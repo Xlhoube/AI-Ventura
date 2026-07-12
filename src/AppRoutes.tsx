@@ -292,6 +292,7 @@ export const AppRoutes = () => {
                                         <DashboardView
                                             t={t}
                                             username={getUserDisplayName(currentUser)}
+                                            isGuest={currentUser?.id === 'guest'}
                                             activeSessionCode={sessionCode}
                                             onNavigate={(nav: any) => {
                                                 if (typeof nav === 'string') {

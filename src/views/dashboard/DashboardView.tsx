@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
    PlusCircle, FileText, Library, Globe, Users2, History, Wifi, Loader2,
-   X, Sparkles, HelpCircle, UserCircle, Trash2, Trophy, Book, User, Archive, BarChart2, Key
+   X, Sparkles, HelpCircle, UserCircle, Trash2, Trophy, Book, User, Archive, BarChart2, Key, AlertTriangle
 } from 'lucide-react';
 import { ChangelogModal, CoopInfoModal, JoinInviteModal, AuthorRankingModal, TutorialModal, InteractiveTour, ApiSetupModal } from '@/components';
 import { account, joinCollaborationSession, createLobbySession } from '@/services/services';
 import { APP_VERSION, Language } from '@/utils/constants';
 
-export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode, onShowToast }: { t: any, username: string, onNavigate: (v: any) => void, lang: Language, activeSessionCode?: string | null, onShowToast: (msg: string, type: 'success' | 'error' | 'info') => void }) => {
+export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode, onShowToast, isGuest }: { t: any, username: string, onNavigate: (v: any) => void, lang: Language, activeSessionCode?: string | null, onShowToast: (msg: string, type: 'success' | 'error' | 'info') => void, isGuest?: boolean }) => {
    const [joinCode, setJoinCode] = useState('');
    const [isJoining, setIsJoining] = useState(false);
    const [errorJoin, setErrorJoin] = useState<string | null>(null);
@@ -209,7 +209,7 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{t.modeSoloDesc}</p>
                         </div>
                      </button>
-                     <button onClick={handleCreateLobby} disabled={isCreatingLobby} className="flex items-center gap-6 p-6 rounded-[32px] border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] hover:bg-white dark:hover:bg-white/5 hover:border-emerald-500 dark:hover:border-emerald-500/50 transition-all text-left group relative tour-coop-mode">
+                     <button onClick={isGuest ? undefined : handleCreateLobby} disabled={isCreatingLobby || isGuest} className={`flex items-center gap-6 p-6 rounded-[32px] border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] transition-all text-left group relative tour-coop-mode ${isGuest ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white dark:hover:bg-white/5 hover:border-emerald-500 dark:hover:border-emerald-500/50'}`}>
                         <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">{isCreatingLobby ? <Loader2 className="animate-spin" /> : <Users2 size={32} />}</div>
                         <div>
                            <div className="flex items-center gap-2 mb-1 relative group/tooltip">
@@ -222,6 +222,12 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
                               </div>
                            </div>
                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{t.modeCoopDesc}</p>
+                           {isGuest && (
+                              <div className="mt-3 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs font-bold px-3 py-2 rounded-xl flex items-start gap-2">
+                                 <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                                 <span>{t.guestCoopWarning || 'O modo Co-Op requer uma conta registada para aceder à nuvem.'}</span>
+                              </div>
+                           )}
                         </div>
                      </button>
                   </div>
