@@ -316,35 +316,26 @@ export const polishManuscript = async (messages: any[], lang: string, currentTit
   const targetLang = promptLangMap[lang] || 'ENGLISH';
 
   const prompts: Record<string, string> = {
-    pt: `Atua como um editor literário sénior. Transforma o diálogo de co-escrita abaixo numa OBRA LITERÁRIA FINAL em ${targetLang}.
+    pt: `Atua como um editor literário sénior. Lê a história abaixo e cria o material editorial final em ${targetLang}.
       CRITÉRIOS OBRIGATÓRIOS:
       1. CRIA EXATAMENTE 3 OPÇÕES DE TÍTULOS CRIATIVOS e DISTINTOS para a obra num array de strings.
-      2. Coesão total e fluidez de parágrafos.
-      3. FORMATAÇÃO DE DIÁLOGO: Cada mudança de interlocutor exige um NOVO PARÁGRAFO.
-      4. TRAVESSÕES: Usa sempre travessão longo (—) no início da fala e para separar incisos do narrador. Nunca uses hífens (-).
-      5. Cria uma SINOPSE EDITORIAL envolvente.
+      2. Cria uma SINOPSE EDITORIAL envolvente.
       
-      Retorna APENAS JSON válido com "titleOptions" (Array de 3 strings), "synopsis" e "content". Não devolvas markdown.`,
+      Retorna APENAS JSON válido com "titleOptions" (Array de 3 strings) e "synopsis". Não devolvas o conteúdo nem markdown.`,
 
-    en: `Act as a senior literary editor. Transform the co-writing dialogue below into a FINAL LITERARY WORK in ${targetLang}.
+    en: `Act as a senior literary editor. Read the story below and create the final editorial material in ${targetLang}.
       MANDATORY CRITERIA:
       1. CREATE EXACTLY 3 CREATIVE and DISTINCT TITLE OPTIONS for the work in a string array.
-      2. Total cohesion and paragraph fluidity.
-      3. DIALOGUE FORMATTING: Each speaker change requires a NEW PARAGRAPH.
-      4. DASHES: Always use a long dash (—) at the start of speech and to separate narrator asides. Never use hyphens (-).
-      5. Create an engaging EDITORIAL SYNOPSIS.
+      2. Create an engaging EDITORIAL SYNOPSIS.
       
-      Return ONLY valid JSON with "titleOptions" (Array of 3 strings), "synopsis" and "content". No markdown.`,
+      Return ONLY valid JSON with "titleOptions" (Array of 3 strings) and "synopsis". Do not return the content or markdown.`,
 
-    fr: `Agissez en tant qu'éditeur littéraire senior. Transformez le dialogue de co-écriture ci-dessous en un MANUSCRIT LITTÉRAIRE FINAL en ${targetLang}.
+    fr: `Agissez en tant qu'éditeur littéraire senior. Lisez l'histoire ci-dessous et créez le matériel éditorial final en ${targetLang}.
       CRITÈRES OBLIGATOIRES :
       1. CRÉEZ EXACTEMENT 3 OPTIONS DE TITRES CRÉATIFS et DISTINCTS pour l'œuvre dans un tableau de chaînes.
-      2. Cohésion totale et fluidité des paragraphes.
-      3. FORMATAGE DU DIALOGUE : Chaque changement d'interlocuteur nécessite un NOUVEAU PARAGRAPHE.
-      4. TIRETS : Utilisez toujours un tiret cadratin (—) au début du discours et pour séparer les incises du narrateur. N'utilisez jamais de traits d'union (-).
-      5. Création d'un SYNOPSIS ÉDITORIAL engageant.
+      2. Création d'un SYNOPSIS ÉDITORIAL engageant.
       
-      Retournez UNIQUEMENT un JSON valide avec "titleOptions" (Tableau de 3 chaînes), "synopsis" et "content". Pas de markdown.`
+      Retournez UNIQUEMENT un JSON valide avec "titleOptions" (Tableau de 3 chaînes) et "synopsis". Ne retournez pas le contenu ni markdown.`
   };
 
   const tryPolish = async () => {
@@ -366,6 +357,9 @@ export const polishManuscript = async (messages: any[], lang: string, currentTit
           `${currentTitle || "Conto"} - Edição Final`
         ];
       }
+      
+      // O conteúdo será sempre a concatenação das mensagens da IA, filtrando qualquer lixo JSON
+      result.content = messages.filter((m: any) => m.role === 'ai').map((m: any) => m.content).join('\n\n');
       return result;
     }
     throw new Error("JSON_MISSING");
@@ -395,7 +389,7 @@ export const polishManuscript = async (messages: any[], lang: string, currentTit
           `O Conto de ${cleanTitle}`
         ],
         synopsis: fallbackSynopsis[lang as 'pt' | 'en' | 'fr'] || fallbackSynopsis['en'],
-        content: messages.map(m => m.content).join('\n\n')
+        content: messages.filter((m: any) => m.role === 'ai').map((m: any) => m.content).join('\n\n')
       };
     }
   }
