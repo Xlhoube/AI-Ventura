@@ -13,10 +13,12 @@ export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, 
 
     const [confirmReopen, setConfirmReopen] = useState(false);
 
-    const manuscript = story.manuscript || {
-        title: story.title,
-        synopsis: '',
-        content: story.messages.filter((m: any) => m.role === 'ai').map((m: any) => m.content).join('\n\n')
+    const manuscriptContent = story.manuscript?.content || story.messages?.filter((m: any) => m.role === 'ai').map((m: any) => m.content).join('\n\n') || '';
+
+    const manuscript = {
+        title: story.manuscript?.title || story.title,
+        synopsis: story.manuscript?.synopsis || '',
+        content: manuscriptContent
     };
 
     const originalLang = story.original_language || 'en';
