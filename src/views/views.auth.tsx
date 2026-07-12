@@ -15,6 +15,7 @@ const GoogleIcon = () => (
 export const LandingView = ({ t, onAuth, onGuestLogin }: { t: any, onAuth: (e: any, mode: 'login' | 'signup') => Promise<void>, onGuestLogin: () => void }) => {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [loading, setLoading] = useState(false);
+  const [logoError, setLogoError] = useState(false);
   const [successMode, setSuccessMode] = useState(false);
 
   const [hasInvite, setHasInvite] = useState(false);
@@ -115,11 +116,18 @@ export const LandingView = ({ t, onAuth, onGuestLogin }: { t: any, onAuth: (e: a
             {/* LOGÓTIPO AI-VENTURA - Link Assinado */}
             <div className="flex flex-col items-center gap-4">
               <div className="flex flex-col items-center gap-3">
-                  <img 
-                      src="/logo.png" 
-                      alt="AI-Ventura Logo" 
-                      className="w-20 h-20 rounded-[2rem] shadow-2xl shadow-indigo-500/40 rotate-3 hover:rotate-6 transition-transform object-cover"
-                  />
+                  {!logoError ? (
+                      <img 
+                          src="/logo.png" 
+                          alt="AI-Ventura Logo" 
+                          onError={() => setLogoError(true)}
+                          className="w-20 h-20 rounded-[2rem] shadow-2xl shadow-indigo-500/40 rotate-3 hover:rotate-6 transition-transform object-cover"
+                      />
+                  ) : (
+                      <div className="w-20 h-20 bg-indigo-500/10 rounded-[2rem] flex items-center justify-center rotate-3 shadow-2xl shadow-indigo-500/20 hover:rotate-6 transition-transform">
+                          <BookOpen className="w-10 h-10 text-indigo-500" />
+                      </div>
+                  )}
                   <h1 className="font-black text-3xl tracking-tighter bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
                       IA-VENTURA
                   </h1>
