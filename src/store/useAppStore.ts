@@ -26,6 +26,11 @@ interface AppState {
         openai: string;
         anthropic: string;
     };
+    apiKeysStatus: {
+        google: 'valid' | 'exceeded';
+        openai: 'valid' | 'exceeded';
+        anthropic: 'valid' | 'exceeded';
+    };
     activeProvider: AIProvider;
     setCurrentUser: (user: AppUser | null) => void;
     setUserLang: (lang: Language) => void;
@@ -33,6 +38,7 @@ interface AppState {
     toggleTheme: () => void;
     setIsHost: (isHost: boolean) => void;
     setApiKeys: (keys: Partial<AppState['apiKeys']>) => void;
+    setApiKeyStatus: (provider: AIProvider, status: 'valid' | 'exceeded') => void;
     setActiveProvider: (provider: AIProvider) => void;
     logout: () => void;
 }
@@ -45,6 +51,7 @@ export const useAppStore = create<AppState>()(
             theme: 'dark',
             isHost: false,
             apiKeys: { google: '', openai: '', anthropic: '' },
+            apiKeysStatus: { google: 'valid', openai: 'valid', anthropic: 'valid' },
             activeProvider: 'google',
             setCurrentUser: (user) => set({ currentUser: user }),
             setUserLang: (lang) => set({ userLang: lang }),
@@ -52,6 +59,7 @@ export const useAppStore = create<AppState>()(
             toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
             setIsHost: (isHost) => set({ isHost }),
             setApiKeys: (keys) => set((state) => ({ apiKeys: { ...state.apiKeys, ...keys } })),
+            setApiKeyStatus: (provider, status) => set((state) => ({ apiKeysStatus: { ...state.apiKeysStatus, [provider]: status } })),
             setActiveProvider: (provider) => set({ activeProvider: provider }),
             logout: () => set({ currentUser: null, isHost: false })
         }),
@@ -62,6 +70,7 @@ export const useAppStore = create<AppState>()(
                 theme: state.theme, 
                 currentUser: state.currentUser,
                 apiKeys: state.apiKeys,
+                apiKeysStatus: state.apiKeysStatus,
                 activeProvider: state.activeProvider 
             }),
         }

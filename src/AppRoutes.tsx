@@ -2,7 +2,7 @@ import React, { useEffect, Suspense, lazy, useRef, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { BookOpen, Loader2, LogOut, Sun, Moon, UserCircle } from 'lucide-react';
 import { Language, translations } from './utils/constants';
-import { account, updateProfileLanguage, getProfileLanguage, generateUUID, isCloudEnabled } from './services/services';
+import { account, updateProfileLanguage, getProfileLanguage, generateUUID, isCloudEnabled, createCloudDraftSession } from './services/services';
 import { ensureProfileExists, handleAuthSubmit } from './services/auth.services';
 import { saveLocalStory, archiveLocalStory } from './services/story.services';
 import { polishManuscript, generateStoryTitle } from './services/ai';
@@ -323,8 +323,12 @@ export const AppRoutes = () => {
                                             onShowToast={showToast}
                                         />
                                     } />
-                                    <Route path="/drafts" element={<DraftsView t={t} onResume={(s: any) => { setCurrentStory(s); if (s.status === 'completed') navigate('/preview'); else navigate('/story'); }} onArchive={archiveLocalStory} onBack={() => navigate('/dashboard')} />} />
-                                    <Route path="/library" element={<PrivateLibraryView t={t} onRead={(s: any) => { setCurrentStory(s); navigate('/preview'); }} onArchive={archiveLocalStory} onBack={() => navigate('/dashboard')} />} />
+                                    <Route path="/drafts" element={<DraftsView t={t} onResume={(s: any) => { 
+                                        setCurrentStory(s); 
+                                        if (s.sessionCode) setSessionCode(s.sessionCode);
+                                        else setSessionCode(null);
+                                        navigate('/story'); 
+                                    }} onArchive={archiveLocalStory} onBack={() => navigate('/dashboard')} />} />
                                     <Route path="/archive" element={<ArchiveView t={t} onBack={() => navigate('/dashboard')} />} />
                                     <Route path="/explore" element={<PublicLibraryView t={t} onRead={(s: any) => { setCurrentStory(s); navigate('/preview'); }} onBack={() => navigate('/dashboard')} />} />
                                     <Route path="/author/:id" element={<PublicLibraryView t={t} authorId={selectedAuthorId} onRead={(s: any) => { setCurrentStory(s); navigate('/preview'); }} onBack={() => navigate('/authors')} />} />
@@ -350,6 +354,9 @@ export const AppRoutes = () => {
                                             onBack={() => navigate('/dashboard')}
                                             onShowToast={showToast}
                                             onComplete={async (config: any) => {
+                                                const searchParams = new URLSearchParams(location.search);
+                                                const storageType = searchParams.get('storage') || 'local';
+                                                
                                                 const displayName = getUserDisplayName(currentUser);
                                                 const title = await generateStoryTitle(config, userLang);
                                                 const newStory = {
@@ -362,8 +369,21 @@ export const AppRoutes = () => {
                                                     status: 'draft',
                                                     sessionCode: sessionCode
                                                 };
-                                                saveLocalStory(newStory);
-                                                setCurrentStory(newStory);
+                                                
+                                                if (storageType === 'cloud' && isCloudEnabled && currentUser && currentUser.id !== 'guest') {
+                                                    try {
+                                                        const cloudDraft = await createCloudDraftSession(newStory, currentUser.id);
+                                                        setSessionCode(cloudDraft.sessionCode);
+                                                        setCurrentStory(cloudDraft);
+                                                    } catch (e) {
+                                                        console.error("Erro ao criar draft na nuvem:", e);
+                                                        saveLocalStory(newStory);
+                                                        setCurrentStory(newStory);
+                                                    }
+                                                } else {
+                                                    saveLocalStory(newStory);
+                                                    setCurrentStory(newStory);
+                                                }
                                                 navigate('/story');
                                             }}
                                         />

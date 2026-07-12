@@ -3,17 +3,37 @@ import { FileText, Users2 } from 'lucide-react';
 import { StoriesList } from './components/StoriesList';
 import { ConfirmModal, PageHeader } from '@/components';
 import { getLocalStories } from '@/services/story.services';
+import { getCloudDrafts } from '@/services/services';
+import { useAppStore } from '@/store/useAppStore';
 
 export const DraftsView = ({ t, onResume, onArchive, onBack }: { t: any, onResume: (s: any) => void, onArchive: (id: string) => void, onBack: () => void }) => {
   const [soloDrafts, setSoloDrafts] = useState<any[]>([]);
   const [coopDrafts, setCoopDrafts] = useState<any[]>([]);
   const [selectedForDelete, setSelectedForDelete] = useState<any>(null);
 
+  const { currentUser } = useAppStore();
+
   useEffect(() => {
-    const allDrafts = getLocalStories().filter((s: any) => s.status !== 'completed');
-    setSoloDrafts(allDrafts.filter((s: any) => !s.sessionCode));
-    setCoopDrafts(allDrafts.filter((s: any) => !!s.sessionCode));
-  }, []);
+    const fetchDrafts = async () => {
+      const allLocalDrafts = getLocalStories().filter((s: any) => s.status !== 'completed');
+      
+      let allCloudDrafts: any[] = [];
+      if (currentUser && currentUser.id !== 'guest') {
+        allCloudDrafts = await getCloudDrafts(currentUser.id);
+      }
+
+      // Merge local and cloud drafts, prioritizing cloud if they have the same ID
+      const mergedMap = new Map();
+      allLocalDrafts.forEach((d: any) => mergedMap.set(d.id, d));
+      allCloudDrafts.forEach((d: any) => mergedMap.set(d.id, d));
+      
+      const allDrafts = Array.from(mergedMap.values());
+      
+      setSoloDrafts(allDrafts.filter((s: any) => !s.sessionCode || s.storageType === 'cloud'));
+      setCoopDrafts(allDrafts.filter((s: any) => !!s.sessionCode && s.storageType !== 'cloud'));
+    };
+    fetchDrafts();
+  }, [currentUser]);
 
   const handleDeleteConfirm = () => {
     if (selectedForDelete) {

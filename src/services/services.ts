@@ -86,8 +86,44 @@ export const createCollaborationSession = async (story: any, hostId: string, hos
     story_data: JSON.stringify(storyWithTurnData),
     status: 'active'
   });
-  
   return parseJsonObj(doc, 'story_data');
+};
+
+export const createCloudDraftSession = async (story: any, hostId: string) => {
+  if (!isCloudEnabled) throw new Error("Cloud disabled");
+
+  const code = createSessionCode();
+  const storyData = {
+    ...story,
+    storageType: 'cloud'
+  };
+
+  const doc = await databases.createDocument(DATABASE_ID, COL_SESSIONS, ID.unique(), {
+    code,
+    host_id: hostId,
+    story_data: JSON.stringify(storyData),
+    status: 'draft'
+  });
+  
+  const parsed = parseJsonObj(doc, 'story_data');
+  return { ...parsed.story_data, sessionCode: code };
+};
+
+export const getCloudDrafts = async (userId: string) => {
+  if (!isCloudEnabled || !userId || userId === 'guest') return [];
+  try {
+    const response = await databases.listDocuments(DATABASE_ID, COL_SESSIONS, [
+      Query.equal('host_id', userId),
+      Query.equal('status', 'draft')
+    ]);
+    return response.documents.map(doc => {
+      const parsed = parseJsonObj(doc, 'story_data');
+      return { ...parsed.story_data, sessionCode: parsed.code };
+    });
+  } catch (e) {
+    console.error("Erro ao buscar rascunhos da nuvem:", e);
+    return [];
+  }
 };
 
 export const createLobbySession = async (hostId: string, hostName: string, hostAvatar?: string) => {

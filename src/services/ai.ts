@@ -87,6 +87,8 @@ const formatAIError = (e: any): Error => {
   if (msg.includes("API_KEY_MISSING")) return new Error(getErrorString('missing_key'));
   if (msg.includes("Failed to fetch")) return new Error(getErrorString('network'));
   if (msg.includes("429") || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("exhausted")) {
+      const store = useAppStore.getState();
+      store.setApiKeyStatus(store.activeProvider, 'exceeded');
       return new Error(getErrorString('rate_limit'));
   }
 

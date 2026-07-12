@@ -210,7 +210,8 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
     }, [sessionCode, messages.length, currentTurnIndex]);
 
     const myTurnIndex = isSpectator ? -1 : participants.findIndex(p => p.id === user?.id);
-    const isMyTurn = !isSpectator && (!sessionCode || (participants.length > 0 && currentTurnIndex === myTurnIndex));
+    const isCloudSolo = initialConfig?.storageType === 'cloud' || participants.length <= 1;
+    const isMyTurn = !isSpectator && (!sessionCode || isCloudSolo || (participants.length > 0 && currentTurnIndex === myTurnIndex));
     const strictModeBlock = !isSpectator && sessionCode && participants.length > 1 && lastAuthorId === user?.id;
 
     const getFullPayload = (newMsgs: any[], nextIndex: number) => ({

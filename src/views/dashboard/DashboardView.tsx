@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
    PlusCircle, FileText, Library, Globe, Users2, History, Wifi, Loader2,
-   X, Sparkles, HelpCircle, UserCircle, Trash2, Trophy, Book, User, Archive, BarChart2, Key, AlertTriangle
+   X, Sparkles, HelpCircle, UserCircle, Trash2, Trophy, Book, User, Archive, BarChart2, Key, AlertTriangle, Save, Cloud
 } from 'lucide-react';
 import { ChangelogModal, CoopInfoModal, JoinInviteModal, AuthorRankingModal, TutorialModal, InteractiveTour, ApiSetupModal } from '@/components';
 import { account, joinCollaborationSession, createLobbySession } from '@/services/services';
@@ -19,6 +19,7 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
    const [showTour, setShowTour] = useState(false);
    const [showCoopInfo, setShowCoopInfo] = useState(false);
    const [showModeSelect, setShowModeSelect] = useState(false);
+   const [showStorageSelect, setShowStorageSelect] = useState(false);
    const [hasNewUpdate, setHasNewUpdate] = useState(false);
    const [isCreatingLobby, setIsCreatingLobby] = useState(false);
 
@@ -194,7 +195,7 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
                      <button onClick={() => setShowModeSelect(false)} className="p-2 bg-gray-100 dark:bg-white/5 rounded-xl hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"><X size={20} className="text-slate-500" /></button>
                   </div>
                   <div className="grid grid-cols-1 gap-4">
-                     <button onClick={() => { setShowModeSelect(false); onNavigate('setup'); }} className="flex items-center gap-6 p-6 rounded-[32px] border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] hover:bg-white dark:hover:bg-white/5 hover:border-indigo-500 dark:hover:border-indigo-500/50 transition-all text-left group tour-solo-mode">
+                     <button onClick={() => { setShowModeSelect(false); setShowStorageSelect(true); }} className="flex items-center gap-6 p-6 rounded-[32px] border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] hover:bg-white dark:hover:bg-white/5 hover:border-indigo-500 dark:hover:border-indigo-500/50 transition-all text-left group tour-solo-mode">
                         <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform"><UserCircle size={32} /></div>
                         <div>
                            <div className="flex items-center gap-2 mb-1 relative group/tooltip">
@@ -226,6 +227,43 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
                               <div className="mt-3 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs font-bold px-3 py-2 rounded-xl flex items-start gap-2">
                                  <AlertTriangle size={14} className="shrink-0 mt-0.5" />
                                  <span>{t.guestCoopWarning || 'O modo Co-Op requer uma conta registada para aceder à nuvem.'}</span>
+                              </div>
+                           )}
+                        </div>
+                     </button>
+                  </div>
+               </div>
+            </div>
+         )}
+
+         {showStorageSelect && (
+            <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-black/60 dark:bg-black/90 backdrop-blur-md animate-in fade-in transition-colors">
+               <div className="bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 w-full max-w-lg rounded-[40px] shadow-2xl p-8 space-y-8 animate-in zoom-in-95 duration-300 relative">
+                  <div className="flex justify-between items-center mb-2">
+                     <h3 className="text-2xl font-black text-gray-900 dark:text-white">{t.storageSelectTitle || 'Onde guardar?'}</h3>
+                     <button onClick={() => setShowStorageSelect(false)} className="p-2 bg-gray-100 dark:bg-white/5 rounded-xl hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"><X size={20} className="text-slate-500" /></button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4">
+                     <button onClick={() => { setShowStorageSelect(false); onNavigate('setup?storage=local'); }} className="flex items-center gap-6 p-6 rounded-[32px] border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] hover:bg-white dark:hover:bg-white/5 hover:border-indigo-500 dark:hover:border-indigo-500/50 transition-all text-left group">
+                        <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
+                           <Save size={32} />
+                        </div>
+                        <div>
+                           <h4 className="text-lg font-black text-gray-900 dark:text-white mb-1">{t.storageLocal || 'Dispositivo Local'}</h4>
+                           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{t.storageLocalDesc || 'Guardado apenas neste browser. Acesso offline, mas perde-se se limpares o cache.'}</p>
+                        </div>
+                     </button>
+                     <button onClick={isGuest ? undefined : () => { setShowStorageSelect(false); onNavigate('setup?storage=cloud'); }} disabled={isGuest} className={`flex items-center gap-6 p-6 rounded-[32px] border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] transition-all text-left group relative ${isGuest ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white dark:hover:bg-white/5 hover:border-emerald-500 dark:hover:border-emerald-500/50'}`}>
+                        <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                           <Cloud size={32} />
+                        </div>
+                        <div>
+                           <h4 className="text-lg font-black text-gray-900 dark:text-white mb-1">{t.storageCloud || 'Nuvem (Appwrite)'}</h4>
+                           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{t.storageCloudDesc || 'Sincronizado na tua conta. Acede em qualquer dispositivo sem perderes nada.'}</p>
+                           {isGuest && (
+                              <div className="mt-3 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs font-bold px-3 py-2 rounded-xl flex items-start gap-2">
+                                 <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                                 <span>{t.guestCloudWarning || 'Requer conta registada para guardar na Nuvem.'}</span>
                               </div>
                            )}
                         </div>

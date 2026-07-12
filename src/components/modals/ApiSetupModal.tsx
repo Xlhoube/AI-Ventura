@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Key, ShieldCheck, HelpCircle, X, Check, ArrowRight, Info } from 'lucide-react';
+import { Key, ShieldCheck, HelpCircle, X, Check, ArrowRight, Info, Trash2, AlertTriangle } from 'lucide-react';
 import { useAppStore, AIProvider } from '@/store/useAppStore';
 
 interface ApiSetupModalProps {
@@ -10,9 +10,9 @@ interface ApiSetupModalProps {
 }
 
 export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, forceSetup = false, t }) => {
-    const { apiKeys, activeProvider, setApiKeys, setActiveProvider } = useAppStore();
+    const { apiKeys, activeProvider, apiKeysStatus, setApiKeys, setApiKeyStatus, setActiveProvider } = useAppStore();
     const [currentProvider, setCurrentProvider] = useState<AIProvider>(activeProvider || 'google');
-    const [keyValue, setKeyValue] = useState(apiKeys[currentProvider] || '');
+    const [keyValue, setKeyValue] = useState(apiKeys[activeProvider || 'google'] || '');
     const [saved, setSaved] = useState(false);
 
     if (!isOpen) return null;
@@ -25,6 +25,7 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
 
     const handleSave = () => {
         setApiKeys({ [currentProvider]: keyValue });
+        setApiKeyStatus(currentProvider, 'valid');
         setActiveProvider(currentProvider);
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
@@ -106,13 +107,13 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                                     <button
                                         key={p.id}
                                         onClick={() => {
-                                            setCurrentProvider(p.id);
-                                            setKeyValue(apiKeys[p.id] || '');
+                                            setCurrentProvider(p.id as AIProvider);
+                                            setKeyValue(apiKeys[p.id as AIProvider] || '');
                                         }}
-                                        className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
+                                        className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${
                                             currentProvider === p.id 
-                                            ? 'border-indigo-500 bg-indigo-500/5 ring-1 ring-indigo-500/20' 
-                                            : 'border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5'
+                                                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10' 
+                                                : 'border-gray-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:bg-gray-50 dark:hover:bg-white/5'
                                         }`}
                                     >
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${currentProvider === p.id ? p.bg : 'bg-gray-100 dark:bg-white/5'}`}>
@@ -187,25 +188,54 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                     </div>
 
                         <div className="mt-6 mb-4 pt-4 border-t border-gray-200 dark:border-white/10">
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
-                                {t?.currentStatus || 'Status Atual'}
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
+                                {t?.savedKeys || 'Chaves Guardadas'}
                             </h4>
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs text-slate-500 dark:text-slate-400">Provedor:</span>
-                                <span className="text-xs font-bold text-gray-900 dark:text-white">
-                                    {providers.find(p => p.id === activeProvider)?.name || 'Nenhum'}
-                                </span>
+                            <div className="space-y-2 max-h-32 overflow-y-auto pr-1">
+                                {providers.filter(p => apiKeys[p.id as AIProvider]).length === 0 ? (
+                                    <p className="text-xs text-slate-400 italic">Nenhuma chave guardada.</p>
+                                ) : (
+                                    providers.filter(p => apiKeys[p.id as AIProvider]).map(p => {
+                                        const isExceeded = apiKeysStatus[p.id as AIProvider] === 'exceeded';
+                                        const isActive = activeProvider === p.id;
+                                        return (
+                                            <div 
+                                                key={p.id}
+                                                onClick={() => {
+                                                    setActiveProvider(p.id as AIProvider);
+                                                    setCurrentProvider(p.id as AIProvider);
+                                                    setKeyValue(apiKeys[p.id as AIProvider]);
+                                                }}
+                                                className={`group flex items-center justify-between p-2 rounded-lg border cursor-pointer transition-all ${
+                                                    isActive 
+                                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/30' 
+                                                        : 'bg-white dark:bg-[#1A1A1E] border-gray-200 dark:border-white/5 hover:border-indigo-300 dark:hover:border-indigo-500/30'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-2 overflow-hidden">
+                                                    <div className={`w-2 h-2 rounded-full shrink-0 ${isExceeded ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
+                                                    <span className="text-xs font-bold text-gray-700 dark:text-slate-300 truncate">
+                                                        {p.name.split(' ')[0]}
+                                                    </span>
+                                                    {isExceeded && <AlertTriangle size={12} className="text-red-500 shrink-0" />}
+                                                </div>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setApiKeys({ [p.id]: '' });
+                                                        setApiKeyStatus(p.id as AIProvider, 'valid');
+                                                        if (currentProvider === p.id) setKeyValue('');
+                                                    }}
+                                                    className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                                                    title="Apagar chave"
+                                                >
+                                                    <Trash2 size={12} />
+                                                </button>
+                                            </div>
+                                        );
+                                    })
+                                )}
                             </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs text-slate-500 dark:text-slate-400">API Key:</span>
-                                <span className="text-xs font-mono text-gray-900 dark:text-white">
-                                    {activeProvider && apiKeys[activeProvider] 
-                                        ? `${apiKeys[activeProvider].slice(0, 4)}...${apiKeys[activeProvider].slice(-4)}` 
-                                        : 'Não definida'}
-                                </span>
-                            </div>
-                        </div>
                         </div>
                     </div>
 
