@@ -565,6 +565,36 @@ export const translations = {
 
     ranking: 'Ranking',
     confirmDeleteSession: 'Eliminar esta sessão ativa?',
+    aiEngineTitle: 'Motor de IA',
+    aiEngineDesc: 'Configura o teu assistente literário.',
+    provider: 'Fornecedor',
+    apiKeyLabel: 'Chave de API (Secret Key)',
+    getKey: 'Obter Chave',
+    apiKeyLocalSecurity: 'A chave é guardada localmente no teu dispositivo e nunca é enviada para os nossos servidores.',
+    saveAndContinue: 'Guardar e Continuar',
+    saved: 'Guardado',
+    help: 'Ajuda',
+    howToGetGoogleKey: 'Como obter a chave da Google?',
+    googleSteps: [
+      'Acede ao Google AI Studio',
+      'Inicia sessão com a tua conta Google',
+      'Clica em "Get API key" no menu lateral',
+      'Clica no botão "Create API key"'
+    ],
+    howToGetOpenAIKey: 'Como obter a chave da OpenAI?',
+    openAISteps: [
+      'Acede à plataforma da OpenAI',
+      'Inicia sessão e adiciona saldo (é um serviço pago)',
+      'Vai a "API keys" no menu lateral',
+      'Clica em "Create new secret key"'
+    ],
+    howToGetAnthropicKey: 'Como obter a chave da Anthropic?',
+    anthropicSteps: [
+      'Acede à Consola da Anthropic',
+      'Inicia sessão e adiciona fundos',
+      'Vai a "Settings" > "API Keys"',
+      'Clica em "Create Key"'
+    ],
     apiKeySettings: 'Configuração da Chave API',
     apiKeyDesc: 'Se a chave de API padrão estiver congestionada ou se preferires usar a tua própria conta do Google Gemini, insere aqui a tua chave. A chave será guardada apenas localmente no teu navegador.',
     apiKeyPlaceholder: 'Insere a tua chave API Gemini (AIzaSy...)',
@@ -883,6 +913,36 @@ export const translations = {
     inviteDetectedDesc: 'You were invited to collaborate on a story with the code:',
     validateAndJoin: 'Validate and Join',
     backToStory: 'Back to Story',
+    aiEngineTitle: 'AI Engine',
+    aiEngineDesc: 'Configure your literary assistant.',
+    provider: 'Provider',
+    apiKeyLabel: 'API Key (Secret Key)',
+    getKey: 'Get Key',
+    apiKeyLocalSecurity: 'The key is stored locally on your device and is never sent to our servers.',
+    saveAndContinue: 'Save and Continue',
+    saved: 'Saved',
+    help: 'Help',
+    howToGetGoogleKey: 'How to get the Google key?',
+    googleSteps: [
+      'Go to Google AI Studio',
+      'Log in with your Google account',
+      'Click on "Get API key" in the side menu',
+      'Click the "Create API key" button'
+    ],
+    howToGetOpenAIKey: 'How to get the OpenAI key?',
+    openAISteps: [
+      'Go to the OpenAI platform',
+      'Log in and add balance (it is a paid service)',
+      'Go to "API keys" in the side menu',
+      'Click on "Create new secret key"'
+    ],
+    howToGetAnthropicKey: 'How to get the Anthropic key?',
+    anthropicSteps: [
+      'Go to the Anthropic Console',
+      'Log in and add funds',
+      'Go to "Settings" > "API Keys"',
+      'Click on "Create Key"'
+    ],
     apiKeySettings: 'API Key Configuration',
     apiKeyDesc: 'If the default API key is congested or if you prefer to use your own Google Gemini account, enter your key here. The key will be stored only locally in your browser.',
     apiKeyPlaceholder: 'Enter your Gemini API key (AIzaSy...)',
@@ -1204,6 +1264,36 @@ export const translations = {
 
     ranking: 'Classement',
     confirmDeleteSession: 'Supprimer cette session active ?',
+    aiEngineTitle: 'Moteur d\'IA',
+    aiEngineDesc: 'Configurez votre assistant littéraire.',
+    provider: 'Fournisseur',
+    apiKeyLabel: 'Clé API (Clé Secrète)',
+    getKey: 'Obtenir la clé',
+    apiKeyLocalSecurity: 'La clé est stockée localement sur votre appareil et n\'est jamais envoyée à nos serveurs.',
+    saveAndContinue: 'Enregistrer et continuer',
+    saved: 'Enregistré',
+    help: 'Aide',
+    howToGetGoogleKey: 'Comment obtenir la clé Google ?',
+    googleSteps: [
+      'Accédez à Google AI Studio',
+      'Connectez-vous avec votre compte Google',
+      'Cliquez sur "Get API key" dans le menu latéral',
+      'Cliquez sur le bouton "Create API key"'
+    ],
+    howToGetOpenAIKey: 'Comment obtenir la clé OpenAI ?',
+    openAISteps: [
+      'Accédez à la plateforme OpenAI',
+      'Connectez-vous et ajoutez un solde (c\'est un service payant)',
+      'Allez dans "API keys" dans le menu latéral',
+      'Cliquez sur "Create new secret key"'
+    ],
+    howToGetAnthropicKey: 'Comment obtenir la clé Anthropic ?',
+    anthropicSteps: [
+      'Accédez à la Console Anthropic',
+      'Connectez-vous et ajoutez des fonds',
+      'Allez dans "Settings" > "API Keys"',
+      'Cliquez sur "Create Key"'
+    ],
     apiKeySettings: 'Configuration de la Clé API',
     apiKeyDesc: 'Si la clé API par défaut est saturée ou si vous préférez utiliser votre propre compte Google Gemini, saisissez votre clé ici. La clé sera stockée uniquement localement dans votre navigateur.',
     apiKeyPlaceholder: 'Saisissez votre clé API Gemini (AIzaSy...)',

@@ -233,7 +233,7 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
          <CoopInfoModal t={t} isOpen={showCoopInfo} onClose={() => setShowCoopInfo(false)} />
          <AuthorRankingModal t={t} isOpen={showRanking} onClose={() => setShowRanking(false)} />
          <TutorialModal t={t} isOpen={showTutorial} onClose={() => setShowTutorial(false)} />
-         <ApiSetupModal isOpen={showApiKeyModal} onClose={() => setShowApiKeyModal(false)} />
+         <ApiSetupModal t={t} isOpen={showApiKeyModal} onClose={() => setShowApiKeyModal(false)} />
 
          {showDeleteConfirm && (
             <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in">

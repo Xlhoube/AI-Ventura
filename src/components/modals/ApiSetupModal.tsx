@@ -6,9 +6,10 @@ interface ApiSetupModalProps {
     isOpen: boolean;
     onClose?: () => void;
     forceSetup?: boolean;
+    t?: any;
 }
 
-export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, forceSetup = false }) => {
+export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, forceSetup = false, t }) => {
     const { apiKeys, activeProvider, setApiKeys, setActiveProvider } = useAppStore();
     const [currentProvider, setCurrentProvider] = useState<AIProvider>(activeProvider || 'google');
     const [keyValue, setKeyValue] = useState(apiKeys[currentProvider] || '');
@@ -36,8 +37,8 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
         switch (provider) {
             case 'google':
                 return {
-                    title: 'Como obter a chave da Google?',
-                    steps: [
+                    title: t?.howToGetGoogleKey || 'Como obter a chave da Google?',
+                    steps: t?.googleSteps || [
                         'Acede ao Google AI Studio',
                         'Inicia sessão com a tua conta Google',
                         'Clica em "Get API key" no menu lateral',
@@ -47,8 +48,8 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                 };
             case 'openai':
                 return {
-                    title: 'Como obter a chave da OpenAI?',
-                    steps: [
+                    title: t?.howToGetOpenAIKey || 'Como obter a chave da OpenAI?',
+                    steps: t?.openAISteps || [
                         'Acede à plataforma da OpenAI',
                         'Inicia sessão e adiciona saldo (é um serviço pago)',
                         'Vai a "API keys" no menu lateral',
@@ -58,12 +59,12 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                 };
             case 'anthropic':
                 return {
-                    title: 'Como obter a chave da Anthropic?',
-                    steps: [
+                    title: t?.howToGetAnthropicKey || 'Como obter a chave da Anthropic?',
+                    steps: t?.anthropicSteps || [
                         'Acede à Consola da Anthropic',
                         'Inicia sessão e adiciona fundos',
                         'Vai a "Settings" > "API Keys"',
-                        'Clica em "Create Key"'
+                        'Clica en "Create Key"'
                     ],
                     link: 'https://console.anthropic.com/settings/keys'
                 };
@@ -80,8 +81,8 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                 <div className="flex-1 p-8">
                     <div className="flex justify-between items-start mb-6">
                         <div>
-                            <h2 className="text-2xl font-black text-gray-900 dark:text-white">Motor de IA</h2>
-                            <p className="text-sm text-slate-500 mt-1">Configura o teu assistente literário.</p>
+                            <h2 className="text-2xl font-black text-gray-900 dark:text-white">{t?.aiEngineTitle || 'Motor de IA'}</h2>
+                            <p className="text-sm text-slate-500 mt-1">{t?.aiEngineDesc || 'Configura o teu assistente literário.'}</p>
                         </div>
                         {!forceSetup && onClose && (
                             <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-slate-400">
@@ -92,7 +93,7 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
 
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Fornecedor</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t?.provider || 'Fornecedor'}</label>
                             <div className="grid grid-cols-1 gap-2">
                                 {providers.map(p => (
                                     <button
@@ -120,15 +121,15 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Chave de API (Secret Key)</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t?.apiKeyLabel || 'Chave de API (Secret Key)'}</label>
                                 <a 
                                     href={helpContent.link} 
                                     target="_blank" 
                                     rel="noreferrer"
                                     className="text-[10px] font-bold text-indigo-500 hover:text-indigo-400 flex items-center gap-1 transition-colors"
-                                    title={`Obter chave para ${providers.find(p => p.id === currentProvider)?.name}`}
+                                    title={`${t?.getKey || 'Obter chave'} ${providers.find(p => p.id === currentProvider)?.name}`}
                                 >
-                                    Obter Chave <ArrowRight size={10} />
+                                    {t?.getKey || 'Obter Chave'} <ArrowRight size={10} />
                                 </a>
                             </div>
                             <div className="relative">
@@ -143,7 +144,7 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                                     className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl pl-11 pr-4 py-3 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 ring-indigo-500/20 transition-all"
                                 />
                             </div>
-                            <p className="text-[10px] text-slate-400">A chave é guardada localmente no teu dispositivo e nunca é enviada para os nossos servidores.</p>
+                            <p className="text-[10px] text-slate-400">{t?.apiKeyLocalSecurity || 'A chave é guardada localmente no teu dispositivo e nunca é enviada para os nossos servidores.'}</p>
                         </div>
 
                         <button
@@ -151,7 +152,7 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                             disabled={!keyValue.trim()}
                             className="w-full py-3.5 bg-indigo-600 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:text-slate-500 text-white font-black uppercase tracking-widest text-xs rounded-xl hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-600/10 flex items-center justify-center gap-2"
                         >
-                            {saved ? <><Check size={16}/> Guardado</> : 'Guardar e Continuar'}
+                            {saved ? <><Check size={16}/> {t?.saved || 'Guardado'}</> : (t?.saveAndContinue || 'Guardar e Continuar')}
                         </button>
                     </div>
                 </div>
@@ -160,7 +161,7 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                 <div className="w-full md:w-64 bg-gray-50 dark:bg-white/[0.02] p-8 border-t md:border-t-0 md:border-l border-gray-200 dark:border-white/5 flex flex-col">
                     <div className="flex items-center gap-2 text-indigo-500 mb-6">
                         <HelpCircle size={20} />
-                        <h3 className="font-black text-sm">Ajuda</h3>
+                        <h3 className="font-black text-sm">{t?.help || 'Ajuda'}</h3>
                     </div>
 
                     <div className="flex-1 space-y-4">
@@ -183,7 +184,7 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                         rel="noreferrer"
                         className="mt-6 flex items-center justify-center gap-2 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-xs font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                     >
-                        Obter Chave <ArrowRight size={14} />
+                        {t?.getKey || 'Obter Chave'} <ArrowRight size={14} />
                     </a>
                 </div>
 

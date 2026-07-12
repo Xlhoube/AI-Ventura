@@ -352,7 +352,7 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                 )}
             </div>
 
-            <ApiSetupModal isOpen={showApiSetup} onClose={() => setShowApiSetup(false)} forceSetup={false} />
+            <ApiSetupModal t={t} isOpen={showApiSetup} onClose={() => setShowApiSetup(false)} forceSetup={false} />
         </div>
     );
 };

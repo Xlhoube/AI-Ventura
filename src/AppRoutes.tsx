@@ -416,6 +416,7 @@ export const AppRoutes = () => {
             />
 
             <ApiSetupModal 
+                t={t}
                 isOpen={showApiSetup} 
                 onClose={() => setShowApiSetup(false)} 
                 forceSetup={!apiKeys[activeProvider]}
