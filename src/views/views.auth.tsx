@@ -18,12 +18,17 @@ export const LandingView = ({ t, onAuth, onGuestLogin }: { t: any, onAuth: (e: a
   const [successMode, setSuccessMode] = useState(false);
 
   const [hasInvite, setHasInvite] = useState(false);
+  const [oauthError, setOauthError] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('session')) {
       setMode('signup');
       setHasInvite(true);
+    }
+    if (params.get('error') === 'oauth_failed') {
+      setOauthError(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
 
@@ -134,6 +139,11 @@ export const LandingView = ({ t, onAuth, onGuestLogin }: { t: any, onAuth: (e: a
               <GoogleIcon />
               <span>Continuar com Google</span>
             </button>
+            {oauthError && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-xs rounded-xl text-center font-medium">
+                Ocorreu um erro no login. Por favor verifica se ativaste o Google OAuth na consola do Appwrite.
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-4">

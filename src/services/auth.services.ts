@@ -49,7 +49,7 @@ export const handleSocialLogin = async (provider: 'google') => {
   
   account.createOAuth2Session(
     OAuthProvider.Google,
-    window.location.origin, // redirect de sucesso
-    window.location.origin  // redirect de falha
+    `${window.location.origin}/dashboard`, // redirect de sucesso
+    `${window.location.origin}/?error=oauth_failed`  // redirect de falha
   );
 };
