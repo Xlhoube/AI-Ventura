@@ -78,8 +78,8 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
             <div className="bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-[32px] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
                 
                 {/* Left Side: Setup Form */}
-                <div className="flex-1 p-8">
-                    <div className="flex justify-between items-start mb-6">
+                <div className="flex-1 p-6 md:p-8">
+                    <div className="flex justify-between items-start mb-4">
                         <div>
                             <h2 className="text-2xl font-black text-gray-900 dark:text-white">{t?.aiEngineTitle || 'Motor de IA'}</h2>
                             <p className="text-sm text-slate-500 mt-1">{t?.aiEngineDesc || 'Configura o teu assistente literário.'}</p>
@@ -91,16 +91,16 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                         )}
                     </div>
 
-                    <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 rounded-xl p-4 mb-6 flex gap-3">
+                    <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 rounded-xl p-3 mb-4 flex gap-3">
                         <Info className="text-blue-500 shrink-0 mt-0.5" size={16} />
                         <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed font-medium">
                             {t?.apiKeyDesc || 'Para utilizar a Inteligência Artificial de forma ilimitada e gratuita, precisas de usar a tua própria chave (API Key) diretamente do fornecedor. As chaves de nível básico costumam ser gratuitas.'}
                         </p>
                     </div>
 
-                    <div className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t?.provider || 'Fornecedor'}</label>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">{t?.provider || 'FORNECEDOR'}</label>
                             <div className="grid grid-cols-1 gap-2">
                                 {providers.map(p => (
                                     <button
@@ -126,9 +126,9 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t?.apiKeyLabel || 'Chave de API (Secret Key)'}</label>
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t?.apiKeyLabel || 'CHAVE DE API (SECRET KEY)'}</label>
                                 <a 
                                     href={helpContent.link} 
                                     target="_blank" 
@@ -165,13 +165,14 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                 </div>
 
                 {/* Right Side: Help Instructions */}
-                <div className="w-full md:w-64 bg-gray-50 dark:bg-white/[0.02] p-8 border-t md:border-t-0 md:border-l border-gray-200 dark:border-white/5 flex flex-col">
-                    <div className="flex items-center gap-2 text-indigo-500 mb-6">
-                        <HelpCircle size={20} />
-                        <h3 className="font-black text-sm">{t?.help || 'Ajuda'}</h3>
-                    </div>
+                <div className="w-full md:w-64 bg-gray-50 dark:bg-white/[0.02] p-6 border-t md:border-t-0 md:border-l border-gray-200 dark:border-white/5 flex flex-col justify-between">
+                    <div>
+                        <div className="flex items-center gap-2 text-indigo-500 mb-4">
+                            <HelpCircle size={20} />
+                            <h3 className="font-black text-sm">{t?.help || 'Ajuda'}</h3>
+                        </div>
 
-                    <div className="flex-1 space-y-4">
+                        <div className="space-y-3">
                         <h4 className="text-xs font-bold text-gray-900 dark:text-white leading-tight">
                             {helpContent.title}
                         </h4>
@@ -185,10 +186,10 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                         </ol>
                     </div>
 
-                    <div className="mt-8 mb-6 pt-6 border-t border-gray-200 dark:border-white/10">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
-                            {t?.currentStatus || 'Status Atual'}
-                        </h4>
+                        <div className="mt-6 mb-4 pt-4 border-t border-gray-200 dark:border-white/10">
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
+                                {t?.currentStatus || 'Status Atual'}
+                            </h4>
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs text-slate-500 dark:text-slate-400">Provedor:</span>
@@ -205,13 +206,14 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                                 </span>
                             </div>
                         </div>
+                        </div>
                     </div>
 
                     <a 
                         href={helpContent.link} 
                         target="_blank" 
                         rel="noreferrer"
-                        className="flex items-center justify-center gap-2 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-xs font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                        className="mt-4 flex items-center justify-center gap-2 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-xs font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                     >
                         {t?.getKey || 'Obter Chave'} <ArrowRight size={14} />
                     </a>
