@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Globe, Loader2, Feather, GlobeLock } from 'lucide-react';
 import { PageHeader, ConfirmModal } from '@/components';
-import { supabase, getUserLikes, toggleStoryLike, unpublishStoryFromGlobal } from '@/services/services';
+import { account, databases, DATABASE_ID, COL_PUBLIC_STORIES, getUserLikes, toggleStoryLike, unpublishStoryFromGlobal, isCloudEnabled } from '@/services/services';
+import { Query } from 'appwrite';
 
 export const PublicLibraryView = ({ t, authorId, onRead, onBack }: { t: any, authorId?: string, onRead: (s: any) => void, onBack: () => void }) => {
   const [stories, setStories] = useState<any[]>([]);
@@ -12,22 +13,33 @@ export const PublicLibraryView = ({ t, authorId, onRead, onBack }: { t: any, aut
   const [selectedForRemoval, setSelectedForRemoval] = useState<any>(null);
 
   useEffect(() => {
-    supabase?.auth.getUser().then(({ data }) => setCurrentUser(data.user?.id || null));
+    if (isCloudEnabled) {
+      account.get().then(user => setCurrentUser(user.$id)).catch(() => setCurrentUser(null));
+    }
   }, []);
 
   useEffect(() => {
     const fetch = async () => {
-      if (!supabase) return;
+      if (!isCloudEnabled) return;
       
-      // Carregar utilizador atual se ainda não carregou
-      const { data: userData } = await supabase.auth.getUser();
-      const userId = userData.user?.id;
-      setCurrentUser(userId || null);
+      let userId = currentUser;
+      if (!userId) {
+         try {
+             const user = await account.get();
+             userId = user.$id;
+             setCurrentUser(userId);
+         } catch(e) {}
+      }
 
-      let query = supabase.from('public_stories').select('*');
-      if (authorId) query = query.eq('author_id', authorId);
-      const { data } = await query.order('votes', { ascending: false }); // Ordenar por aclamação
-      setStories(data || []);
+      let queries = [Query.orderDesc('votes')];
+      if (authorId) queries.push(Query.equal('author_id', authorId));
+      
+      try {
+         const data = await databases.listDocuments(DATABASE_ID, COL_PUBLIC_STORIES, queries);
+         setStories(data.documents || []);
+      } catch(e) {
+         setStories([]);
+      }
 
       // Carregar likes do utilizador
       if (userId) {

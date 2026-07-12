@@ -1,22 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Book, Loader2 } from 'lucide-react';
-import { supabase } from '@/services/services';
+import { isCloudEnabled } from '@/services/services';
 
 export const NotificationCenter = ({ t, currentUser, isOpen, onClose, onReadStory }: { t: any, currentUser: any, isOpen: boolean, onClose: () => void, onReadStory: (s: any) => void }) => {
     const [notifications, setNotifications] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
     const fetchNotifications = async () => {
-        if (!currentUser || !supabase || !isOpen) return;
+        if (!currentUser || !isOpen || !isCloudEnabled) return;
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('notifications')
-                .select('*, actor:profiles!actor_id(username), story:public_stories!story_id(title, messages, config, author_name)')
-                .eq('user_id', currentUser.id)
-                .order('created_at', { ascending: false })
-                .limit(10);
-            if (!error) setNotifications(data || []);
+            // Em Appwrite ainda não criamos a collection de notifications
+            setNotifications([]);
         } catch (err) { console.error(err); } finally { setLoading(false); }
     };
 

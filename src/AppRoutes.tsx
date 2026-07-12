@@ -2,7 +2,7 @@ import React, { useEffect, Suspense, lazy, useRef, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { BookOpen, Loader2, LogOut, Sun, Moon, UserCircle } from 'lucide-react';
 import { Language, translations } from './utils/constants';
-import { supabase, updateProfileLanguage, getProfileLanguage, generateUUID } from './services/services';
+import { account, updateProfileLanguage, getProfileLanguage, generateUUID, isCloudEnabled } from './services/services';
 import { ensureProfileExists, handleAuthSubmit } from './services/auth.services';
 import { saveLocalStory, archiveLocalStory } from './services/story.services';
 import { polishManuscript, generateStoryTitle } from './services/ai';
@@ -64,58 +64,46 @@ export const AppRoutes = () => {
     };
 
     useEffect(() => {
-        if (!supabase) return;
-        const auth = (supabase as any).auth;
-
-        const initializeUser = async (sessionUser: any) => {
-            setCurrentUser(sessionUser);
-            if (!authInitialized.current) {
-                const params = new URLSearchParams(window.location.search);
-                const paramSessionCode = params.get('session');
-
-                if (paramSessionCode) {
-                    setSessionCode(paramSessionCode);
-                    navigate('/lobby');
-                } else if (location.pathname === '/' || location.pathname === '/landing') {
-                    navigate('/dashboard');
-                }
-                authInitialized.current = true;
-            }
-
-            await ensureProfileExists(sessionUser);
-
-            const profileLang = await getProfileLanguage(sessionUser.id);
-            if (profileLang && ['pt', 'en', 'fr'].includes(profileLang)) {
-                setUserLang(profileLang as Language);
-            } else {
-                await updateProfileLanguage(sessionUser.id, userLang);
-            }
-
+        if (!isCloudEnabled) {
             setIsLoadingSession(false);
-        };
+            return;
+        }
 
-        auth.getSession().then(({ data: { session } }: any) => {
-            if (session?.user) {
-                initializeUser(session.user);
-            } else {
+        const initializeUser = async () => {
+            try {
+                const sessionUser = await account.get();
+                setCurrentUser(sessionUser as any);
+                
+                if (!authInitialized.current) {
+                    const params = new URLSearchParams(window.location.search);
+                    const paramSessionCode = params.get('session');
+
+                    if (paramSessionCode) {
+                        setSessionCode(paramSessionCode);
+                        navigate('/lobby');
+                    } else if (location.pathname === '/' || location.pathname === '/landing') {
+                        navigate('/dashboard');
+                    }
+                    authInitialized.current = true;
+                }
+
+                await ensureProfileExists(sessionUser);
+
+                const profileLang = await getProfileLanguage(sessionUser.$id);
+                if (profileLang && ['pt', 'en', 'fr'].includes(profileLang)) {
+                    setUserLang(profileLang as Language);
+                } else {
+                    await updateProfileLanguage(sessionUser.$id, userLang);
+                }
+            } catch (err) {
+                // Not logged in
+                setCurrentUser(null);
+            } finally {
                 setIsLoadingSession(false);
             }
-        });
-
-        const { data: authListener } = auth.onAuthStateChange((event: any, session: any) => {
-            if (event === 'SIGNED_IN' && session?.user) {
-                initializeUser(session.user);
-            }
-            else if (event === 'SIGNED_OUT') {
-                setCurrentUser(null);
-                authInitialized.current = false;
-                navigate('/');
-            }
-        });
-
-        return () => {
-            authListener?.subscription?.unsubscribe();
         };
+
+        initializeUser();
     }, []);
 
     // Check if user has API key, if not, show modal
@@ -155,8 +143,8 @@ export const AppRoutes = () => {
             return;
         }
         try {
-            if (supabase) {
-                await (supabase as any).auth.signOut();
+            if (isCloudEnabled) {
+                await account.deleteSession('current');
             }
         } catch (error) {
             console.error("Erro no logout:", error);

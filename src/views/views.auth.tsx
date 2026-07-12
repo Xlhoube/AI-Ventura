@@ -107,7 +107,7 @@ export const LandingView = ({ t, onAuth, onGuestLogin }: { t: any, onAuth: (e: a
           <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-indigo-50/50 to-transparent dark:from-indigo-900/10 pointer-events-none"></div>
 
           <div className="text-center space-y-4 mb-2">
-            {/* LOGÓTIPO AI-VENTURA DO SUPABASE - Link Assinado */}
+            {/* LOGÓTIPO AI-VENTURA - Link Assinado */}
             <div className="flex flex-col items-center gap-4">
               <div className="flex flex-col items-center gap-3">
                   <div className="w-20 h-20 rounded-[2rem] bg-indigo-600 flex items-center justify-center text-white shadow-2xl shadow-indigo-500/40 rotate-3 hover:rotate-6 transition-transform">

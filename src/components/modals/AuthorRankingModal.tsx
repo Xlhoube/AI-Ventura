@@ -6,7 +6,7 @@ export const AuthorRankingModal = ({ t, isOpen, onClose }: { t: any, isOpen: boo
 
     if (!isOpen) return null;
 
-    // Dados fictícios para demonstração (Poderiam vir do Supabase no futuro)
+    // Dados fictícios para demonstração (Poderiam vir do Appwrite no futuro)
     const rankingData: Record<number, any[]> = {
         1: [
             { name: 'Afonso Cruz', works: 42, points: 1250, medal: 'gold' },

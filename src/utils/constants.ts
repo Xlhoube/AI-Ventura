@@ -213,15 +213,15 @@ export const changelogData = [
     changes: {
       pt: [
         'Co-Op Strict Mode: Implementada regra de "Bloqueio de Autor Consecutivo". Se foste o último a escrever, o sistema impede-te de jogar novamente até que outro participante o faça.',
-        'Supabase Sync: Correção crítica na persistência de dados (participants & config) durante atualizações de turno.'
+        'Cloud Sync: Correção crítica na persistência de dados (participants & config) durante atualizações de turno.'
       ],
       en: [
         'Co-Op Strict Mode: Implemented "Consecutive Author Block". If you were the last to write, the system prevents you from playing again until another participant does.',
-        'Supabase Sync: Critical fix in data persistence (participants & config) during turn updates.'
+        'Cloud Sync: Critical fix in data persistence (participants & config) during turn updates.'
       ],
       fr: [
         'Co-Op Strict Mode : Mise en place du "Blocage d\'Auteur Consécutif".',
-        'Supabase Sync : Correction critique de la persistance des données lors des mises à jour de tour.'
+        'Cloud Sync : Correction critique de la persistance des données lors des mises à jour de tour.'
       ]
     }
   },
@@ -562,7 +562,7 @@ export const translations = {
     backToStory: 'Voltar à História',
     authorRankingTitle: 'Ranking de Autores',
     topAuthors: 'Os melhores do trimestre',
-    help: 'Ajuda',
+
     ranking: 'Ranking',
     confirmDeleteSession: 'Eliminar esta sessão ativa?',
     apiKeySettings: 'Configuração da Chave API',
@@ -1201,7 +1201,7 @@ export const translations = {
     backToStory: 'Retour à l\'Histoire',
     authorRankingTitle: 'Classement des Auteurs',
     topAuthors: 'Les meilleurs du trimestre',
-    help: 'Aide',
+
     ranking: 'Classement',
     confirmDeleteSession: 'Supprimer cette session active ?',
     apiKeySettings: 'Configuration de la Clé API',

@@ -4,7 +4,7 @@ import {
    X, Sparkles, HelpCircle, UserCircle, Trash2, Trophy, Book, User, Archive, BarChart2, Key
 } from 'lucide-react';
 import { ChangelogModal, CoopInfoModal, JoinInviteModal, AuthorRankingModal, TutorialModal, InteractiveTour, ApiSetupModal } from '@/components';
-import { supabase, joinCollaborationSession, createLobbySession } from '@/services/services';
+import { account, joinCollaborationSession, createLobbySession } from '@/services/services';
 import { APP_VERSION, Language } from '@/utils/constants';
 
 export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode, onShowToast }: { t: any, username: string, onNavigate: (v: any) => void, lang: Language, activeSessionCode?: string | null, onShowToast: (msg: string, type: 'success' | 'error' | 'info') => void }) => {
@@ -63,13 +63,15 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
    const handleCreateLobby = async () => {
       setIsCreatingLobby(true);
       try {
-         const userRes = await supabase?.auth.getUser();
-         const user = userRes?.data.user;
-
+         let user;
+         try {
+             user = await account.get();
+         } catch(e) {} // Convidado
+         
          // Fix para Convidados: Se não houver user, usamos 'guest' context
-         const userId = user?.id || `guest_${Math.random().toString(36).substring(2, 9)}`;
-         const finalUsername = user?.user_metadata?.username || username || 'Convidado';
-         const avatar = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+         const userId = user?.$id || `guest_${Math.random().toString(36).substring(2, 9)}`;
+         const finalUsername = user?.name || username || 'Convidado';
+         const avatar = user?.prefs?.avatar || null;
 
          const session = await createLobbySession(userId, finalUsername, avatar);
          if (session) {
@@ -98,10 +100,13 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
       setIsJoining(true);
       setErrorJoin(null);
       try {
-         const userRes = await supabase?.auth.getUser();
-         const currentUser = userRes?.data.user;
-         const currentUserId = currentUser?.id || 'guest';
-         const userAvatar = currentUser?.user_metadata?.avatar_url || currentUser?.user_metadata?.picture;
+         let currentUser;
+         try {
+             currentUser = await account.get();
+         } catch(e) {}
+
+         const currentUserId = currentUser?.$id || 'guest';
+         const userAvatar = currentUser?.prefs?.avatar || null;
          const session = await joinCollaborationSession(codeToUse, currentUserId, username, userAvatar);
          if (session) {
             const url = new URL(window.location.href);

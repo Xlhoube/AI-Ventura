@@ -3,7 +3,8 @@ import { Library, Loader2, UploadCloud, Users2 } from 'lucide-react';
 import { StoriesList } from './components/StoriesList';
 import { ConfirmModal, PageHeader } from '@/components';
 import { getLocalStories } from '@/services/story.services';
-import { supabase, publishStoryToGlobal, unpublishStoryByTitle, syncStoriesCount } from '@/services/services';
+import { account, databases, DATABASE_ID, COL_PUBLIC_STORIES, publishStoryToGlobal, unpublishStoryByTitle, syncStoriesCount, isCloudEnabled } from '@/services/services';
+import { Query } from 'appwrite';
 
 export const PrivateLibraryView = ({ t, onRead, onArchive, onBack }: { t: any, onRead: (s: any) => void, onArchive: (id: string) => void, onBack: () => void }) => {
   const [soloLibrary, setSoloLibrary] = useState<any[]>([]);
@@ -19,30 +20,32 @@ export const PrivateLibraryView = ({ t, onRead, onArchive, onBack }: { t: any, o
       setCoopLibrary(localStories.filter((s: any) => !!s.sessionCode));
 
       // Verificar quais histórias já estão publicadas
-      if (supabase) {
-        const user = (await supabase.auth.getUser())?.data.user;
-        if (user) {
-          // Sincronizar contagem de histórias concluídas com o perfil
-          syncStoriesCount(user.id, localStories.length);
+      if (isCloudEnabled) {
+        try {
+          const user = await account.get();
+          if (user) {
+            // Sincronizar contagem de histórias concluídas com o perfil
+            syncStoriesCount(user.$id, localStories.length);
 
-          const { data } = await supabase
-            .from('public_stories')
-            .select('title')
-            .eq('author_id', user.id);
-          
-          if (data) {
-            const publishedTitles = new Set(data.map(d => d.title));
-            // Mapear títulos para IDs locais (assumindo títulos únicos por autor ou melhor esforço)
-            // Idealmente, deveríamos guardar o ID público no local, mas por agora usamos o título
-            const ids = new Set<string>();
-            localStories.forEach(s => {
-              if (publishedTitles.has(s.title)) {
-                ids.add(s.id);
-              }
-            });
-            setPublishedIds(ids);
+            const data = await databases.listDocuments(
+               DATABASE_ID,
+               COL_PUBLIC_STORIES,
+               [Query.equal('author_id', user.$id)]
+            );
+            
+            if (data && data.documents) {
+              const publishedTitles = new Set(data.documents.map((d: any) => d.title));
+              // Mapear títulos para IDs locais
+              const ids = new Set<string>();
+              localStories.forEach(s => {
+                if (publishedTitles.has(s.title)) {
+                  ids.add(s.id);
+                }
+              });
+              setPublishedIds(ids);
+            }
           }
-        }
+        } catch(e) {}
       }
     };
     loadStories();
@@ -60,7 +63,10 @@ export const PrivateLibraryView = ({ t, onRead, onArchive, onBack }: { t: any, o
   const handlePublish = async (story: any) => {
     setIsPublishing(story.id);
     try {
-      const user = (await supabase?.auth.getUser())?.data.user;
+      let user;
+      try {
+         user = await account.get();
+      } catch(e) {}
       if (!user) return;
 
       // Se já estiver publicada, remover
@@ -75,13 +81,13 @@ export const PrivateLibraryView = ({ t, onRead, onArchive, onBack }: { t: any, o
          return;
       }
       
-      const userName = user.user_metadata?.username || user.email?.split('@')[0] || 'Author';
+      const userName = user.name || user.email?.split('@')[0] || 'Author';
       
       // INCLUI AGORA O IDIOMA ATUAL DO UTILIZADOR COMO IDIOMA ORIGINAL
       // A preferência de idioma da app (t) é inferida, mas aqui usamos o idioma local
       const currentLang = localStorage.getItem('ia_ventura_lang') || 'en';
       
-      const res = await publishStoryToGlobal(story, user.id, userName, currentLang);
+      const res = await publishStoryToGlobal(story, user.$id, userName, currentLang);
       
       if (res.success) {
         alert(t.publishedSuccess);
