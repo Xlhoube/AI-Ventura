@@ -147,12 +147,12 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                 value={config.idea}
                                 onChange={(e) => handleConfigChange({ ...config, idea: e.target.value })}
                                 placeholder={t.ideaPlaceholder}
-                                className="w-full h-40 lg:h-80 bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-3xl p-6 text-gray-900 dark:text-white outline-none focus:ring-2 ring-indigo-500/20 resize-none shadow-xl text-lg leading-relaxed"
+                                className="w-full h-40 lg:h-64 bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-3xl p-6 text-gray-900 dark:text-white outline-none focus:ring-2 ring-indigo-500/20 resize-none shadow-xl text-lg leading-relaxed"
                             />
                         )}
                         {mode === 'ai' && (
                             <div className="space-y-4 bg-white dark:bg-[#121214] p-6 lg:p-8 rounded-3xl border border-gray-200 dark:border-white/10 shadow-xl">
-                                <h4 className="font-bold text-gray-900 dark:text-white mb-4 text-lg">{lang === 'pt' ? '1. Escolhe o Género' : '1. Choose Genre'}</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-white mb-4 text-lg">{t.step1Genre}</h4>
                                 <div className="flex flex-wrap gap-2 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
                                     {Object.keys(t.genres).map(g => (
                                         <button key={g} onClick={() => setConfig({ ...config, genre: g })} className={`px-4 py-3 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-widest whitespace-nowrap border transition-all ${config.genre === g ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/30' : 'bg-gray-50 dark:bg-white/5 text-slate-500 border-gray-200 dark:border-white/10 hover:border-indigo-400/50 hover:text-indigo-400'}`}>
@@ -162,7 +162,7 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                 </div>
                                 <button onClick={fetchAI} disabled={loadingAI} className="w-full py-5 mt-4 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-black tracking-widest uppercase text-sm rounded-2xl hover:bg-indigo-200 dark:hover:bg-indigo-500/30 transition-all flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 shadow-lg shadow-indigo-500/10">
                                     {loadingAI ? <Loader2 className="animate-spin" size={24} /> : <Wand2 size={24} />}
-                                    {loadingAI ? (t.generatingConcepts || (lang === 'pt' ? 'A gerar conceitos...' : 'Generating concepts...')) : (lang === 'pt' ? 'Gerar Sugestões Mágicas' : 'Generate Magic Suggestions')}
+                                    {loadingAI ? t.generatingConcepts : t.generateMagicSuggestions}
                                 </button>
                             </div>
                         )}
@@ -174,12 +174,12 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                             <div className="bg-white dark:bg-[#121214] p-6 lg:p-8 rounded-3xl border border-gray-200 dark:border-white/10 shadow-xl h-full flex flex-col min-h-[400px]">
                                 <h4 className="font-bold text-gray-900 dark:text-white mb-6 text-lg flex items-center gap-3">
                                     <Sparkles className="text-indigo-500" />
-                                    {lang === 'pt' ? '2. Escolhe a Premissa' : '2. Choose Premise'}
+                                    {t.step2Premise}
                                 </h4>
                                 {aiIdeas.length === 0 ? (
                                     <div className="flex-1 flex flex-col items-center justify-center text-center opacity-40">
                                         <Wand2 size={64} className="mb-6 text-indigo-500" />
-                                        <p className="text-sm font-black uppercase tracking-[0.2em] text-slate-500">{lang === 'pt' ? 'Gera ideias primeiro' : 'Generate ideas first'}</p>
+                                        <p className="text-sm font-black uppercase tracking-[0.2em] text-slate-500">{t.generateIdeasFirst}</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1 max-h-[500px]">
@@ -196,8 +196,8 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                 <div className="w-24 h-24 bg-white dark:bg-white/5 rounded-full flex items-center justify-center mb-8 shadow-xl">
                                     <PenTool size={40} className="text-indigo-500" />
                                 </div>
-                                <h3 className="text-3xl font-black text-gray-900 dark:text-white mb-6 tracking-tight">A tua imaginação é o limite!</h3>
-                                <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed max-w-md">Escreve a ideia central da tua história com o máximo de detalhe que quiseres. O AI-Ventura irá usar esta base para criar um mundo rico e personagens cativantes que se adaptam às tuas escolhas.</p>
+                                <h3 className="text-3xl font-black text-gray-900 dark:text-white mb-6 tracking-tight">{t.limitImaginationTitle}</h3>
+                                <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed max-w-md">{t.limitImaginationDesc}</p>
                             </div>
                         )}
                     </div>
@@ -232,7 +232,7 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                 <div className="flex gap-2">
                                     <button onClick={fetchCharsAI} disabled={loadingCharsAI || !config.idea} className="px-5 py-2.5 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-colors flex items-center gap-2">
                                         {loadingCharsAI ? <Loader2 className="animate-spin" size={14} /> : <Wand2 size={14} />}
-                                        <span className="hidden sm:inline">{lang === 'pt' ? 'Gerar Personagens' : 'Generate Cast'}</span>
+                                        <span className="hidden sm:inline">{t.generateCast}</span>
                                     </button>
                                     <button onClick={() => setEditingChar({})} className="px-5 py-2.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors">+ {t.addCharacter}</button>
                                 </div>
@@ -245,7 +245,7 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                             <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-black text-lg shadow-inner">{char.name[0]}</div>
                                             <div>
                                                 <p className="font-bold text-gray-900 dark:text-white text-base">{char.name}</p>
-                                                <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mt-0.5">{char.role === 'Protagonist' ? (lang === 'pt' ? 'Protagonista' : 'Protagonist') : char.role === 'Antagonist' ? (lang === 'pt' ? 'Antagonista' : 'Antagonist') : char.role === 'Sidekick' ? (lang === 'pt' ? 'Personagem Secundária' : 'Sidekick') : char.role}</p>
+                                                <p className="text-xs text-slate-500 uppercase tracking-widest font-bold mt-0.5">{char.role === 'Protagonist' ? t.roleProtagonist : char.role === 'Antagonist' ? t.roleAntagonist : char.role === 'Sidekick' ? t.roleSidekick : char.role}</p>
                                                 {char.controlledBy && <p className="text-[10px] text-emerald-500 font-black mt-1 uppercase tracking-wider">{t.lockedBy} {char.controlledBy}</p>}
                                             </div>
                                         </div>
@@ -297,13 +297,13 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                 )}
 
                                 <div className="flex gap-3 pt-4">
-                                    <button onClick={() => setEditingChar(null)} className="flex-1 py-4 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors rounded-2xl text-xs font-black uppercase tracking-widest text-slate-500">{t.cancel || (lang === 'pt' ? 'Cancelar' : 'Cancel')}</button>
+                                    <button onClick={() => setEditingChar(null)} className="flex-1 py-4 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors rounded-2xl text-xs font-black uppercase tracking-widest text-slate-500">{t.cancel}</button>
                                     <button onClick={() => {
                                         if (editingChar.name) {
                                             handleConfigChange({ ...config, charProfiles: [...config.charProfiles, editingChar] });
                                             setEditingChar(null);
                                         }
-                                    }} className="flex-1 py-4 bg-indigo-600 text-white hover:bg-indigo-500 transition-colors rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20">{t.confirm || (lang === 'pt' ? 'Confirmar' : 'Confirm')}</button>
+                                    }} className="flex-1 py-4 bg-indigo-600 text-white hover:bg-indigo-500 transition-colors rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20">{t.confirm}</button>
                                 </div>
                             </div>
                         </div>
@@ -320,15 +320,13 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                         </div>
                     </div>
                     <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium text-lg leading-relaxed max-w-2xl">
-                        {lang === 'pt' 
-                            ? 'Define as relações entre as personagens, passados partilhados ou rivalidades antigas. (Opcional: Se deixares em branco, a IA preenche por ti)' 
-                            : 'Define the relationships between characters, shared pasts or old rivalries. (Optional: If left blank, the AI will fill it for you)'}
+                        {t.charLinksDesc}
                     </p>
                     <textarea
                         value={config.charLinks}
                         onChange={(e) => handleConfigChange({ ...config, charLinks: e.target.value })}
-                        placeholder={t.charLinksPlaceholder || (lang === 'pt' ? 'Descreve as ligações...' : 'Describe the links...')}
-                        className="w-full h-64 lg:h-80 bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 rounded-3xl p-6 lg:p-8 text-gray-900 dark:text-white outline-none focus:ring-2 ring-purple-500/30 resize-none text-lg leading-relaxed shadow-inner"
+                        placeholder={t.charLinksPlaceholder}
+                        className="w-full h-64 lg:h-64 bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 rounded-3xl p-6 lg:p-8 text-gray-900 dark:text-white outline-none focus:ring-2 ring-purple-500/30 resize-none text-lg leading-relaxed shadow-inner"
                     />
                 </div>
             )}
@@ -338,8 +336,8 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                     <div className="w-32 h-32 bg-emerald-100 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-500 mb-8 shadow-2xl shadow-emerald-500/20 animate-pulse">
                         <CheckCircle size={64} />
                     </div>
-                    <h3 className="text-5xl lg:text-7xl font-black text-gray-900 dark:text-white tracking-tighter mb-6">{lang === 'pt' ? 'Tudo Pronto!' : 'All Set!'}</h3>
-                    <p className="text-xl lg:text-2xl text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-medium leading-relaxed">{lang === 'pt' ? 'A tua aventura épica está prestes a começar. O Editor IA já tem todos os detalhes necessários para te guiar.' : 'Your epic adventure is about to begin. The AI Editor has all the details needed to guide you.'}</p>
+                    <h3 className="text-5xl lg:text-7xl font-black text-gray-900 dark:text-white tracking-tighter mb-6">{t.allSetTitle}</h3>
+                    <p className="text-xl lg:text-2xl text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-medium leading-relaxed">{t.allSetDesc}</p>
                 </div>
             )}
 
