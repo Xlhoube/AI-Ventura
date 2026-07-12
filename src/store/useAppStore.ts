@@ -2,15 +2,14 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Language } from '@/utils/constants';
 
-import { User } from '@supabase/supabase-js';
+import { Models } from 'appwrite';
 
-export interface AppUser extends User {
-    user_metadata: {
-        username?: string;
-        full_name?: string;
-        name?: string;
+export interface AppUser extends Models.User<Models.Preferences> {
+    name: string;
+    email: string;
+    $id: string;
+    prefs: {
         avatar_url?: string;
-        picture?: string;
         [key: string]: any;
     };
 }

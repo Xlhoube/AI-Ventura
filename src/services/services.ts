@@ -1,5 +1,4 @@
-// ... (previous imports)
-import { createClient } from '@supabase/supabase-js';
+import { Client, Account, Databases, ID, Query } from 'appwrite';
 
 // --- CONFIGURAÇÃO ---
 export const getEnv = (key: string) => {
@@ -11,22 +10,31 @@ export const getEnv = (key: string) => {
   const value = (import.meta as any).env?.[`VITE_${key}`] ||
     (import.meta as any).env?.[key] ||
     (window as any)._env_?.[key] ||
-    (window as any).process?.env?.[key] || // Adicionado suporte para index.html config
+    (window as any).process?.env?.[key] || 
     (process as any).env?.[key] ||
     '';
 
-  if (!value) {
-    if (key === 'SUPABASE_URL') return 'https://jvnefjwgndyeiohlbovs.supabase.co';
-    if (key === 'SUPABASE_ANON_KEY') return 'sb_publishable_eFXcxoN0UmnYntj6Xwj8Bg_-PZR8cTf';
-  }
   return value;
 };
 
-export const SUPABASE_URL = getEnv('SUPABASE_URL');
-export const SUPABASE_ANON_KEY = getEnv('SUPABASE_ANON_KEY');
-export const isCloudEnabled = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+export const APPWRITE_ENDPOINT = getEnv('APPWRITE_ENDPOINT') || 'https://cloud.appwrite.io/v1';
+export const APPWRITE_PROJECT_ID = getEnv('APPWRITE_PROJECT_ID');
+export const isCloudEnabled = Boolean(APPWRITE_ENDPOINT && APPWRITE_PROJECT_ID);
 
-export const supabase = isCloudEnabled ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+export const client = new Client();
+if (isCloudEnabled) {
+  client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID);
+}
+
+export const account = new Account(client);
+export const databases = new Databases(client);
+
+// PADRÃO DE IDS PARA O APPWRITE (O usuário deverá criar estes no painel)
+export const DATABASE_ID = 'ai_ventura_db';
+export const COL_SESSIONS = 'sessions';
+export const COL_PUBLIC_STORIES = 'public_stories';
+export const COL_STORY_LIKES = 'story_likes';
+export const COL_PROFILES = 'profiles';
 
 // --- UTILITÁRIOS GERAIS ---
 export const generateUUID = () => {
@@ -41,39 +49,51 @@ export const generateUUID = () => {
   });
 };
 
-// ... (other functions: createSessionCode, createCollaborationSession, createLobbySession, regenerateSessionCode, updateSessionPhase, kickParticipant, joinCollaborationSession, updateSessionStory, notifyTurnByEmail) ...
+// Helpers para lidar com dados JSON que no Appwrite serão salvos como Strings longas
+const parseJsonObj = (data: any, fieldName: string) => {
+  if (data && data[fieldName]) {
+    try {
+      if (typeof data[fieldName] === 'string') {
+        data[fieldName] = JSON.parse(data[fieldName]);
+      }
+    } catch (e) {
+      console.warn(`Failed to parse ${fieldName}:`, e);
+      data[fieldName] = {};
+    }
+  }
+  return data;
+};
+
+// --- SESSÕES E COLABORAÇÃO ---
 
 export const createSessionCode = () => {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 };
 
 export const createCollaborationSession = async (story: any, hostId: string, hostName: string, hostAvatar?: string) => {
-  if (!supabase) throw new Error("Cloud disabled");
+  if (!isCloudEnabled) throw new Error("Cloud disabled");
 
   const code = createSessionCode();
-
   const storyWithTurnData = {
     ...story,
     participants: [{ id: hostId, name: hostName, avatar: hostAvatar }],
     currentTurnIndex: 0
   };
 
-  const { data, error } = await supabase.from('sessions').insert({
+  const doc = await databases.createDocument(DATABASE_ID, COL_SESSIONS, ID.unique(), {
     code,
     host_id: hostId,
-    story_data: storyWithTurnData,
+    story_data: JSON.stringify(storyWithTurnData),
     status: 'active'
-  }).select().single();
-
-  if (error) throw error;
-  return data;
+  });
+  
+  return parseJsonObj(doc, 'story_data');
 };
 
 export const createLobbySession = async (hostId: string, hostName: string, hostAvatar?: string) => {
-  if (!supabase) throw new Error("Cloud disabled");
+  if (!isCloudEnabled) throw new Error("Cloud disabled");
 
   const code = createSessionCode();
-
   const initialStoryData = {
     participants: [{ id: hostId, name: hostName, avatar: hostAvatar }],
     currentTurnIndex: 0,
@@ -82,61 +102,60 @@ export const createLobbySession = async (hostId: string, hostName: string, hostA
 
   const payload: any = {
     code,
-    story_data: initialStoryData,
+    story_data: JSON.stringify(initialStoryData),
     status: 'lobby'
   };
 
-  // Skip host_id if it's a guest ID (to avoid UUID syntax errors)
   if (hostId && !hostId.startsWith('guest_')) {
     payload.host_id = hostId;
   }
 
-  const { data, error } = await supabase.from('sessions').insert(payload).select().single();
-
-  if (error) throw error;
-  return data;
+  const doc = await databases.createDocument(DATABASE_ID, COL_SESSIONS, ID.unique(), payload);
+  return parseJsonObj(doc, 'story_data');
 };
 
 export const regenerateSessionCode = async (oldCode: string, storyData: any, hostId: string) => {
-  if (!supabase) return null;
+  if (!isCloudEnabled) return null;
 
   const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-  
   const payload: any = {
     code: newCode,
-    story_data: storyData,
+    story_data: JSON.stringify(storyData),
     status: 'lobby'
   };
 
-  const { data, error } = await supabase.from('sessions')
-    .update(payload)
-    .eq('code', oldCode)
-    .select()
-    .single();
-
-  if (error) {
+  try {
+    const response = await databases.listDocuments(DATABASE_ID, COL_SESSIONS, [Query.equal('code', oldCode)]);
+    if (response.documents.length === 0) throw new Error("Session not found");
+    
+    const docId = response.documents[0].$id;
+    const updated = await databases.updateDocument(DATABASE_ID, COL_SESSIONS, docId, payload);
+    return parseJsonObj(updated, 'story_data');
+  } catch (error) {
     console.error("[regenerateSessionCode] Erro ao atualizar:", error);
     throw error;
   }
-  return data;
 };
 
 export const updateSessionPhase = async (code: string, status: 'lobby' | 'setup' | 'active', storyData?: any) => {
-  if (!supabase) return;
+  if (!isCloudEnabled) return;
 
   const payload: any = { status };
-  if (storyData) payload.story_data = storyData;
+  if (storyData) payload.story_data = JSON.stringify(storyData);
 
-  const { error } = await supabase.from('sessions').update(payload).eq('code', code);
-  if (error) throw error;
+  const response = await databases.listDocuments(DATABASE_ID, COL_SESSIONS, [Query.equal('code', code)]);
+  if (response.documents.length > 0) {
+    await databases.updateDocument(DATABASE_ID, COL_SESSIONS, response.documents[0].$id, payload);
+  }
 };
 
 export const kickParticipant = async (code: string, participantId: string) => {
-  if (!supabase) return;
+  if (!isCloudEnabled) return;
 
-  const { data, error } = await supabase.from('sessions').select('*').eq('code', code).single();
-  if (error || !data) throw error || new Error("Session not found");
-
+  const response = await databases.listDocuments(DATABASE_ID, COL_SESSIONS, [Query.equal('code', code)]);
+  if (response.documents.length === 0) throw new Error("Session not found");
+  
+  const data = parseJsonObj(response.documents[0], 'story_data');
   const storyData = data.story_data || {};
   let participants = storyData.participants || [];
   let turnIndex = storyData.currentTurnIndex || 0;
@@ -153,19 +172,19 @@ export const kickParticipant = async (code: string, participantId: string) => {
     currentTurnIndex: turnIndex
   };
 
-  await supabase.from('sessions').update({ story_data: updatedStoryData }).eq('code', code);
+  await databases.updateDocument(DATABASE_ID, COL_SESSIONS, data.$id, { 
+    story_data: JSON.stringify(updatedStoryData) 
+  });
   return newParticipants;
 };
 
 export const joinCollaborationSession = async (code: string, userId: string, userName: string, userAvatar?: string) => {
-  if (!supabase) throw new Error("Cloud disabled");
+  if (!isCloudEnabled) throw new Error("Cloud disabled");
 
-  const { data, error } = await supabase.from('sessions')
-    .select('*')
-    .eq('code', code.toUpperCase())
-    .maybeSingle();
-
-  if (error || !data) return null;
+  const response = await databases.listDocuments(DATABASE_ID, COL_SESSIONS, [Query.equal('code', code.toUpperCase())]);
+  if (response.documents.length === 0) return null;
+  
+  const data = parseJsonObj(response.documents[0], 'story_data');
 
   if (data && data.story_data) {
     const currentParticipants = data.story_data.participants || [];
@@ -177,9 +196,10 @@ export const joinCollaborationSession = async (code: string, userId: string, use
         ...data.story_data,
         participants: updatedParticipants
       };
-      await supabase.from('sessions')
-        .update({ story_data: updatedStoryData })
-        .eq('code', code.toUpperCase());
+      
+      await databases.updateDocument(DATABASE_ID, COL_SESSIONS, data.$id, { 
+        story_data: JSON.stringify(updatedStoryData) 
+      });
       return { ...data, story_data: updatedStoryData };
     } else {
       return data;
@@ -189,107 +209,108 @@ export const joinCollaborationSession = async (code: string, userId: string, use
 };
 
 export const updateSessionStory = async (code: string, storyData: any) => {
-  if (!supabase) return;
-  const { error } = await supabase.from('sessions')
-    .update({ story_data: storyData })
-    .eq('code', code);
-  if (error) console.error("Erro ao sincronizar história:", error);
+  if (!isCloudEnabled) return;
+  try {
+    const response = await databases.listDocuments(DATABASE_ID, COL_SESSIONS, [Query.equal('code', code)]);
+    if (response.documents.length > 0) {
+      await databases.updateDocument(DATABASE_ID, COL_SESSIONS, response.documents[0].$id, { 
+        story_data: JSON.stringify(storyData) 
+      });
+    }
+  } catch (error) {
+    console.error("Erro ao sincronizar história:", error);
+  }
 };
 
 export const notifyTurnByEmail = async (targetUserId: string, sessionCode: string, storyTitle: string) => {
-  if (!supabase) return;
-  try {
-    const { error } = await supabase.functions.invoke('notify-turn', {
-      body: { targetUserId, sessionCode, storyTitle }
-    });
-    if (error) console.warn("Email notification failed (backend config needed):", error);
-  } catch (e) {
-    console.warn("Notification error:", e);
-  }
+  // Edge functions will be implemented differently in Appwrite
+  console.log("Appwrite Edge function integration needed for notifyTurnByEmail");
 };
 
-// ... (existing social functions: publishStoryToGlobal, unpublishStoryFromGlobal, getUserLikes, toggleStoryLike) ...
+// --- FUNÇÕES SOCIAIS E PÚBLICAS ---
 
 export const publishStoryToGlobal = async (story: any, userId: string, authorName: string, originalLang: string = 'en') => {
-  if (!supabase) throw new Error("Cloud disabled");
+  if (!isCloudEnabled) throw new Error("Cloud disabled");
 
-  const { data: existing } = await supabase
-    .from('public_stories')
-    .select('id')
-    .eq('title', story.title)
-    .eq('author_id', userId)
-    .single();
+  const existing = await databases.listDocuments(DATABASE_ID, COL_PUBLIC_STORIES, [
+    Query.equal('title', story.title),
+    Query.equal('author_id', userId)
+  ]);
 
-  if (existing) {
+  if (existing.documents.length > 0) {
     return { success: false, message: 'already_exists' };
   }
 
-  const { error } = await supabase.from('public_stories').insert({
+  await databases.createDocument(DATABASE_ID, COL_PUBLIC_STORIES, ID.unique(), {
     title: story.title,
-    messages: story.messages,
-    config: story.config,
+    messages: JSON.stringify(story.messages),
+    config: JSON.stringify(story.config),
     author_id: userId,
     author_name: authorName,
     original_language: originalLang,
     votes: 0
   });
 
-  if (error) throw error;
   return { success: true };
 };
 
 export const unpublishStoryFromGlobal = async (storyId: string, userId: string) => {
-  if (!supabase) throw new Error("Cloud disabled");
-  const { error } = await supabase
-    .from('public_stories')
-    .delete()
-    .eq('id', storyId)
-    .eq('author_id', userId);
-  if (error) throw error;
+  if (!isCloudEnabled) throw new Error("Cloud disabled");
+  // Certifique-se de que o autor é o mesmo (verificando antes ou via Database Rules)
+  await databases.deleteDocument(DATABASE_ID, COL_PUBLIC_STORIES, storyId);
   return { success: true };
 };
 
 export const unpublishStoryByTitle = async (title: string, userId: string) => {
-  if (!supabase) throw new Error("Cloud disabled");
-  const { error } = await supabase
-    .from('public_stories')
-    .delete()
-    .eq('title', title)
-    .eq('author_id', userId);
-  if (error) throw error;
+  if (!isCloudEnabled) throw new Error("Cloud disabled");
+  const response = await databases.listDocuments(DATABASE_ID, COL_PUBLIC_STORIES, [
+    Query.equal('title', title),
+    Query.equal('author_id', userId)
+  ]);
+  for (const doc of response.documents) {
+    await databases.deleteDocument(DATABASE_ID, COL_PUBLIC_STORIES, doc.$id);
+  }
   return { success: true };
 };
 
 export const getUserLikes = async (userId: string) => {
-  if (!supabase) return [];
-  const { data } = await supabase
-    .from('story_likes')
-    .select('story_id')
-    .eq('user_id', userId);
-  return data?.map((item: any) => item.story_id) || [];
+  if (!isCloudEnabled) return [];
+  try {
+    const { documents } = await databases.listDocuments(DATABASE_ID, COL_STORY_LIKES, [Query.equal('user_id', userId)]);
+    return documents.map((item: any) => item.story_id);
+  } catch(e) { return []; }
 };
 
 export const toggleStoryLike = async (storyId: string, userId: string) => {
-  if (!supabase) throw new Error("Cloud disabled");
-  const { data: existingLike } = await supabase
-    .from('story_likes')
-    .select('*')
-    .eq('story_id', storyId)
-    .eq('user_id', userId)
-    .single();
+  if (!isCloudEnabled) throw new Error("Cloud disabled");
+  
+  const { documents } = await databases.listDocuments(DATABASE_ID, COL_STORY_LIKES, [
+    Query.equal('story_id', storyId),
+    Query.equal('user_id', userId)
+  ]);
 
-  if (existingLike) {
-    await supabase.from('story_likes').delete().eq('story_id', storyId).eq('user_id', userId);
-    const { data: story } = await supabase.from('public_stories').select('votes').eq('id', storyId).single();
-    if (story) {
-      await supabase.from('public_stories').update({ votes: Math.max(0, (story.votes || 0) - 1) }).eq('id', storyId);
+  if (documents.length > 0) {
+    // Retirar curtida
+    await databases.deleteDocument(DATABASE_ID, COL_STORY_LIKES, documents[0].$id);
+    
+    // Atualizar votos
+    const storyResponse = await databases.getDocument(DATABASE_ID, COL_PUBLIC_STORIES, storyId);
+    if (storyResponse) {
+      await databases.updateDocument(DATABASE_ID, COL_PUBLIC_STORIES, storyId, { 
+        votes: Math.max(0, (storyResponse.votes || 0) - 1) 
+      });
     }
     return 'unliked';
   } else {
-    await supabase.from('story_likes').insert({ story_id: storyId, user_id: userId });
-    const { data: story } = await supabase.from('public_stories').select('votes').eq('id', storyId).single();
-    if (story) {
-      await supabase.from('public_stories').update({ votes: (story.votes || 0) + 1 }).eq('id', storyId);
+    // Dar curtida
+    await databases.createDocument(DATABASE_ID, COL_STORY_LIKES, ID.unique(), { story_id: storyId, user_id: userId });
+    
+    // Atualizar votos
+    const storyResponse = await databases.getDocument(DATABASE_ID, COL_PUBLIC_STORIES, storyId);
+    if (storyResponse) {
+      await databases.updateDocument(DATABASE_ID, COL_PUBLIC_STORIES, storyId, { 
+        votes: (storyResponse.votes || 0) + 1 
+      });
     }
     return 'liked';
   }
@@ -298,20 +319,21 @@ export const toggleStoryLike = async (storyId: string, userId: string) => {
 // --- SERVIÇOS DE PERFIL E PREFERÊNCIAS ---
 
 export const updateProfileLanguage = async (userId: string, lang: string) => {
-  if (!supabase) return;
-  await supabase.from('profiles').update({ language_preference: lang }).eq('id', userId);
+  if (!isCloudEnabled) return;
+  try {
+    await databases.updateDocument(DATABASE_ID, COL_PROFILES, userId, { language_preference: lang });
+  } catch(e) { console.warn(e); }
 };
 
 export const getProfileLanguage = async (userId: string) => {
-  if (!supabase) return null;
-  const { data } = await supabase.from('profiles').select('language_preference').eq('id', userId).single();
-  return data?.language_preference;
+  if (!isCloudEnabled) return null;
+  try {
+    const data = await databases.getDocument(DATABASE_ID, COL_PROFILES, userId);
+    return data?.language_preference;
+  } catch(e) { return null; }
 };
 
-// NEW: User Settings (Font Size, etc) - Stored in a JSONB column 'settings' or specific column if available.
-// Robust implementation with LocalStorage fallback
 export const updateProfileSettings = async (userId: string, settings: any) => {
-  // 1. Always save to LocalStorage first (immediate UI feedback & offline support)
   try {
     const currentLocal = localStorage.getItem(`user_settings_${userId}`);
     const parsedLocal = currentLocal ? JSON.parse(currentLocal) : {};
@@ -321,15 +343,10 @@ export const updateProfileSettings = async (userId: string, settings: any) => {
     console.warn("LocalStorage save error:", e);
   }
 
-  if (!supabase) return;
+  if (!isCloudEnabled) return;
 
-  // 2. Try to sync with Supabase
   try {
-    const { error } = await supabase.from('profiles').update({ settings: settings }).eq('id', userId);
-    if (error) {
-      // Silent fail for DB (user still has local settings)
-      console.warn("DB Sync skipped (settings column might be missing):", error.message);
-    }
+    await databases.updateDocument(DATABASE_ID, COL_PROFILES, userId, { settings: JSON.stringify(settings) });
   } catch (err) {
     console.warn("DB Sync error:", err);
   }
@@ -337,48 +354,36 @@ export const updateProfileSettings = async (userId: string, settings: any) => {
 
 export const getProfileSettings = async (userId: string): Promise<any> => {
   let remoteSettings: any = {};
-
-  // 1. Try to fetch from Supabase
-  if (supabase) {
+  if (isCloudEnabled) {
     try {
-      const { data, error } = await supabase.from('profiles').select('settings').eq('id', userId).single();
-      if (!error && data?.settings) {
-        remoteSettings = data.settings;
+      const data = await databases.getDocument(DATABASE_ID, COL_PROFILES, userId);
+      if (data?.settings) {
+        remoteSettings = typeof data.settings === 'string' ? JSON.parse(data.settings) : data.settings;
       }
-    } catch (err) {
-      // Ignore DB errors, fall back to local
-    }
+    } catch (err) { }
   }
 
-  // 2. Fetch from LocalStorage
   let localSettings = {};
   try {
     const local = localStorage.getItem(`user_settings_${userId}`);
     if (local) localSettings = JSON.parse(local);
   } catch (e) { }
 
-  // 3. Merge (Remote takes precedence if available, otherwise Local)
   return { ...localSettings, ...remoteSettings };
 };
 
 export const syncStoriesCount = async (userId: string, count: number) => {
-  if (!supabase) return;
+  if (!isCloudEnabled) return;
   try {
-    const { error } = await supabase.from('profiles').update({ stories_count: count }).eq('id', userId);
-    if (error) console.warn("Error syncing stories count:", error.message);
+    await databases.updateDocument(DATABASE_ID, COL_PROFILES, userId, { stories_count: count });
   } catch (e) {
     console.warn("Error syncing stories count:", e);
   }
 };
 
 export const getSpectatorSession = async (code: string) => {
-  if (!supabase) return null;
-  const { data, error } = await supabase
-    .from('sessions')
-    .select('*')
-    .eq('code', code.toUpperCase())
-    .single();
-
-  if (error || !data) return null;
-  return data;
+  if (!isCloudEnabled) return null;
+  const { documents } = await databases.listDocuments(DATABASE_ID, COL_SESSIONS, [Query.equal('code', code.toUpperCase())]);
+  if (documents.length === 0) return null;
+  return parseJsonObj(documents[0], 'story_data');
 };
