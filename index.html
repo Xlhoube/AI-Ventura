@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Ventura - Collaborative Writing Studio</title>
+    <link rel="icon" type="image/png" href="https://yranruzmmwzngggatmdv.supabase.co/storage/v1/object/public/Imagens/LOGO.png">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ai-ventura.fun/">
+    <meta property="og:title" content="AI-Ventura - Escreve Histórias Incríveis">
+    <meta property="og:description" content="Junta-te a mim no AI-Ventura! Um estúdio de escrita colaborativa onde criamos histórias juntos com a ajuda de Inteligência Artificial.">
+    <meta property="og:image" content="https://yranruzmmwzngggatmdv.supabase.co/storage/v1/object/public/Imagens/LOGO.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://ai-ventura.fun/">
+    <meta property="twitter:title" content="AI-Ventura - Escreve Histórias Incríveis">
+    <meta property="twitter:description" content="Junta-te a mim no AI-Ventura! Um estúdio de escrita colaborativa onde criamos histórias juntos com a ajuda de Inteligência Artificial.">
+    <meta property="twitter:image" content="https://yranruzmmwzngggatmdv.supabase.co/storage/v1/object/public/Imagens/LOGO.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-serif { font-family: 'Lora', serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.05); }
+        .dark ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.1); border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.2); }
+        .dark ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* Estilos de Livro Real na Web */
+        .book-page {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            line-height: 1.8;
+            text-align: justify;
+            hyphens: auto;
+        }
+        .dark .book-page {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .book-page p::first-letter {
+            float: left;
+            font-size: 3.5rem;
+            line-height: 1;
+            font-weight: 900;
+            padding-right: 8px;
+            font-family: 'Playfair Display', serif;
+            color: #6366f1;
+        }
+        .book-page p + p::first-letter {
+            float: none;
+            font-size: inherit;
+            line-height: inherit;
+            padding-right: 0;
+            font-family: inherit;
+            color: inherit;
+        }
+
+        /* Quebra de Capítulo Decorativa */
+        .chapter-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 4rem 0;
+            opacity: 0.4;
+        }
+        .chapter-divider::before, .chapter-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, currentColor, transparent);
+        }
+        .chapter-divider span {
+            margin: 0 1.5rem;
+            font-size: 1.5rem;
+            color: #6366f1;
+        }
+
+        /* Otimização para Impressão e Guardar como PDF */
+        @media print {
+            @page {
+                margin: 2.5cm;
+                size: A4;
+            }
+            body {
+                background: white !important;
+                color: #1a1a1a !important;
+                font-family: 'Lora', serif !important;
+            }
+            #root > header,
+            .print\:hidden,
+            button,
+            nav {
+                display: none !important;
+            }
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                display: block !important;
+            }
+            .book-content {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                background: white !important;
+                color: #1a1a1a !important;
+                width: 100% !important;
+            }
+            .chapter-divider {
+                color: black !important;
+                margin: 3rem 0;
+            }
+            .book-title-page {
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                page-break-after: always;
+            }
+            .book-title-page h1 {
+                font-family: 'Playfair Display', serif !important;
+                font-size: 48pt !important;
+                font-weight: 900 !important;
+                margin-bottom: 1cm;
+            }
+            .book-title-page p {
+                font-size: 18pt !important;
+                text-transform: uppercase;
+                letter-spacing: 0.2em;
+            }
+            .narrative-body {
+                font-size: 12pt !important;
+                line-height: 1.6 !important;
+                text-align: justify !important;
+            }
+            .chapter-break {
+                page-break-before: always;
+                margin-top: 2cm;
+            }
+            p {
+                orphans: 3;
+                widows: 3;
+                margin-bottom: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-[#0a0a0c] text-slate-800 dark:text-slate-200 transition-colors duration-300">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
