@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     ChevronLeft, Sparkles, Loader2, Send, Wifi, Lock, PenTool, CheckCircle, Plus, Minus, Type, Users2, HelpCircle, Info, X, Map, Shield, Volume2, VolumeX, Eye, EyeOff, Trash2
 } from 'lucide-react';
-import { requestImageGeneration, streamAIConversation, generateSuggestions, extractStoryState } from '@/services/ai';
+import { requestImageGeneration, streamAIConversation, generateSuggestions, extractStoryState, generateImagePrompt } from '@/services/ai';
 import { ConfirmModal, ParticipantsModal } from '@/components';
 import { updateSessionStory, joinCollaborationSession, createCollaborationSession, updateSessionPhase, notifyTurnByEmail, regenerateSessionCode, getProfileSettings, updateProfileSettings, getSpectatorSession } from '@/services/services';
 import { renderNarrativeWithBreaks, getAuthorStyle } from '@/utils/utils';
@@ -165,10 +165,9 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
     };
 
     const handleGenerateImage = async (msgId: string, content: string) => {
-        // Constrói o prompt diretamente do conteúdo sem chamada extra à API
         const genre = initialConfig.config?.genre || 'cinematic';
-        const rawPrompt = `${genre} style, cinematic scene: ${content.substring(0, 300).replace(/["'`]/g, '')}`;
-        const url = await requestImageGeneration(rawPrompt);
+        const aiPrompt = await generateImagePrompt(content, genre, lang);
+        const url = await requestImageGeneration(aiPrompt);
         if (url) setMessages(prev => prev.map(m => m.id === msgId ? { ...m, imageUrl: url } : m));
     };
 
