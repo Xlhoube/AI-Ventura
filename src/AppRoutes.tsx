@@ -299,6 +299,7 @@ export const AppRoutes = () => {
                                             activeSessionCode={sessionCode}
                                             onNavigate={(nav: any) => {
                                                 if (typeof nav === 'string') {
+                                                    const [base, query] = nav.split('?');
                                                     const routeMap: Record<string, string> = {
                                                         'setup': '/setup',
                                                         'drafts': '/drafts',
@@ -307,7 +308,12 @@ export const AppRoutes = () => {
                                                         'authors': '/authors',
                                                         'archive': '/archive'
                                                     };
-                                                    navigate(routeMap[nav] || '/dashboard');
+                                                    const matchedRoute = routeMap[base];
+                                                    if (matchedRoute) {
+                                                        navigate(query ? `${matchedRoute}?${query}` : matchedRoute);
+                                                    } else {
+                                                        navigate('/dashboard');
+                                                    }
                                                 } else if (typeof nav === 'object') {
                                                     // Corrigido: Agora permite limpar a sessão se nav.sessionCode for null
                                                     if ('sessionCode' in nav) setSessionCode(nav.sessionCode);
