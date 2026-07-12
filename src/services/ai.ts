@@ -58,7 +58,9 @@ const formatAIError = (e: any): Error => {
   if (msg.includes("API key not valid")) return new Error("A Chave de API configurada é inválida.");
   if (msg.includes("API_KEY_MISSING")) return new Error("Chave de API não encontrada.");
   if (msg.includes("Failed to fetch")) return new Error("Erro de conexão. Verifique a internet.");
-  if (msg.includes("429")) return new Error("Muitos pedidos. Tente novamente em instantes.");
+  if (msg.includes("429") || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("exhausted")) {
+      return new Error("🚨 LIMITE DA API ATINGIDO: Atingiste o limite de uso da tua chave. Se usas um plano gratuito, aguarda uns minutos ou verifica o teu saldo.");
+  }
 
   return new Error(msg);
 };
