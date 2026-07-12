@@ -55,11 +55,39 @@ const formatAIError = (e: any): Error => {
     } catch { /* Ignora falhas no parse */ }
   }
 
-  if (msg.includes("API key not valid")) return new Error("A Chave de API configurada é inválida.");
-  if (msg.includes("API_KEY_MISSING")) return new Error("Chave de API não encontrada.");
-  if (msg.includes("Failed to fetch")) return new Error("Erro de conexão. Verifique a internet.");
+  const lang = useAppStore.getState().userLang;
+
+  const getErrorString = (type: 'invalid_key' | 'missing_key' | 'network' | 'rate_limit') => {
+      if (lang === 'en') {
+          switch(type) {
+              case 'invalid_key': return "The configured API Key is invalid.";
+              case 'missing_key': return "API Key not found.";
+              case 'network': return "Connection error. Check your internet.";
+              case 'rate_limit': return "🚨 API LIMIT REACHED: You've reached the usage limit of your key. If you use a free tier, wait a few minutes or check your balance.";
+          }
+      }
+      if (lang === 'fr') {
+          switch(type) {
+              case 'invalid_key': return "La clé API configurée est invalide.";
+              case 'missing_key': return "Clé API introuvable.";
+              case 'network': return "Erreur de connexion. Vérifiez votre internet.";
+              case 'rate_limit': return "🚨 LIMITE D'API ATTEINTE : Vous avez atteint la limite d'utilisation de votre clé. Si vous utilisez un forfait gratuit, attendez quelques minutes ou vérifiez votre solde.";
+          }
+      }
+      // pt (default)
+      switch(type) {
+          case 'invalid_key': return "A Chave de API configurada é inválida.";
+          case 'missing_key': return "Chave de API não encontrada.";
+          case 'network': return "Erro de conexão. Verifique a internet.";
+          case 'rate_limit': return "🚨 LIMITE DA API ATINGIDO: Atingiste o limite de uso da tua chave. Se usas um plano gratuito, aguarda uns minutos ou verifica o teu saldo.";
+      }
+  };
+
+  if (msg.includes("API key not valid")) return new Error(getErrorString('invalid_key'));
+  if (msg.includes("API_KEY_MISSING")) return new Error(getErrorString('missing_key'));
+  if (msg.includes("Failed to fetch")) return new Error(getErrorString('network'));
   if (msg.includes("429") || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("exhausted")) {
-      return new Error("🚨 LIMITE DA API ATINGIDO: Atingiste o limite de uso da tua chave. Se usas um plano gratuito, aguarda uns minutos ou verifica o teu saldo.");
+      return new Error(getErrorString('rate_limit'));
   }
 
   return new Error(msg);
