@@ -10,6 +10,7 @@ export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, 
     const [translationLoading, setTranslationLoading] = useState(false);
     const [translatedContent, setTranslatedContent] = useState<string | null>(null);
     const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
+    const [currentTranslatedLang, setCurrentTranslatedLang] = useState<Language | null>(null);
 
     const [confirmReopen, setConfirmReopen] = useState(false);
 
@@ -25,22 +26,22 @@ export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, 
     // Permitir tradução sempre que houver um idioma de utilizador definido, para garantir acessibilidade
     const showTranslateButton = !!userLang;
 
-    const handleTranslate = async () => {
-        if (isTranslated) {
+    const handleTranslate = async (targetLang: Language) => {
+        if (isTranslated && currentTranslatedLang === targetLang) {
             setIsTranslated(false);
             return;
         }
 
-        if (translatedContent) {
+        if (translatedContent && currentTranslatedLang === targetLang) {
             setIsTranslated(true);
             return;
         }
 
+        setCurrentTranslatedLang(targetLang);
         setTranslationLoading(true);
         try {
-            if (!userLang) return;
-            const tTitle = await translateManuscript(manuscript.title, userLang);
-            const tContent = await translateManuscript(manuscript.content, userLang);
+            const tTitle = await translateManuscript(manuscript.title, targetLang);
+            const tContent = await translateManuscript(manuscript.content, targetLang);
             setTranslatedTitle(tTitle);
             setTranslatedContent(tContent);
             setIsTranslated(true);
@@ -60,17 +61,22 @@ export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, 
                 <button onClick={onBack} className="flex items-center gap-2 text-slate-500 hover:text-gray-900 dark:hover:text-white transition-colors uppercase text-[10px] font-black tracking-widest"><ChevronLeft size={18} /> {t.back}</button>
 
                 <div className="flex items-center gap-2">
-                    {showTranslateButton && (
-                        <button
-                            onClick={handleTranslate}
-                            disabled={translationLoading}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest border ${isTranslated ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20'}`}
-                            title={t.translateDesc ? t.translateDesc(userLang) : `Traduzir para ${userLang?.toUpperCase()}`}
-                        >
-                            {translationLoading ? <Loader2 size={16} className="animate-spin" /> : <Globe size={16} />}
-                            {translationLoading ? t.translating : (isTranslated ? t.showOriginal : `${t.translate} (${userLang?.toUpperCase()})`)}
-                        </button>
-                    )}
+                    {['pt', 'en', 'fr'].filter(l => l !== originalLang).map((lang) => {
+                        const isThisLang = isTranslated && currentTranslatedLang === lang;
+                        const isLoadingThis = translationLoading && currentTranslatedLang === lang;
+                        return (
+                            <button
+                                key={lang}
+                                onClick={() => handleTranslate(lang as Language)}
+                                disabled={translationLoading && !isLoadingThis}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest border ${isThisLang ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20'}`}
+                                title={`Traduzir para ${lang.toUpperCase()}`}
+                            >
+                                {isLoadingThis ? <Loader2 size={16} className="animate-spin" /> : <Globe size={16} />}
+                                {isLoadingThis ? t.translating : (isThisLang ? t.showOriginal : `${t.translate} (${lang.toUpperCase()})`)}
+                            </button>
+                        );
+                    })}
 
                     <button onClick={() => setConfirmReopen(true)} className="flex items-center gap-2 px-6 py-3 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest border border-amber-200 dark:border-amber-500/20">
                         <Edit3 size={16} /> {t.reopenBook}
