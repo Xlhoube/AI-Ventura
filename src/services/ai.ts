@@ -500,26 +500,26 @@ export const generateStoryTitle = async (config: any, lang: Language = 'pt') => 
     // const ai = getAIInstance();
 
     const prompts: Record<string, string> = {
-      pt: `Com base nesta ideia de história, gera um título literário ÚNICO, CURTO e CRIATIVO (máximo 6 palavras).
+      pt: `Com base nesta ideia de história, gera um título literário ÚNICO, CURTO e CRIATIVO (máximo 6 palavras) ESTRITAMENTE EM PORTUGUÊS.
       Género: ${config.genre || 'Vários'}
       Ideia: ${config.idea}
       Personagens: ${config.characters || 'Várias'}
       
-      Devolve APENAS o título, sem aspas ou explicações.`,
+      Devolve APENAS o título em PORTUGUÊS, sem aspas ou explicações.`,
 
-      en: `Based on this story idea, generate a UNIQUE, SHORT, and CREATIVE literary title (maximum 6 words).
+      en: `Based on this story idea, generate a UNIQUE, SHORT, and CREATIVE literary title (maximum 6 words) STRICTLY IN ENGLISH.
       Genre: ${config.genre || 'Various'}
       Idea: ${config.idea}
       Characters: ${config.characters || 'Various'}
       
-      Return ONLY the title, without quotes or explanations.`,
+      Return ONLY the title in ENGLISH, without quotes or explanations.`,
 
-      fr: `Sur la base de cette idée d'histoire, générez un titre littéraire UNIQUE, COURT et CRÉATIF (maximum 6 mots).
+      fr: `Sur la base de cette idée d'histoire, générez un titre littéraire UNIQUE, COURT et CRÉATIF (maximum 6 mots) STRICTEMENT EN FRANÇAIS.
       Genre : ${config.genre || 'Divers'}
       Idée : ${config.idea}
       Personnages : ${config.characters || 'Divers'}
       
-      Renvoyez UNIQUEMENT le titre, sans guillemets ni explications.`
+      Renvoyez UNIQUEMENT le titre en FRANÇAIS, sans guillemets ni explications.`
     };
 
     const promptText = prompts[lang] || prompts['pt'];
