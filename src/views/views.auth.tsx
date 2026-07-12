@@ -129,7 +129,7 @@ export const LandingView = ({ t, onAuth, onGuestLogin }: { t: any, onAuth: (e: a
                       </div>
                   )}
                   <h1 className="font-black text-3xl tracking-tighter bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
-                      IA-VENTURA
+                      IA VENTURA
                   </h1>
               </div>
             </div>

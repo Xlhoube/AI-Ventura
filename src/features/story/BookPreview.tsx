@@ -8,8 +8,7 @@ import { ConfirmModal } from '@/components';
 export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, story: any, onBack: () => void, onReopen: (s: any) => void, userLang?: Language }) => {
     const [isTranslated, setIsTranslated] = useState(false);
     const [translationLoading, setTranslationLoading] = useState(false);
-    const [translatedContent, setTranslatedContent] = useState<string | null>(null);
-    const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
+    const [translationCache, setTranslationCache] = useState<Partial<Record<Language, { title: string, content: string }>>>({});
     const [currentTranslatedLang, setCurrentTranslatedLang] = useState<Language | null>(null);
 
     const [confirmReopen, setConfirmReopen] = useState(false);
@@ -32,18 +31,21 @@ export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, 
             return;
         }
 
-        if (translatedContent && currentTranslatedLang === targetLang) {
+        setCurrentTranslatedLang(targetLang);
+
+        if (translationCache[targetLang]) {
             setIsTranslated(true);
             return;
         }
 
-        setCurrentTranslatedLang(targetLang);
         setTranslationLoading(true);
         try {
             const tTitle = await translateManuscript(manuscript.title, targetLang);
             const tContent = await translateManuscript(manuscript.content, targetLang);
-            setTranslatedTitle(tTitle);
-            setTranslatedContent(tContent);
+            setTranslationCache(prev => ({
+                ...prev,
+                [targetLang]: { title: tTitle, content: tContent }
+            }));
             setIsTranslated(true);
         } catch (e) {
             console.error("Translation failed", e);
@@ -52,8 +54,8 @@ export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, 
         }
     };
 
-    const displayTitle = isTranslated && translatedTitle ? translatedTitle : manuscript.title;
-    const displayContent = isTranslated && translatedContent ? translatedContent : manuscript.content;
+    const displayTitle = isTranslated && currentTranslatedLang && translationCache[currentTranslatedLang] ? translationCache[currentTranslatedLang]!.title : manuscript.title;
+    const displayContent = isTranslated && currentTranslatedLang && translationCache[currentTranslatedLang] ? translationCache[currentTranslatedLang]!.content : manuscript.content;
 
     return (
         <div className="max-w-6xl mx-auto pb-20 animate-in fade-in duration-1000">

@@ -1,8 +1,31 @@
 export type Language = 'pt' | 'en' | 'fr';
 
-export const APP_VERSION = '0.0.48';
+export const APP_VERSION = '0.0.49';
 
-export const changelogData = [
+  {
+    version: '0.0.49',
+    date: new Date().toISOString().split('T')[0],
+    changes: {
+      pt: [
+        'Design: Removido o hífen do logotipo (IA VENTURA).',
+        'Core: As traduções de obras agora são guardadas em memória cache para evitar falhas ou demoras ao alternar entre idiomas.',
+        'Core: Adicionada prevenção visual (ícone de salvaguarda) para o caso de a imagem do logotipo falhar ao carregar devido à rede.',
+        'Core: A página final do livro apresenta agora botões para traduzir diretamente para os idiomas em falta, de forma inteligente.'
+      ],
+      en: [
+        'Design: Removed the hyphen from the logo (IA VENTURA).',
+        'Core: Work translations are now cached in memory to prevent failures or delays when switching languages.',
+        'Core: Added visual fallback (safeguard icon) in case the logo image fails to load due to network issues.',
+        'Core: The final book page now intelligently displays direct translation buttons for missing languages.'
+      ],
+      fr: [
+        'Design : Suppression du trait d\'union dans le logo (IA VENTURA).',
+        'Core : Les traductions des œuvres sont désormais mises en cache pour éviter les échecs ou les retards lors du changement de langue.',
+        'Core : Ajout d\'une solution de secours visuelle (icône de sauvegarde) au cas où l\'image du logo ne se chargerait pas en raison du réseau.',
+        'Core : La page finale du livre affiche désormais intelligemment des boutons de traduction directe pour les langues manquantes.'
+      ]
+    }
+  },
   {
     version: '0.0.48',
     date: new Date().toISOString().split('T')[0],

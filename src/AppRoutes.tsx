@@ -235,7 +235,7 @@ export const AppRoutes = () => {
                         className="w-10 h-10 rounded-xl shadow-lg shadow-indigo-500/30 group-hover:rotate-6 transition-transform object-cover"
                     />
                     <span className="font-black text-xl tracking-tighter bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
-                        IA-VENTURA
+                        IA VENTURA
                     </span>
                 </div>
 
