@@ -13,6 +13,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [writeOwn, setWriteOwn] = useState(false);
     const [participants, setParticipants] = useState<any[]>(initialConfig?.participants || []);
     const [showParticipants, setShowParticipants] = useState(false);
     const [showConfig, setShowConfig] = useState(false);
@@ -58,6 +59,10 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
         }, 3000);
         return () => clearInterval(interval);
     }, [sessionCode, messages.length, isSpectator]);
+
+    useEffect(() => {
+        setWriteOwn(false);
+    }, [messages.length]);
 
     useEffect(() => {
         if (isSpectator || !user) return;
@@ -651,17 +656,24 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
 
             <div className={`bg-white/90 dark:bg-[#0a0a0c]/90 backdrop-blur-xl border-t border-gray-200 dark:border-white/10 p-4 md:p-6 z-20 flex flex-col gap-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transition-all duration-500 ${zenMode ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
 
-                {!isTyping && suggestions.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2 animate-in slide-in-from-bottom-2 fade-in duration-500">
+                {!isTyping && suggestions.length > 0 && !writeOwn && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mb-2 animate-in slide-in-from-bottom-2 fade-in duration-500">
                         {suggestions.map((s, i) => (
                             <button
                                 key={i}
-                                onClick={() => setInput(s)}
+                                onClick={() => { setInput(s); setWriteOwn(true); }}
                                 className="w-full text-left px-4 py-3 bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-xl text-xs text-slate-600 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all shadow-sm flex items-center group h-auto min-h-[3rem]"
                             >
-                                <span className="line-clamp-2 w-full group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-relaxed">{s}</span>
+                                <span className="line-clamp-3 w-full group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-relaxed">{s}</span>
                             </button>
                         ))}
+                        <button
+                            onClick={() => { setInput(''); setWriteOwn(true); }}
+                            className="w-full text-center px-4 py-3 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all shadow-sm flex items-center justify-center gap-2 h-auto min-h-[3rem]"
+                        >
+                            <PenTool size={16} />
+                            {lang === 'pt' ? 'Escrever eu próprio' : lang === 'fr' ? 'Écrire moi-même' : 'Write my own'}
+                        </button>
                     </div>
                 )}
 
@@ -698,7 +710,16 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                             )}
                         </div>
                     ) : (
-                        <div className="flex gap-2 relative">
+                        <div className={`flex gap-2 relative ${(!writeOwn && suggestions.length > 0) ? 'hidden' : ''}`}>
+                            {suggestions.length > 0 && writeOwn && (
+                                <button
+                                    onClick={() => { setWriteOwn(false); setInput(''); }}
+                                    className="bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-slate-500 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl px-3 flex items-center justify-center transition-all"
+                                    title="Voltar às opções"
+                                >
+                                    <X size={16} />
+                                </button>
+                            )}
                             <textarea
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
