@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Key, ShieldCheck, HelpCircle, X, Check, ArrowRight } from 'lucide-react';
+import { Key, ShieldCheck, HelpCircle, X, Check, ArrowRight, Info } from 'lucide-react';
 import { useAppStore, AIProvider } from '@/store/useAppStore';
 
 interface ApiSetupModalProps {
@@ -89,6 +89,13 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                                 <X size={20} />
                             </button>
                         )}
+                    </div>
+
+                    <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 rounded-xl p-4 mb-6 flex gap-3">
+                        <Info className="text-blue-500 shrink-0 mt-0.5" size={16} />
+                        <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed font-medium">
+                            {t?.apiKeyDesc || 'Para utilizar a Inteligência Artificial de forma ilimitada e gratuita, precisas de usar a tua própria chave (API Key) diretamente do fornecedor. As chaves de nível básico costumam ser gratuitas.'}
+                        </p>
                     </div>
 
                     <div className="space-y-6">

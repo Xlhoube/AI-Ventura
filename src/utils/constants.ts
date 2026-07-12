@@ -601,7 +601,7 @@ export const translations = {
       'Clica em "Create Key"'
     ],
     apiKeySettings: 'Configuração da Chave API',
-    apiKeyDesc: 'Se a chave de API padrão estiver congestionada ou se preferires usar a tua própria conta do Google Gemini, insere aqui a tua chave. A chave será guardada apenas localmente no teu navegador.',
+    apiKeyDesc: 'Para utilizar a Inteligência Artificial de forma ilimitada e gratuita, precisas de usar a tua própria chave (API Key) diretamente do fornecedor. As chaves de nível básico costumam ser gratuitas.',
     apiKeyPlaceholder: 'Insere a tua chave API Gemini (AIzaSy...)',
     apiKeySave: 'Guardar Chave',
     apiKeyClear: 'Limpar e Repor',
@@ -954,7 +954,7 @@ export const translations = {
       'Click on "Create Key"'
     ],
     apiKeySettings: 'API Key Configuration',
-    apiKeyDesc: 'If the default API key is congested or if you prefer to use your own Google Gemini account, enter your key here. The key will be stored only locally in your browser.',
+    apiKeyDesc: 'To use Artificial Intelligence unlimitedly and for free, you need to use your own access key (API Key) directly from the provider. Basic tier keys are usually free.',
     apiKeyPlaceholder: 'Enter your Gemini API key (AIzaSy...)',
     apiKeySave: 'Save Key',
     apiKeyClear: 'Clear and Reset',
@@ -1310,7 +1310,7 @@ export const translations = {
       'Cliquez sur "Create Key"'
     ],
     apiKeySettings: 'Configuration de la Clé API',
-    apiKeyDesc: 'Si la clé API par défaut est saturée ou si vous préférez utiliser votre propre compte Google Gemini, saisissez votre clé ici. La clé sera stockée uniquement localement dans votre navigateur.',
+    apiKeyDesc: 'Pour utiliser l\\'Intelligence Artificielle de manière illimitée et gratuite, vous devez utiliser votre propre clé d\\'accès (Clé API) directement auprès du fournisseur. Les clés de base sont généralement gratuites.',
     apiKeyPlaceholder: 'Saisissez votre clé API Gemini (AIzaSy...)',
     apiKeySave: 'Enregistrer la Clé',
     apiKeyClear: 'Effacer et Réinitialiser',
