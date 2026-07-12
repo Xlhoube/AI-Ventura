@@ -58,8 +58,8 @@ export const AppRoutes = () => {
 
     const handleLanguageChange = async (newLang: Language) => {
         setUserLang(newLang);
-        if (currentUser && currentUser.id !== 'guest') {
-            await updateProfileLanguage(currentUser.id, newLang);
+        if (currentUser && currentUser.$id !== 'guest') {
+            await updateProfileLanguage(currentUser.$id, newLang);
         }
     };
 
@@ -108,7 +108,7 @@ export const AppRoutes = () => {
 
     // Check if user has API key, if not, show modal
     useEffect(() => {
-        if (!isLoadingSession && currentUser && !apiKeys[activeProvider] && currentUser.id !== 'guest') {
+        if (!isLoadingSession && currentUser && !apiKeys[activeProvider] && currentUser.$id !== 'guest') {
             setShowApiSetup(true);
         }
     }, [isLoadingSession, currentUser, apiKeys, activeProvider]);
@@ -129,14 +129,14 @@ export const AppRoutes = () => {
     };
 
     const handleGuestLogin = () => {
-        setCurrentUser({ id: 'guest', user_metadata: { username: 'Guest' }, email: 'guest@iaventura.com', app_metadata: {}, aud: 'authenticated', created_at: new Date().toISOString() } as any);
+        setCurrentUser({ $id: 'guest', name: 'Guest', email: 'guest@iaventura.com', prefs: {} } as any);
         authInitialized.current = true;
         navigate('/dashboard');
         showToast(t.loginSuccess, 'success');
     };
 
     const handleLogout = async () => {
-        if (currentUser?.id === 'guest') {
+        if (currentUser?.$id === 'guest') {
             setCurrentUser(null);
             authInitialized.current = false;
             navigate('/');
@@ -295,7 +295,7 @@ export const AppRoutes = () => {
                                         <DashboardView
                                             t={t}
                                             username={getUserDisplayName(currentUser)}
-                                            isGuest={currentUser?.id === 'guest'}
+                                            isGuest={currentUser?.$id === 'guest'}
                                             activeSessionCode={sessionCode}
                                             onNavigate={(nav: any) => {
                                                 if (typeof nav === 'string') {
@@ -370,9 +370,9 @@ export const AppRoutes = () => {
                                                     sessionCode: sessionCode
                                                 };
                                                 
-                                                if (storageType === 'cloud' && isCloudEnabled && currentUser && currentUser.id !== 'guest') {
+                                                if (storageType === 'cloud' && isCloudEnabled && currentUser && currentUser.$id !== 'guest') {
                                                     try {
-                                                        const cloudDraft = await createCloudDraftSession(newStory, currentUser.id);
+                                                        const cloudDraft = await createCloudDraftSession(newStory, currentUser.$id);
                                                         setSessionCode(cloudDraft.sessionCode);
                                                         setCurrentStory(cloudDraft);
                                                     } catch (e) {

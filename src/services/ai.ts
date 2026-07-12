@@ -282,7 +282,7 @@ export const extractStoryState = async (messages: any[], lang: Language = 'en') 
     ${historyStr}`;
 
     const responseText = await executeUnifiedAI(prompt, {
-      response_format: { type: "json_object" }
+      jsonMode: true
     });
 
     let cleanJson = responseText?.trim() || "{}";

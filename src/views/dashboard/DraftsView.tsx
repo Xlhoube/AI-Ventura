@@ -18,8 +18,8 @@ export const DraftsView = ({ t, onResume, onArchive, onBack }: { t: any, onResum
       const allLocalDrafts = getLocalStories().filter((s: any) => s.status !== 'completed');
       
       let allCloudDrafts: any[] = [];
-      if (currentUser && currentUser.id !== 'guest') {
-        allCloudDrafts = await getCloudDrafts(currentUser.id);
+      if (currentUser && currentUser.$id !== 'guest') {
+        allCloudDrafts = await getCloudDrafts(currentUser.$id);
       }
 
       // Merge local and cloud drafts, prioritizing cloud if they have the same ID
