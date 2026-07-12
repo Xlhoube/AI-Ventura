@@ -228,9 +228,11 @@ export const AppRoutes = () => {
             {/* HEADER ATUALIZADO V0.0.47 - CENTRALIZAÇÃO TOTAL */}
             <header className="border-b border-gray-200 dark:border-white/5 bg-white/80 dark:bg-black/60 backdrop-blur-xl sticky top-0 z-50 px-8 h-20 flex items-center justify-between relative print:hidden transition-colors duration-300">
                 <div className="flex items-center gap-2 cursor-pointer group" onClick={() => navigate(currentUser ? '/dashboard' : '/')}>
-                    <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 group-hover:rotate-6 transition-transform">
-                        <BookOpen size={24} />
-                    </div>
+                    <img 
+                        src="/logo.png" 
+                        alt="AI-Ventura Logo" 
+                        className="w-10 h-10 rounded-xl shadow-lg shadow-indigo-500/30 group-hover:rotate-6 transition-transform object-cover"
+                    />
                     <span className="font-black text-xl tracking-tighter bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
                         IA-VENTURA
                     </span>

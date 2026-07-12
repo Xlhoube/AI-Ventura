@@ -115,9 +115,11 @@ export const LandingView = ({ t, onAuth, onGuestLogin }: { t: any, onAuth: (e: a
             {/* LOGÓTIPO AI-VENTURA - Link Assinado */}
             <div className="flex flex-col items-center gap-4">
               <div className="flex flex-col items-center gap-3">
-                  <div className="w-20 h-20 rounded-[2rem] bg-indigo-600 flex items-center justify-center text-white shadow-2xl shadow-indigo-500/40 rotate-3 hover:rotate-6 transition-transform">
-                      <BookOpen size={40} />
-                  </div>
+                  <img 
+                      src="/logo.png" 
+                      alt="AI-Ventura Logo" 
+                      className="w-20 h-20 rounded-[2rem] shadow-2xl shadow-indigo-500/40 rotate-3 hover:rotate-6 transition-transform object-cover"
+                  />
                   <h1 className="font-black text-3xl tracking-tighter bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
                       IA-VENTURA
                   </h1>
