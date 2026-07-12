@@ -31,4 +31,4 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./dist/
         # Descomente a linha abaixo e mude caso precise de um diretório específico (como public_html)
-        # server-dir: /public_html/
+        server-dir: /public_html/
