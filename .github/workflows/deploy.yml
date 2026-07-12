@@ -21,6 +21,10 @@ jobs:
       run: npm install
 
     - name: Build project
+      env:
+        VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
+        VITE_APPWRITE_ENDPOINT: https://fra.cloud.appwrite.io/v1
+        VITE_APPWRITE_PROJECT_ID: 6a53c25900398eb8afd7
       run: npm run build
 
     - name: Deploy to Hostinger via FTP

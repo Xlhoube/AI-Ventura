@@ -1310,7 +1310,7 @@ export const translations = {
       'Cliquez sur "Create Key"'
     ],
     apiKeySettings: 'Configuration de la Clé API',
-    apiKeyDesc: 'Pour utiliser l\\'Intelligence Artificielle de manière illimitée et gratuite, vous devez utiliser votre propre clé d\\'accès (Clé API) directement auprès du fournisseur. Les clés de base sont généralement gratuites.',
+    apiKeyDesc: "Pour utiliser l'Intelligence Artificielle de manière illimitée et gratuite, vous devez utiliser votre propre clé d'accès (Clé API) directement auprès du fournisseur. Les clés de base sont généralement gratuites.",
     apiKeyPlaceholder: 'Saisissez votre clé API Gemini (AIzaSy...)',
     apiKeySave: 'Enregistrer la Clé',
     apiKeyClear: 'Effacer et Réinitialiser',
