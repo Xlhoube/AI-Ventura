@@ -185,16 +185,7 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                         </ol>
                     </div>
 
-                    <a 
-                        href={helpContent.link} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="mt-6 flex items-center justify-center gap-2 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-xs font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
-                    >
-                        {t?.getKey || 'Obter Chave'} <ArrowRight size={14} />
-                    </a>
-
-                    <div className="mt-8 pt-6 border-t border-gray-200 dark:border-white/10">
+                    <div className="mt-8 mb-6 pt-6 border-t border-gray-200 dark:border-white/10">
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
                             {t?.currentStatus || 'Status Atual'}
                         </h4>
@@ -215,6 +206,15 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                             </div>
                         </div>
                     </div>
+
+                    <a 
+                        href={helpContent.link} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="flex items-center justify-center gap-2 py-3 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-xs font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                    >
+                        {t?.getKey || 'Obter Chave'} <ArrowRight size={14} />
+                    </a>
                 </div>
 
             </div>
