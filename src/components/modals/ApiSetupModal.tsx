@@ -193,6 +193,28 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                     >
                         {t?.getKey || 'Obter Chave'} <ArrowRight size={14} />
                     </a>
+
+                    <div className="mt-8 pt-6 border-t border-gray-200 dark:border-white/10">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
+                            {t?.currentStatus || 'Status Atual'}
+                        </h4>
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs text-slate-500 dark:text-slate-400">Provedor:</span>
+                                <span className="text-xs font-bold text-gray-900 dark:text-white">
+                                    {providers.find(p => p.id === activeProvider)?.name || 'Nenhum'}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs text-slate-500 dark:text-slate-400">API Key:</span>
+                                <span className="text-xs font-mono text-gray-900 dark:text-white">
+                                    {activeProvider && apiKeys[activeProvider] 
+                                        ? `${apiKeys[activeProvider].slice(0, 4)}...${apiKeys[activeProvider].slice(-4)}` 
+                                        : 'Não definida'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </div>
