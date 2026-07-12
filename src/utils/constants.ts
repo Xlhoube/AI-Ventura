@@ -2,6 +2,7 @@ export type Language = 'pt' | 'en' | 'fr';
 
 export const APP_VERSION = '0.0.49';
 
+export const changelogData = [
   {
     version: '0.0.49',
     date: new Date().toISOString().split('T')[0],
