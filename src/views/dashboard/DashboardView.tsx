@@ -258,7 +258,7 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
                            <Cloud size={32} />
                         </div>
                         <div>
-                           <h4 className="text-lg font-black text-gray-900 dark:text-white mb-1">{t.storageCloud || 'Nuvem (Appwrite)'}</h4>
+                           <h4 className="text-lg font-black text-gray-900 dark:text-white mb-1">{t.storageCloud || 'Nuvem'}</h4>
                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{t.storageCloudDesc || 'Sincronizado na tua conta. Acede em qualquer dispositivo sem perderes nada.'}</p>
                            {isGuest && (
                               <div className="mt-3 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs font-bold px-3 py-2 rounded-xl flex items-start gap-2">
