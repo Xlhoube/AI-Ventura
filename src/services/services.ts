@@ -29,8 +29,8 @@ if (isCloudEnabled) {
 export const account = new Account(client);
 export const databases = new Databases(client);
 
-// PADRÃO DE IDS PARA O APPWRITE (O usuário deverá criar estes no painel)
-export const DATABASE_ID = 'ai_ventura_db';
+// PADRÃO DE IDS PARA O APPWRITE
+export const DATABASE_ID = '6a53c3a8001e92294d6e';
 export const COL_SESSIONS = 'sessions';
 export const COL_PUBLIC_STORIES = 'public_stories';
 export const COL_STORY_LIKES = 'story_likes';
