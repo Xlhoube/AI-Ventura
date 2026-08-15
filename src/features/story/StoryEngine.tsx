@@ -31,6 +31,9 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
     const [selectedWordInfo, setSelectedWordInfo] = useState<{ msgId: string, word: string, index: number, fullText: string } | null>(null);
     const [newWordValue, setNewWordValue] = useState('');
 
+    // Estado para Abas de Capítulos
+    const [activeChapterIndex, setActiveChapterIndex] = useState<number>(-1);
+
     const fontSizes = ['text-sm', 'text-base', 'text-lg', 'text-xl', 'text-2xl'];
     const [fontSizeIndex, setFontSizeIndex] = useState(1);
     const [lastAuthorId, setLastAuthorId] = useState<string | null>(null);
@@ -550,94 +553,150 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                         </button>
                     )}
 
-                    {messages.map((msg, i) => {
-                        const isAI = msg.role === 'ai';
-                        const isMe = msg.author_id === user.id;
-                        const style = !isAI ? getAuthorStyle(msg.author_id) : null;
+                    {/* Tabs Dinâmicas de Capítulos */}
+                    {!zenMode && (
+                        (() => {
+                            // Separar mensagens em blocos de capítulos baseados no padrão "Capítulo" ou quebra explícita
+                            const chaptersList: any[][] = [[]];
+                            messages.forEach((msg) => {
+                                const isNewChapter = msg.role === 'user' && /cap[ií]tulo/i.test(msg.content);
+                                if (isNewChapter && chaptersList[chaptersList.length - 1].length > 0) {
+                                    chaptersList.push([msg]);
+                                } else {
+                                    chaptersList[chaptersList.length - 1].push(msg);
+                                }
+                            });
 
-                        if (msg.hidden) return null;
-
-                        return (
-                            <div key={msg.id || i} className={`flex gap-4 ${isMe ? 'flex-row-reverse' : ''} animate-writing`}>
-                                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-2xl flex-shrink-0 flex items-center justify-center overflow-hidden border-2 ${isAI ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-600/20' : `${style?.bg} ${style?.border}`}`}>
-                                    {isAI ? <Sparkles className="text-white" size={16} /> : (
-                                        msg.author_avatar ? <img src={msg.author_avatar} className="w-full h-full object-cover" /> : <span className="font-bold text-xs">{msg.author_name?.[0]}</span>
-                                    )}
-                                </div>
-                                <div className={`max-w-[85%] md:max-w-[80%] ${isAI ? 'w-full' : ''}`}>
-                                    <div className={`flex items-center gap-2 mb-1 ${isMe ? 'flex-row-reverse' : ''}`}>
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{isAI ? 'Editor IA' : msg.author_name}</span>
+                            if (chaptersList.length > 1) {
+                                return (
+                                    <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-4 border-b border-gray-100 dark:border-white/5 sticky top-0 bg-white/95 dark:bg-[#121214]/95 backdrop-blur-md z-40 pr-2 scrollbar-none">
+                                        <button 
+                                            onClick={() => setActiveChapterIndex(-1)} 
+                                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap border transition-all ${activeChapterIndex === -1 ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/10' : 'bg-gray-50 dark:bg-white/5 text-slate-500 border-gray-200 dark:border-white/5'}`}
+                                        >
+                                            {lang === 'pt' ? 'Ver Tudo' : 'View All'}
+                                        </button>
+                                        {chaptersList.map((_, idx) => (
+                                            <button 
+                                                key={idx}
+                                                onClick={() => setActiveChapterIndex(idx)} 
+                                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap border transition-all ${activeChapterIndex === idx ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/10' : 'bg-gray-50 dark:bg-white/5 text-slate-500 border-gray-200 dark:border-white/5'}`}
+                                            >
+                                                {lang === 'pt' ? `Capítulo ${idx + 1}` : `Chapter ${idx + 1}`}
+                                            </button>
+                                        ))}
                                     </div>
+                                );
+                            }
+                            return null;
+                        })()
+                    )}
 
-                                    <div className="relative group">
-                                        <div className={`prose dark:prose-invert text-justify ${isAI ? `max-w-none leading-relaxed font-serif text-gray-800 dark:text-slate-300 ${fontSizes[fontSizeIndex]}` : `bg-white dark:bg-[#1a1a1c] p-4 rounded-2xl border border-gray-200 dark:border-white/5 shadow-sm text-sm ${isMe ? 'rounded-tr-sm bg-indigo-50/50 dark:bg-indigo-500/5' : ''}`}`}>
+                    {(() => {
+                        // Filtrar mensagens de acordo com a tab ativa
+                        let displayedMessages = messages;
+                        if (activeChapterIndex !== -1) {
+                            const chaptersList: any[][] = [[]];
+                            messages.forEach((msg) => {
+                                const isNewChapter = msg.role === 'user' && /cap[ií]tulo/i.test(msg.content);
+                                if (isNewChapter && chaptersList[chaptersList.length - 1].length > 0) {
+                                    chaptersList.push([msg]);
+                                } else {
+                                    chaptersList[chaptersList.length - 1].push(msg);
+                                }
+                            });
+                            displayedMessages = chaptersList[activeChapterIndex] || messages;
+                        }
 
-                                            {isAI && msg.imageUrl && (
-                                                <div className="story-image-container mb-6 animate-in fade-in zoom-in-95 duration-700 overflow-hidden rounded-2xl">
-                                                    <img
-                                                        src={msg.imageUrl}
-                                                        className="w-full h-auto object-cover max-h-[400px]"
-                                                        alt="Ilustração da cena"
-                                                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                                        onLoad={(e) => { (e.target as HTMLImageElement).style.display = 'block'; }}
-                                                        style={{ display: 'block' }}
-                                                    />
-                                                </div>
-                                            )}
+                        return displayedMessages.map((msg, i) => {
+                            const isAI = msg.role === 'ai';
+                            const isMe = msg.author_id === user.id;
+                            const style = !isAI ? getAuthorStyle(msg.author_id) : null;
 
-                                            {isAI ? (
-                                                <div className="narrative-segment whitespace-pre-wrap">
-                                                    {msg.content.split(' ').map((word: string, wIdx: number) => {
-                                                        const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "").trim();
-                                                        return (
-                                                            <span
-                                                                key={wIdx}
-                                                                onClick={() => {
-                                                                    if (cleanWord.length > 1 && !isTyping) {
-                                                                        setSelectedWordInfo({
-                                                                            msgId: msg.id,
-                                                                            word: cleanWord,
-                                                                            index: wIdx,
-                                                                            fullText: msg.content
-                                                                        });
-                                                                        setNewWordValue(cleanWord);
-                                                                    }
-                                                                }}
-                                                                className="cursor-pointer hover:bg-indigo-500/20 hover:text-indigo-400 rounded px-0.5 transition-all inline-block"
-                                                                title={lang === 'pt' ? 'Clicar para modificar palavra' : 'Click to modify word'}
-                                                            >
-                                                                {word}{' '}
-                                                            </span>
-                                                        );
-                                                    })}
-                                                </div>
-                                            ) : msg.content}
-                                            {isAI && i === messages.length - 1 && isTyping && <span className="inline-block w-2 h-4 bg-indigo-500 ml-1 animate-pulse"></span>}
-                                        </div>
+                            if (msg.hidden) return null;
 
-                                        {isAI && !isTyping && (
-                                            <div className="absolute top-0 -right-12 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button
-                                                    onClick={() => handleTTS(msg.content, msg.id)}
-                                                    className={`p-2 rounded-lg transition-all ${isSpeaking === msg.id ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-white/5 text-slate-400 hover:text-indigo-500 shadow-sm border border-gray-100 dark:border-white/10'}`}
-                                                >
-                                                    {isSpeaking === msg.id ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                                                </button>
-                                                {!msg.imageUrl && (
-                                                    <button
-                                                        onClick={() => handleGenerateImage(msg.id, msg.content)}
-                                                        className="p-2 bg-white dark:bg-white/5 text-slate-400 hover:text-indigo-500 rounded-lg shadow-sm border border-gray-100 dark:border-white/10 transition-all"
-                                                    >
-                                                        <Sparkles size={14} />
-                                                    </button>
-                                                )}
-                                            </div>
+                            return (
+                                <div key={msg.id || i} className={`flex gap-4 ${isMe ? 'flex-row-reverse' : ''} animate-writing`}>
+                                    <div className={`w-8 h-8 md:w-10 md:h-10 rounded-2xl flex-shrink-0 flex items-center justify-center overflow-hidden border-2 ${isAI ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-600/20' : `${style?.bg} ${style?.border}`}`}>
+                                        {isAI ? <Sparkles className="text-white" size={16} /> : (
+                                            msg.author_avatar ? <img src={msg.author_avatar} className="w-full h-full object-cover" /> : <span className="font-bold text-xs">{msg.author_name?.[0]}</span>
                                         )}
                                     </div>
+                                    <div className={`max-w-[85%] md:max-w-[80%] ${isAI ? 'w-full' : ''}`}>
+                                        <div className={`flex items-center gap-2 mb-1 ${isMe ? 'flex-row-reverse' : ''}`}>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{isAI ? 'Editor IA' : msg.author_name}</span>
+                                        </div>
+
+                                        <div className="relative group">
+                                            <div className={`prose dark:prose-invert text-justify ${isAI ? `max-w-none leading-relaxed font-serif text-gray-800 dark:text-slate-300 ${fontSizes[fontSizeIndex]}` : `bg-white dark:bg-[#1a1a1c] p-4 rounded-2xl border border-gray-200 dark:border-white/5 shadow-sm text-sm ${isMe ? 'rounded-tr-sm bg-indigo-50/50 dark:bg-indigo-500/5' : ''}`}`}>
+
+                                                {isAI && msg.imageUrl && (
+                                                    <div className="story-image-container mb-6 animate-in fade-in zoom-in-95 duration-700 overflow-hidden rounded-2xl">
+                                                        <img
+                                                            src={msg.imageUrl}
+                                                            className="w-full h-auto object-cover max-h-[400px]"
+                                                            alt="Ilustração da cena"
+                                                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                                            onLoad={(e) => { (e.target as HTMLImageElement).style.display = 'block'; }}
+                                                            style={{ display: 'block' }}
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                {isAI ? (
+                                                    <div className="narrative-segment whitespace-pre-wrap">
+                                                        {msg.content.split(' ').map((word: string, wIdx: number) => {
+                                                            const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "").trim();
+                                                            return (
+                                                                <span
+                                                                    key={wIdx}
+                                                                    onClick={() => {
+                                                                        if (cleanWord.length > 1 && !isTyping) {
+                                                                            setSelectedWordInfo({
+                                                                                msgId: msg.id,
+                                                                                word: cleanWord,
+                                                                                index: wIdx,
+                                                                                fullText: msg.content
+                                                                            });
+                                                                            setNewWordValue(cleanWord);
+                                                                        }
+                                                                    }}
+                                                                    className="cursor-pointer hover:bg-indigo-500/20 hover:text-indigo-400 rounded px-0.5 transition-all inline-block"
+                                                                    title={lang === 'pt' ? 'Clicar para modificar palavra' : 'Click to modify word'}
+                                                                >
+                                                                    {word}{' '}
+                                                                </span>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ) : msg.content}
+                                                {isAI && i === messages.length - 1 && isTyping && <span className="inline-block w-2 h-4 bg-indigo-500 ml-1 animate-pulse"></span>}
+                                            </div>
+
+                                            {isAI && !isTyping && (
+                                                <div className="absolute top-0 -right-12 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={() => handleTTS(msg.content, msg.id)}
+                                                        className={`p-2 rounded-lg transition-all ${isSpeaking === msg.id ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-white/5 text-slate-400 hover:text-indigo-500 shadow-sm border border-gray-100 dark:border-white/10'}`}
+                                                    >
+                                                        {isSpeaking === msg.id ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                                                    </button>
+                                                    {!msg.imageUrl && (
+                                                        <button
+                                                            onClick={() => handleGenerateImage(msg.id, msg.content)}
+                                                            className="p-2 bg-white dark:bg-white/5 text-slate-400 hover:text-indigo-500 rounded-lg shadow-sm border border-gray-100 dark:border-white/10 transition-all"
+                                                        >
+                                                            <Sparkles size={14} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        )
-                    })}
+                            );
+                        });
+                    })()}
                     <div ref={messagesEndRef} />
                 </div>
 
