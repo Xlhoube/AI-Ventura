@@ -1,3 +1,6 @@
+DOCUMENTATION & MODELS REFERENCE:
+https://ai.google.dev/gemini-api/docs/models?hl=pt-pt
+
 SUPPORTED MODELS:
 - models/gemini-2.5-flash (Methods: unknown)
 - models/gemini-2.5-pro (Methods: unknown)
