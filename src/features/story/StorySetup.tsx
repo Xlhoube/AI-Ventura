@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PenTool, Sparkles, Loader2, Wand2, Shield, Trash2, CheckCircle, Users2 } from 'lucide-react';
+import { PenTool, Sparkles, Loader2, Wand2, Shield, Trash2, CheckCircle, Users2, Plus, Minus } from 'lucide-react';
 import { PageHeader, ApiSetupModal } from '@/components';
 import { Language } from '@/utils/constants';
 import { generatePremises, generateCharacters } from '@/services/ai';
@@ -18,6 +18,7 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
     const [sessionParticipants, setSessionParticipants] = useState<any[]>([]);
     const [kicked, setKicked] = useState(false);
     const [showApiSetup, setShowApiSetup] = useState(false);
+    const [extraCharsB, setExtraCharsB] = useState<string[]>([]);
     const { apiKeys, activeProvider } = useAppStore();
 
     useEffect(() => {
@@ -380,48 +381,97 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                             {lang === 'pt' ? '🔗 Adicionar Nova Conexão' : '🔗 Add New Connection'}
                         </h4>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                            <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
-                                    {lang === 'pt' ? 'Personagem A' : 'Character A'}
-                                </label>
-                                <select 
-                                    id="char-a-select"
-                                    className="w-full bg-white dark:bg-[#1A1A1E] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-purple-500/20 font-medium text-sm text-gray-900 dark:text-white"
-                                >
-                                    <option value="">{lang === 'pt' ? 'Selecionar...' : 'Select...'}</option>
-                                    {config.charProfiles.map((c: any, idx: number) => (
-                                        <option key={idx} value={c.name}>{c.name}</option>
-                                    ))}
-                                </select>
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
+                                        {lang === 'pt' ? 'Personagem A' : 'Character A'}
+                                    </label>
+                                    <select 
+                                        id="char-a-select"
+                                        className="w-full bg-white dark:bg-[#1A1A1E] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-purple-500/20 font-medium text-sm text-gray-900 dark:text-white"
+                                    >
+                                        <option value="">{lang === 'pt' ? 'Selecionar...' : 'Select...'}</option>
+                                        {config.charProfiles.map((c: any, idx: number) => (
+                                            <option key={idx} value={c.name} className="text-gray-900 dark:text-gray-900">{c.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
+                                        {lang === 'pt' ? 'Ligação / Relação' : 'Relationship / Connection'}
+                                    </label>
+                                    <input 
+                                        id="relation-input"
+                                        type="text" 
+                                        placeholder={lang === 'pt' ? 'Ex: Irmão de, Pai de, Rival de' : 'Ex: Brother of, Father of, Rival of'}
+                                        className="w-full bg-white dark:bg-[#1A1A1E] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-purple-500/20 font-medium text-sm text-gray-900 dark:text-white"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                            {lang === 'pt' ? 'Personagem B' : 'Character B'}
+                                        </label>
+                                        <button 
+                                            onClick={() => setExtraCharsB([...extraCharsB, ''])}
+                                            className="p-1 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10 rounded-md transition-all flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider"
+                                            title={lang === 'pt' ? 'Adicionar mais uma Personagem B' : 'Add another Character B'}
+                                        >
+                                            <Plus size={12} /> {lang === 'pt' ? 'Mais' : 'More'}
+                                        </button>
+                                    </div>
+                                    <select 
+                                        id="char-b-select"
+                                        className="w-full bg-white dark:bg-[#1A1A1E] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-purple-500/20 font-medium text-sm text-gray-900 dark:text-white"
+                                    >
+                                        <option value="">{lang === 'pt' ? 'Selecionar...' : 'Select...'}</option>
+                                        {config.charProfiles.map((c: any, idx: number) => (
+                                            <option key={idx} value={c.name} className="text-gray-900 dark:text-gray-900">{c.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
-                                    {lang === 'pt' ? 'Ligação / Relação' : 'Relationship / Connection'}
-                                </label>
-                                <input 
-                                    id="relation-input"
-                                    type="text" 
-                                    placeholder={lang === 'pt' ? 'Ex: Irmão de, Pai de, Rival de' : 'Ex: Brother of, Father of, Rival of'}
-                                    className="w-full bg-white dark:bg-[#1A1A1E] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-purple-500/20 font-medium text-sm text-gray-900 dark:text-white"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
-                                    {lang === 'pt' ? 'Personagem B' : 'Character B'}
-                                </label>
-                                <select 
-                                    id="char-b-select"
-                                    className="w-full bg-white dark:bg-[#1A1A1E] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-purple-500/20 font-medium text-sm text-gray-900 dark:text-white"
-                                >
-                                    <option value="">{lang === 'pt' ? 'Selecionar...' : 'Select...'}</option>
-                                    {config.charProfiles.map((c: any, idx: number) => (
-                                        <option key={idx} value={c.name}>{c.name}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            {extraCharsB.map((val, eIdx) => (
+                                <div key={eIdx} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end animate-in slide-in-from-top-2 duration-200">
+                                    <div className="hidden md:block"></div>
+                                    <div className="hidden md:block"></div>
+                                    <div className="space-y-2 relative">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                                {lang === 'pt' ? `Personagem B (Extra ${eIdx + 1})` : `Character B (Extra ${eIdx + 1})`}
+                                            </label>
+                                            <button 
+                                                onClick={() => {
+                                                    const updated = [...extraCharsB];
+                                                    updated.splice(eIdx, 1);
+                                                    setExtraCharsB(updated);
+                                                }}
+                                                className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-all flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider"
+                                            >
+                                                <Minus size={12} /> {lang === 'pt' ? 'Remover' : 'Remove'}
+                                            </button>
+                                        </div>
+                                        <select 
+                                            value={val}
+                                            onChange={e => {
+                                                const updated = [...extraCharsB];
+                                                updated[eIdx] = e.target.value;
+                                                setExtraCharsB(updated);
+                                            }}
+                                            className="w-full bg-white dark:bg-[#1A1A1E] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-purple-500/20 font-medium text-sm text-gray-900 dark:text-white"
+                                        >
+                                            <option value="">{lang === 'pt' ? 'Selecionar...' : 'Select...'}</option>
+                                            {config.charProfiles.map((c: any, idx: number) => (
+                                                <option key={idx} value={c.name} className="text-gray-900 dark:text-gray-900">{c.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         <button 
@@ -430,19 +480,38 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                 const inputRel = document.getElementById('relation-input') as HTMLInputElement;
                                 const selectB = document.getElementById('char-b-select') as HTMLSelectElement;
 
-                                if (selectA?.value && inputRel?.value && selectB?.value) {
-                                    if (selectA.value === selectB.value) {
+                                const valueA = selectA?.value;
+                                const relation = inputRel?.value;
+                                
+                                // Colecionar todas as personagens B selecionadas
+                                const targetsB = [selectB?.value, ...extraCharsB].filter(v => v && v.trim() !== '');
+
+                                if (valueA && relation && targetsB.length > 0) {
+                                    const duplicate = targetsB.find(val => val === valueA);
+                                    if (duplicate) {
                                         if (onShowToast) onShowToast(lang === 'pt' ? 'Uma personagem não pode ligar-se a si mesma.' : 'A character cannot connect to themselves.', 'error');
                                         return;
                                     }
-                                    const linkText = `${selectA.value} é ${inputRel.value} ${selectB.value}`;
+
                                     const currentLinks = config.charLinks ? config.charLinks.split('\n').filter((l: string) => l.trim() !== '') : [];
-                                    
-                                    if (!currentLinks.includes(linkText)) {
-                                        currentLinks.push(linkText);
+                                    let newLinkAdded = false;
+
+                                    targetsB.forEach(valB => {
+                                        const linkText = `${valueA} é ${relation} ${valB}`;
+                                        if (!currentLinks.includes(linkText)) {
+                                            currentLinks.push(linkText);
+                                            newLinkAdded = true;
+                                        }
+                                    });
+
+                                    if (newLinkAdded) {
                                         handleConfigChange({ ...config, charLinks: currentLinks.join('\n') });
+                                        if (onShowToast) onShowToast(lang === 'pt' ? 'Ligações criadas com sucesso!' : 'Connections created successfully!', 'success');
                                     }
+                                    
                                     inputRel.value = '';
+                                    setExtraCharsB([]);
+                                    selectB.value = '';
                                 } else {
                                     if (onShowToast) onShowToast(lang === 'pt' ? 'Preenche todos os campos da conexão.' : 'Fill in all connection fields.', 'error');
                                 }
