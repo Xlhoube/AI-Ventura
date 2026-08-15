@@ -645,29 +645,35 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
 
                                                 {isAI ? (
                                                     <div className="narrative-segment whitespace-pre-wrap">
-                                                        {msg.content.split(' ').map((word: string, wIdx: number) => {
-                                                            const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "").trim();
-                                                            return (
-                                                                <span
-                                                                    key={wIdx}
-                                                                    onClick={() => {
-                                                                        if (cleanWord.length > 1 && !isTyping) {
-                                                                            setSelectedWordInfo({
-                                                                                msgId: msg.id,
-                                                                                word: cleanWord,
-                                                                                index: wIdx,
-                                                                                fullText: msg.content
-                                                                            });
-                                                                            setNewWordValue(cleanWord);
-                                                                        }
-                                                                    }}
-                                                                    className="cursor-pointer hover:bg-indigo-500/20 hover:text-indigo-400 rounded px-0.5 transition-all inline-block"
-                                                                    title={lang === 'pt' ? 'Clicar para modificar palavra' : 'Click to modify word'}
-                                                                >
-                                                                    {word}{' '}
-                                                                </span>
-                                                            );
-                                                        })}
+                                                        {msg.content.split('\n').map((paragraph: string, pIdx: number) => (
+                                                            <p key={pIdx} className="mb-4 text-justify">
+                                                                {paragraph.split(' ').map((word: string, wIdx: number) => {
+                                                                    const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "").trim();
+                                                                    // Gerar uma chave única global para esta palavra no parágrafo
+                                                                    const globalWordIndex = `${pIdx}-${wIdx}`;
+                                                                    return (
+                                                                        <span
+                                                                            key={globalWordIndex}
+                                                                            onClick={() => {
+                                                                                if (cleanWord.length > 1 && !isTyping) {
+                                                                                    setSelectedWordInfo({
+                                                                                        msgId: msg.id,
+                                                                                        word: cleanWord,
+                                                                                        index: wIdx, // mantemos o index da palavra ou podemos referenciar por regex
+                                                                                        fullText: msg.content
+                                                                                    });
+                                                                                    setNewWordValue(cleanWord);
+                                                                                }
+                                                                            }}
+                                                                            className="cursor-pointer hover:bg-indigo-500/20 hover:text-indigo-400 rounded px-0.5 transition-all inline"
+                                                                            title={lang === 'pt' ? 'Clicar para modificar palavra' : 'Click to modify word'}
+                                                                        >
+                                                                            {word}{' '}
+                                                                        </span>
+                                                                    );
+                                                                })}
+                                                            </p>
+                                                        ))}
                                                     </div>
                                                 ) : msg.content}
                                                 {isAI && i === messages.length - 1 && isTyping && <span className="inline-block w-2 h-4 bg-indigo-500 ml-1 animate-pulse"></span>}
