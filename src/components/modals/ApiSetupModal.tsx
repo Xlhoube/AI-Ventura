@@ -101,44 +101,46 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">{t?.provider || 'FORNECEDOR'}</label>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">{t?.provider || 'FORNECEDOR (CLIQUE PARA OBTER CHAVE)'}</label>
                             <div className="grid grid-cols-1 gap-2">
-                                {providers.map(p => (
-                                    <button
-                                        key={p.id}
-                                        onClick={() => {
-                                            setCurrentProvider(p.id as AIProvider);
-                                            setKeyValue(apiKeys[p.id as AIProvider] || '');
-                                        }}
-                                        className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                                            currentProvider === p.id 
-                                                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10' 
-                                                : 'border-gray-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:bg-gray-50 dark:hover:bg-white/5'
-                                        }`}
-                                    >
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${currentProvider === p.id ? p.bg : 'bg-gray-100 dark:bg-white/5'}`}>
-                                            <ShieldCheck size={16} className={currentProvider === p.id ? p.color : 'text-slate-400'} />
-                                        </div>
-                                        <span className={`font-bold text-sm ${currentProvider === p.id ? 'text-gray-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
-                                            {p.name}
-                                        </span>
-                                    </button>
-                                ))}
+                                {providers.map(p => {
+                                    const pHelp = getHelpContent(p.id as AIProvider);
+                                    return (
+                                        <button
+                                            key={p.id}
+                                            onClick={() => {
+                                                setCurrentProvider(p.id as AIProvider);
+                                                setKeyValue(apiKeys[p.id as AIProvider] || '');
+                                                // Abre o link do respetivo fornecedor numa nova aba
+                                                window.open(pHelp.link, '_blank', 'noreferrer');
+                                            }}
+                                            title={`Selecionar e abrir link para obter chave da ${p.name}`}
+                                            className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
+                                                currentProvider === p.id 
+                                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10' 
+                                                    : 'border-gray-200 dark:border-white/10 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:bg-gray-50 dark:hover:bg-white/5'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${currentProvider === p.id ? p.bg : 'bg-gray-100 dark:bg-white/5'}`}>
+                                                    <ShieldCheck size={16} className={currentProvider === p.id ? p.color : 'text-slate-400'} />
+                                                </div>
+                                                <span className={`font-bold text-sm ${currentProvider === p.id ? 'text-gray-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                    {p.name}
+                                                </span>
+                                            </div>
+                                            <div className="text-[10px] font-bold text-indigo-500 flex items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
+                                                {t?.getKey || 'Obter Chave'} <ArrowRight size={10} />
+                                            </div>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t?.apiKeyLabel || 'CHAVE DE API (SECRET KEY)'}</label>
-                                <a 
-                                    href={helpContent.link} 
-                                    target="_blank" 
-                                    rel="noreferrer"
-                                    className="text-[10px] font-bold text-indigo-500 hover:text-indigo-400 flex items-center gap-1 transition-colors"
-                                    title={`${t?.getKey || 'Obter chave'} ${providers.find(p => p.id === currentProvider)?.name}`}
-                                >
-                                    {t?.getKey || 'Obter Chave'} <ArrowRight size={10} />
-                                </a>
                             </div>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
