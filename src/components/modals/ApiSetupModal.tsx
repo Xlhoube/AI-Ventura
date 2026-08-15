@@ -20,7 +20,9 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
     const providers = [
         { id: 'google', name: 'Google Gemini', color: 'text-blue-500', bg: 'bg-blue-500/10' },
         { id: 'openai', name: 'OpenAI (ChatGPT)', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-        { id: 'anthropic', name: 'Anthropic (Claude)', color: 'text-amber-500', bg: 'bg-amber-500/10' }
+        { id: 'anthropic', name: 'Anthropic (Claude)', color: 'text-amber-500', bg: 'bg-amber-500/10' },
+        { id: 'groq', name: 'Groq (Llama 3 / Mixtral)', color: 'text-orange-500', bg: 'bg-orange-500/10' },
+        { id: 'mistral', name: 'Mistral AI', color: 'text-violet-500', bg: 'bg-violet-500/10' }
     ] as const;
 
     const handleSave = () => {
@@ -68,6 +70,28 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                         'Clica en "Create Key"'
                     ],
                     link: 'https://console.anthropic.com/settings/keys'
+                };
+            case 'groq':
+                return {
+                    title: 'Como obter a chave do Groq?',
+                    steps: [
+                        'Acede ao Groq Console',
+                        'Inicia sessão com a tua conta',
+                        'Vai a "API Keys" no menu lateral',
+                        'Clica em "Create API Key"'
+                    ],
+                    link: 'https://console.groq.com/keys'
+                };
+            case 'mistral':
+                return {
+                    title: 'Como obter a chave da Mistral AI?',
+                    steps: [
+                        'Acede ao Console La Plateforme',
+                        'Inicia sessão ou cria conta',
+                        'Vai a "API keys"',
+                        'Gera uma nova chave gratuita'
+                    ],
+                    link: 'https://console.mistral.ai/api-keys/'
                 };
         }
     };

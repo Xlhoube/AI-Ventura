@@ -115,5 +115,41 @@ export const executeUnifiedAI = async (
         }
     }
     
+    // Groq e Mistral utilizam a API standard da OpenAI, permitindo reaproveitar a lógica
+    if (provider === 'groq' || provider === 'mistral') {
+        const baseURL = provider === 'groq' ? 'https://api.groq.com/openai/v1' : 'https://api.mistral.ai/v1';
+        // Modelos recomendados para cada plataforma (rápidos e competentes para narrativa)
+        const model = provider === 'groq' ? 'llama-3.1-8b-instant' : 'open-mistral-nemo';
+
+        const openai = new OpenAI({ apiKey: key, baseURL, dangerouslyAllowBrowser: true });
+        const messages: any[] = [];
+        if (config.systemInstruction) {
+            messages.push({ role: 'system', content: config.systemInstruction });
+        }
+        messages.push({ role: 'user', content: prompt });
+        
+        if (config.stream) {
+            const stream = await openai.chat.completions.create({
+                model,
+                messages,
+                stream: true,
+                response_format: config.jsonMode ? { type: "json_object" } : undefined
+            });
+            async function* textStream() {
+                for await (const chunk of stream) {
+                    yield chunk.choices[0]?.delta?.content || "";
+                }
+            }
+            return textStream();
+        } else {
+            const response = await openai.chat.completions.create({
+                model,
+                messages,
+                response_format: config.jsonMode ? { type: "json_object" } : undefined
+            });
+            return response.choices[0]?.message?.content || "";
+        }
+    }
+    
     throw new Error(`Unsupported provider: ${provider}`);
 };

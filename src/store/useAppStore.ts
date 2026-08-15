@@ -14,7 +14,7 @@ export interface AppUser extends Models.User<Models.Preferences> {
     };
 }
 
-export type AIProvider = 'google' | 'openai' | 'anthropic';
+export type AIProvider = 'google' | 'openai' | 'anthropic' | 'groq' | 'mistral';
 
 interface AppState {
     currentUser: AppUser | null;
@@ -25,11 +25,15 @@ interface AppState {
         google: string;
         openai: string;
         anthropic: string;
+        groq: string;
+        mistral: string;
     };
     apiKeysStatus: {
         google: 'valid' | 'exceeded';
         openai: 'valid' | 'exceeded';
         anthropic: 'valid' | 'exceeded';
+        groq: 'valid' | 'exceeded';
+        mistral: 'valid' | 'exceeded';
     };
     activeProvider: AIProvider;
     setCurrentUser: (user: AppUser | null) => void;
@@ -50,8 +54,8 @@ export const useAppStore = create<AppState>()(
             userLang: 'pt',
             theme: 'dark',
             isHost: false,
-            apiKeys: { google: '', openai: '', anthropic: '' },
-            apiKeysStatus: { google: 'valid', openai: 'valid', anthropic: 'valid' },
+            apiKeys: { google: '', openai: '', anthropic: '', groq: '', mistral: '' },
+            apiKeysStatus: { google: 'valid', openai: 'valid', anthropic: 'valid', groq: 'valid', mistral: 'valid' },
             activeProvider: 'google',
             setCurrentUser: (user) => set({ currentUser: user }),
             setUserLang: (lang) => set({ userLang: lang }),
