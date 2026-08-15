@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 import { requestImageGeneration, streamAIConversation, generateSuggestions, extractStoryState, generateImagePrompt } from '@/services/ai';
 import { ConfirmModal, ParticipantsModal } from '@/components';
-import { updateSessionStory, joinCollaborationSession, createCollaborationSession, updateSessionPhase, notifyTurnByEmail, regenerateSessionCode, getProfileSettings, updateProfileSettings, getSpectatorSession } from '@/services/services';
+import { updateSessionStory, joinCollaborationSession, createCollaborationSession, updateSessionPhase, regenerateSessionCode, getProfileSettings, updateProfileSettings, getSpectatorSession } from '@/services/services';
 import { renderNarrativeWithBreaks, getAuthorStyle } from '@/utils/utils';
 
 export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit, onAutoSave, onFinalizeBook, onSessionStart, onShowToast, isSpectator = false }: any) => {
@@ -262,7 +262,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
             setCurrentTurnIndex(nextIndex);
             const nextPlayer = participants[nextIndex];
             if (nextPlayer && nextPlayer.id !== user.id) {
-                notifyTurnByEmail(nextPlayer.id, sessionCode, initialConfig.title);
+            // TODO: Notificação de turno via Appwrite Functions (por implementar)
             }
         } else {
             onAutoSave(newMessages);
@@ -425,7 +425,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
     };
 
     const handleNudge = (targetId: string) => {
-        if (sessionCode) notifyTurnByEmail(targetId, sessionCode, initialConfig.title);
+        // TODO: Notificação de turno via Appwrite Functions (por implementar)
         onShowToast(t.nudgeSent, 'info');
     };
 

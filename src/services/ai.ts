@@ -1,23 +1,5 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { executeUnifiedAI } from './unifiedAi';
-import { getEnv } from '@/services/services';
 import { Language } from '@/utils/constants';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -108,74 +90,6 @@ const cleanAIJSON = (text: string) => {
   return cleaned.trim();
 };
 
-// FUNÇÃO ORIGINAL (MANTIDA PARA USO DE COMPATIBILIDADE SE NECESSÁRIO)
-// AGORA A PRINCIPAL É A streamAIConversation
-export const callAI = async (
-  messages: any[],
-  userPrompt: string,
-  systemRole: string,
-  mode: 'development' | 'ending' | 'definitive_ending',
-  lang: Language = 'en'
-) => {
-  try {
-    // // const ai = getAIInstance();
-    const historyStr = messages.map(m => `${m.role === 'user' ? 'AUTOR' : 'EDITOR'}: ${m.content}`).join('\n\n');
-
-    const instructions = {
-      pt: {
-        ending: "FINALIZAR CENA: Redige um desfecho literário elegante e conclusivo para esta sequência em PORTUGUÊS. Garante que o tom é profissional e encerra os fios narrativos pendentes. NÃO converses com o autor. Devolve JSON com 'narrative' (texto) e 'suggestions' (array vazio).",
-        definitive: "FIM DEFINITIVO: Redige o capítulo final absoluto desta obra em PORTUGUÊS. Todos os conflitos principais devem ser resolvidos. O tom deve ser de encerramento total. Não deixes ganchos. NÃO digas 'aqui está o fim'. Devolve JSON com 'narrative' (texto final) e 'suggestions' (array vazio).",
-        develop: "DESENVOLVER PROSA: Expande a ideia do Autor com prosa de alta qualidade em PORTUGUÊS (PT-PT). Foca na narrativa, diálogos e descrições. IMPORTANTE: Cada fala de diálogo deve começar num novo parágrafo com travessão (—). NÃO respondas a comandos. Devolve JSON com 'narrative' (texto literário em PORTUGUÊS) e 3 'suggestions' (OBRIGATORIAMENTE em PORTUGUÊS) curtas para o próximo passo da história."
-      },
-      en: {
-        ending: "FINALIZE SCENE: Write an elegant and conclusive literary ending for this sequence in ENGLISH. Ensure the tone is professional and wraps up the pending narrative threads. NO meta-commentary. Return JSON with 'narrative' and empty 'suggestions'.",
-        definitive: "DEFINITIVE END: Write the absolute final chapter of this work in ENGLISH. All major conflicts must be resolved. The tone should be one of total closure. NO chatting. Return JSON with 'narrative' and empty 'suggestions'.",
-        develop: "DEVELOP PROSE: Expand the Author's idea with high-quality prose in ENGLISH. Focus on narrative, dialogue, and descriptions. IMPORTANT: Each dialogue line must start on a new paragraph with a long dash (—). DO NOT reply to user commands. Return JSON with 'narrative' (literary text in ENGLISH) and 3 editorial 'suggestions' (MUST BE IN ENGLISH) for the next step."
-      },
-      fr: {
-        ending: "FINALISER LA SCÈNE : Rédigez une fin littéraire élégante et concluante pour cette séquence en FRANÇAIS. Assurez-vous que le ton est professionnel. PAS de discussion. Renvoyez un JSON avec 'narrative' et 'suggestions' (vide).",
-        definitive: "FIN DÉFINITIVE : Rédigez le chapitre final absolu de cette œuvre en FRANÇAIS. Tous les conflits majeurs doivent être résolus. Le ton doit être celui d'une clôture totale. PAS de discussion. Renvoyez un JSON avec 'narrative' et 'suggestions' (vide).",
-        develop: "DÉVELOPPER LA PROSE : Développez l'idée de l'Auteur avec une prose de haute qualité en FRANÇAIS. Concentrez-vous sur la narration, les dialogues et les descriptions. IMPORTANT : Chaque ligne de dialogue doit commencer par un nouveau paragraphe avec un tiret cadratin (—). NE PAS répondre aux commandes. Renvoyez un JSON avec 'narrative' (texte littéraire en FRANÇAIS) et 3 'suggestions' (OBLIGATOIREMENT en FRANÇAIS) pour la prochaine étape."
-      }
-    };
-
-    const currentLangInstructions = instructions[lang] || instructions['en'];
-
-    let instruction = "";
-    if (mode === 'ending') {
-      instruction = currentLangInstructions.ending;
-    } else if (mode === 'definitive_ending') {
-      instruction = currentLangInstructions.definitive;
-    } else {
-      instruction = currentLangInstructions.develop;
-    }
-
-    const fullPrompt = `LOG DA OBRA:\n${historyStr}\n\nINPUT DO AUTOR: ${userPrompt}\n\nDIRETRIZ EDITORIAL: ${instruction}`;
-
-    const responseText = await executeUnifiedAI(fullPrompt, { systemInstruction: systemRole, jsonMode: true });
-
-    try {
-      const cleanText = cleanAIJSON(responseText);
-      const start = cleanText.indexOf('{');
-      const end = cleanText.lastIndexOf('}');
-      if (start !== -1 && end !== -1) {
-        const jsonBody = cleanText.substring(start, end + 1);
-        const parsed = JSON.parse(jsonBody);
-        return {
-          narrative: parsed.narrative || cleanText,
-          suggestions: parsed.suggestions || []
-        };
-      }
-    } catch (jsonErr) {
-      console.warn("[callAI] Falha no parse JSON:", jsonErr);
-    }
-
-    return { narrative: responseText, suggestions: [] };
-  } catch (e: any) {
-    console.error("[callAI] Erro fatal:", e);
-    throw formatAIError(e);
-  }
-};
 
 // NOVA FUNÇÃO: Gerar Apenas Sugestões (Para Resume/Reload) - OTIMIZADA
 export const generateSuggestions = async (
@@ -265,7 +179,7 @@ export const requestImageGeneration = async (prompt: string): Promise<string> =>
   return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=512&nologo=true&seed=${seed}&model=flux`;
 };
 
-// NOVA FUNÇÃO: Extrair Estado (Inventário e Relações) da Narrativa
+// Extrair Estado (Inventário e Relações) da Narrativa
 export const extractStoryState = async (messages: any[], lang: Language = 'en') => {
   try {
     const historyStr = messages.slice(-5).map(m => `${m.role === 'user' ? 'AUTOR' : 'EDITOR'}: ${m.content}`).join('\n\n');
@@ -281,12 +195,8 @@ export const extractStoryState = async (messages: any[], lang: Language = 'en') 
     RECENT STORY:
     ${historyStr}`;
 
-    const responseText = await executeUnifiedAI(prompt, {
-      jsonMode: true
-    });
-
-    let cleanJson = responseText?.trim() || "{}";
-    cleanJson = cleanJson.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const responseText = await executeUnifiedAI(prompt, { jsonMode: true });
+    const cleanJson = cleanAIJSON(responseText) || '{}';
     
     const parsed = JSON.parse(cleanJson);
     return {
@@ -460,7 +370,6 @@ export const generatePremises = async (lang: string, genre?: string) => {
       "um romance em tempos de guerra"
     ];
     const randomSeed = seeds[Math.floor(Math.random() * seeds.length)];
-    const entropyCode = Math.random().toString(36).substring(7);
 
     const prompts: Record<string, string> = {
       pt: `Gera 3 conceitos de obras literárias (ideias base para livros) ALTAMENTE ORIGINAIS e ÚNICAS (foge de clichés comuns) ${genre ? `do género literário "${genre}"` : "de géneros variados"} em PORTUGUÊS.
@@ -476,7 +385,7 @@ export const generatePremises = async (lang: string, genre?: string) => {
       Renvoyez uniquement un tableau JSON de chaînes avec les résumés des œuvres.`
     };
 
-    const promptText = `${prompts[lang] || prompts['en']}\nCódigo de entropia: ${entropyCode}.`;
+    const promptText = prompts[lang] || prompts['en'];
 
     const responseText = await executeUnifiedAI(promptText);
 
@@ -516,13 +425,9 @@ export const generatePremises = async (lang: string, genre?: string) => {
   }
 };
 
-
-
-// NOVA FUNÇÃO: Gerar Título Criativo para a Obra
+// Gerar Título Criativo para a Obra
 export const generateStoryTitle = async (config: any, lang: Language = 'pt') => {
   try {
-    // const ai = getAIInstance();
-
     const prompts: Record<string, string> = {
       pt: `Com base nesta ideia de história, gera um título literário ÚNICO, CURTO e CRIATIVO (máximo 6 palavras) ESTRITAMENTE EM PORTUGUÊS.
       Género: ${config.genre || 'Vários'}
@@ -591,11 +496,11 @@ export const generateCharacters = async (config: any, lang: string = 'pt') => {
     const responseText = await executeUnifiedAI(promptText);
     
     try {
-      let cleanText = responseText.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+      const cleanText = cleanAIJSON(responseText);
       const start = cleanText.indexOf('[');
       const end = cleanText.lastIndexOf(']');
       if (start !== -1 && end !== -1) {
-        cleanText = cleanText.substring(start, end + 1);
+        return JSON.parse(cleanText.substring(start, end + 1));
       }
       return JSON.parse(cleanText);
     } catch (parseErr) {

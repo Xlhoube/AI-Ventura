@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
    PlusCircle, FileText, Library, Globe, Users2, History, Wifi, Loader2,
-   X, Sparkles, HelpCircle, UserCircle, Trash2, Trophy, Book, User, Archive, BarChart2, Key, AlertTriangle, Save, Cloud, Download
+   X, HelpCircle, UserCircle, Trash2, Trophy, Key, AlertTriangle, Save, Cloud, Download
 } from 'lucide-react';
-import { ChangelogModal, CoopInfoModal, JoinInviteModal, AuthorRankingModal, TutorialModal, InteractiveTour, ApiSetupModal } from '@/components';
+import { ChangelogModal, CoopInfoModal, JoinInviteModal, AuthorRankingModal, TutorialModal, InteractiveTour, ApiSetupModal, ConfirmModal } from '@/components';
 import { account, joinCollaborationSession, createLobbySession } from '@/services/services';
 import { getLocalStories } from '@/services/story.services';
 import { APP_VERSION, Language } from '@/utils/constants';
@@ -300,19 +300,15 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
          <TutorialModal t={t} isOpen={showTutorial} onClose={() => setShowTutorial(false)} />
          <ApiSetupModal t={t} isOpen={showApiKeyModal} onClose={() => setShowApiKeyModal(false)} />
 
-         {showDeleteConfirm && (
-            <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in">
-               <div className="bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 w-full max-w-sm rounded-[40px] p-8 shadow-2xl animate-in zoom-in-95">
-                  <div className="w-16 h-16 bg-rose-100 dark:bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-500 mb-6 mx-auto"><Trash2 size={32} /></div>
-                  <h3 className="text-xl font-black text-center text-gray-900 dark:text-white mb-2">{t.confirmDeleteSession || 'Eliminar Sessão?'}</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 text-center font-medium mb-8">{t.confirmDeleteSessionDesc || 'Tens a certeza que queres terminar esta sessão ativamente?'}</p>
-                  <div className="grid grid-cols-2 gap-3">
-                     <button onClick={() => setShowDeleteConfirm(false)} className="px-6 py-4 rounded-2xl bg-gray-100 dark:bg-white/5 text-slate-500 font-bold hover:bg-gray-200 transition-colors">{t.cancel}</button>
-                     <button onClick={() => { setShowDeleteConfirm(false); onNavigate({ view: 'dashboard', sessionCode: null }); }} className="px-6 py-4 rounded-2xl bg-rose-600 text-white font-bold hover:bg-rose-500 shadow-lg shadow-rose-500/20 transition-all">{t.confirm}</button>
-                  </div>
-               </div>
-            </div>
-         )}
+         <ConfirmModal
+            isOpen={showDeleteConfirm}
+            onClose={() => setShowDeleteConfirm(false)}
+            onConfirm={() => { setShowDeleteConfirm(false); onNavigate({ view: 'dashboard', sessionCode: null }); }}
+            title={t.confirmDeleteSession || 'Eliminar Sessão?'}
+            message={t.confirmDeleteSessionDesc || 'Tens a certeza que queres terminar esta sessão ativamente?'}
+            confirmText={t.confirm}
+            cancelText={t.cancel}
+         />
 
          <InteractiveTour
             isOpen={showTour}

@@ -1,20 +1,11 @@
 import { Client, Account, Databases, ID, Query } from 'appwrite';
 
 // --- CONFIGURAÇÃO ---
-export const getEnv = (key: string) => {
-  if (key === 'API_KEY') {
-    const localKey = localStorage.getItem('ia_ventura_api_key');
-    if (localKey) return localKey;
-  }
-
-  const value = (import.meta as any).env?.[`VITE_${key}`] ||
+export const getEnv = (key: string): string => {
+  return (import.meta as any).env?.[`VITE_${key}`] ||
     (import.meta as any).env?.[key] ||
     (window as any)._env_?.[key] ||
-    (window as any).process?.env?.[key] || 
-    (process as any).env?.[key] ||
     '';
-
-  return value;
 };
 
 export const APPWRITE_ENDPOINT = getEnv('APPWRITE_ENDPOINT') || 'https://cloud.appwrite.io/v1';
@@ -258,10 +249,7 @@ export const updateSessionStory = async (code: string, storyData: any) => {
   }
 };
 
-export const notifyTurnByEmail = async (targetUserId: string, sessionCode: string, storyTitle: string) => {
-  // Edge functions will be implemented differently in Appwrite
-  console.log("Appwrite Edge function integration needed for notifyTurnByEmail");
-};
+
 
 // --- FUNÇÕES SOCIAIS E PÚBLICAS ---
 

@@ -1,6 +1,6 @@
 import React, { useEffect, Suspense, lazy, useRef, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { BookOpen, Loader2, LogOut, Sun, Moon, UserCircle } from 'lucide-react';
+import { Loader2, LogOut, Sun, Moon, UserCircle } from 'lucide-react';
 import { Language, translations } from './utils/constants';
 import { account, updateProfileLanguage, getProfileLanguage, generateUUID, isCloudEnabled, createCloudDraftSession } from './services/services';
 import { ensureProfileExists, handleAuthSubmit } from './services/auth.services';
@@ -28,20 +28,15 @@ const LobbyView = lazy(() => import('./views').then(m => ({ default: m.LobbyView
 export const AppRoutes = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { currentUser, setCurrentUser, userLang, setUserLang, theme, toggleTheme } = useAppStore();
-    const { sessionCode, setSessionCode, resetStory } = useStoryStore();
+    const { currentUser, setCurrentUser, userLang, setUserLang, theme, toggleTheme, apiKeys, activeProvider } = useAppStore();
+    const { sessionCode, setSessionCode, currentStory, setCurrentStory, pendingManuscript, setPendingManuscript, pendingMessages, setPendingMessages } = useStoryStore();
 
-    const [currentStory, setCurrentStory] = useState<any>(null);
     const [selectedAuthorId, setSelectedAuthorId] = useState<string | undefined>();
     const [isPolishing, setIsPolishing] = useState(false);
     const [toast, setToast] = useState<{ message: string, type: ToastType } | null>(null);
     const [showTitleModal, setShowTitleModal] = useState(false);
-    const [pendingManuscript, setPendingManuscript] = useState<any>(null);
-    const [pendingMessages, setPendingMessages] = useState<any[]>([]);
     const [isLoadingSession, setIsLoadingSession] = useState(true);
     const [showApiSetup, setShowApiSetup] = useState(false);
-
-    const { apiKeys, activeProvider } = useAppStore();
 
     const authInitialized = useRef(false);
     const t = translations[userLang] || translations['en'];
@@ -165,9 +160,9 @@ export const AppRoutes = () => {
             setShowTitleModal(true);
         } catch (error) {
             // ... fallback handling if polish fails (uses same messages and marks as completed)
-            const fallbackStory = { ...currentStory, messages: msgs, status: 'completed', updated_at: new Date().toISOString() };
+            const fallbackStory = { ...currentStory, messages: msgs, status: 'completed' as const, updated_at: new Date().toISOString() };
             saveLocalStory(fallbackStory);
-            setCurrentStory(fallbackStory);
+            setCurrentStory(fallbackStory as any);
             navigate('/preview');
             showToast(t.publishError, 'error');
         } finally {
@@ -184,7 +179,7 @@ export const AppRoutes = () => {
             title: selectedTitle,
             messages: pendingMessages,
             manuscript: finalManuscript,
-            status: 'completed',
+            status: 'completed' as const,
             updated_at: new Date().toISOString()
         };
 
@@ -198,12 +193,12 @@ export const AppRoutes = () => {
     };
 
     const handleAutoSave = (msgs: any[], status?: string, newSessionCode?: string) => {
-        setCurrentStory((prev: any) => {
+        setCurrentStory((prev) => {
             if (!prev) return prev;
             const updated = {
                 ...prev,
                 messages: msgs,
-                status: status || prev.status,
+                status: (status || prev.status) as 'draft' | 'completed' | 'archived',
                 sessionCode: newSessionCode || prev.sessionCode
             };
             saveLocalStory(updated);
@@ -211,16 +206,15 @@ export const AppRoutes = () => {
         });
     };
 
+    // Lê campos do Appwrite: name e prefs.avatar_url
     const getUserDisplayName = (u: any) => {
         if (!u) return 'Autor';
-        const meta = u.user_metadata || {};
-        return meta.username || meta.full_name || meta.name || u.email?.split('@')[0] || 'Autor';
+        return u.name || u.email?.split('@')[0] || 'Autor';
     };
 
     const getUserAvatar = (u: any) => {
         if (!u) return null;
-        const meta = u.user_metadata || {};
-        return meta.avatar_url || meta.picture || null;
+        return u.prefs?.avatar_url || null;
     };
 
     return (
@@ -372,7 +366,7 @@ export const AppRoutes = () => {
                                                     config,
                                                     author_name: displayName,
                                                     updated_at: new Date().toISOString(),
-                                                    status: 'draft',
+                                                    status: 'draft' as const,
                                                     sessionCode: sessionCode
                                                 };
                                                 

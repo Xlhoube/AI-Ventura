@@ -104,7 +104,7 @@ export const DraftsView = ({ t, onResume, onArchive, onBack }: { t: any, onResum
         onClose={() => setSelectedForDelete(null)} 
         onConfirm={handleDeleteConfirm}
         title={t.confirmDelete}
-        message={t.confirmDelete}
+        message={t.confirmDeleteDesc || t.confirmDelete}
         confirmText={t.confirm}
         cancelText={t.cancel}
       />
