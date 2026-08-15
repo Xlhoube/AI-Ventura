@@ -206,21 +206,40 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
                      <button onClick={() => setShowModeSelect(false)} className="p-2 bg-gray-100 dark:bg-white/5 rounded-xl hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"><X size={20} className="text-slate-500" /></button>
                   </div>
                   <div className="grid grid-cols-1 gap-4">
-                     <button onClick={() => { setShowModeSelect(false); onNavigate('setup?storage=local'); }} className="flex items-center gap-6 p-6 rounded-[32px] border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] hover:bg-white dark:hover:bg-white/5 hover:border-indigo-500 dark:hover:border-indigo-500/50 transition-all text-left group tour-solo-mode">
-                        <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform"><UserCircle size={32} /></div>
-                        <div>
-                           <div className="flex items-center gap-2 mb-1 relative group/tooltip">
-                              <h4 className="text-lg font-black text-gray-900 dark:text-white">{t.modeSolo}</h4>
-                              <div className="text-slate-400 transition-colors p-1 rounded-full cursor-help relative">
-                                 <HelpCircle size={14} />
-                                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs leading-relaxed rounded-xl shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-[160] pointer-events-none before:absolute before:top-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-gray-900 dark:before:border-t-white text-center font-medium">
-                                    {t.modeSoloTooltip}
-                                 </div>
-                              </div>
-                           </div>
-                           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{t.modeSoloDesc}</p>
-                        </div>
-                     </button>
+                      <div className="flex flex-col gap-3 p-6 rounded-[32px] border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] text-left group">
+                         <div className="flex items-center gap-6">
+                            <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform"><UserCircle size={32} /></div>
+                            <div>
+                               <div className="flex items-center gap-2 mb-1 relative group/tooltip">
+                                  <h4 className="text-lg font-black text-gray-900 dark:text-white">{t.modeSolo}</h4>
+                                  <div className="text-slate-400 transition-colors p-1 rounded-full cursor-help relative">
+                                     <HelpCircle size={14} />
+                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs leading-relaxed rounded-xl shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-[160] pointer-events-none before:absolute before:top-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-gray-900 dark:before:border-t-white text-center font-medium">
+                                        {t.modeSoloTooltip}
+                                     </div>
+                                  </div>
+                               </div>
+                               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-3">{t.modeSoloDesc}</p>
+                            </div>
+                         </div>
+                         <div className="w-full h-px bg-gray-200 dark:bg-white/10 my-1"></div>
+                         <div className="grid grid-cols-2 gap-3 pt-1">
+                            <button 
+                               onClick={() => { setShowModeSelect(false); onNavigate('setup?storage=local'); }}
+                               className="py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-widest text-[10px] sm:text-xs text-center transition-all shadow-md hover:scale-[1.02] active:scale-95"
+                            >
+                               {lang === 'pt' ? '📁 Armazenar Local' : '📁 Local Storage'}
+                            </button>
+                            <button 
+                               disabled={isGuest}
+                               onClick={() => { setShowModeSelect(false); onNavigate('setup?storage=cloud'); }}
+                               className={`py-3 px-4 rounded-xl font-bold uppercase tracking-widest text-[10px] sm:text-xs text-center transition-all shadow-md ${isGuest ? 'bg-gray-300 dark:bg-white/5 text-slate-500 cursor-not-allowed opacity-50' : 'bg-purple-600 hover:bg-purple-500 text-white hover:scale-[1.02] active:scale-95'}`}
+                               title={isGuest ? (lang === 'pt' ? 'Requer login' : 'Requires login') : ''}
+                            >
+                               {lang === 'pt' ? '☁️ Armazenar Nuvem' : '☁️ Cloud Storage'}
+                            </button>
+                         </div>
+                      </div>
                      <button onClick={isGuest ? undefined : handleCreateLobby} disabled={isCreatingLobby || isGuest} className={`flex items-center gap-6 p-6 rounded-[32px] border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] transition-all text-left group relative tour-coop-mode ${isGuest ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white dark:hover:bg-white/5 hover:border-emerald-500 dark:hover:border-emerald-500/50'}`}>
                         <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">{isCreatingLobby ? <Loader2 className="animate-spin" /> : <Users2 size={32} />}</div>
                         <div>
