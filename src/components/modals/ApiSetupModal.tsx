@@ -212,6 +212,15 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                                 </li>
                             ))}
                         </ol>
+                        
+                        <a 
+                            href={helpContent.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-4 flex items-center justify-center gap-2 w-full py-2 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest rounded-lg transition-colors border border-indigo-100 dark:border-indigo-500/20"
+                        >
+                            Obter Chave <ArrowRight size={14} />
+                        </a>
                     </div>
 
                         <div className="mt-6 mb-4 pt-4 border-t border-gray-200 dark:border-white/10">
