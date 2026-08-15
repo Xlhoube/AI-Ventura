@@ -8,8 +8,8 @@ export const getEnv = (key: string): string => {
     '';
 };
 
-export const APPWRITE_ENDPOINT = getEnv('APPWRITE_ENDPOINT') || 'https://cloud.appwrite.io/v1';
-export const APPWRITE_PROJECT_ID = getEnv('APPWRITE_PROJECT_ID');
+export const APPWRITE_ENDPOINT = getEnv('APPWRITE_ENDPOINT') || 'https://fra.cloud.appwrite.io/v1';
+export const APPWRITE_PROJECT_ID = getEnv('APPWRITE_PROJECT_ID') || '6a53c25900398eb8afd7';
 export const isCloudEnabled = Boolean(APPWRITE_ENDPOINT && APPWRITE_PROJECT_ID);
 
 export const client = new Client();
