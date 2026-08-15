@@ -26,7 +26,7 @@ export const executeUnifiedAI = async (
         
         if (config.stream) {
             const stream = await ai.models.generateContentStream({
-                model: 'gemini-2.5-flash',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: geminiConfig
             });
@@ -38,7 +38,7 @@ export const executeUnifiedAI = async (
             return textStream();
         } else {
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: geminiConfig
             });

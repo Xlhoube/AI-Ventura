@@ -470,7 +470,7 @@ export const testGeminiAPIKey = async (apiKey: string): Promise<boolean> => {
   try {
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.5-pro',
       contents: 'Olá! Isto é um teste rápido de conexão.',
       config: {
         maxOutputTokens: 5
