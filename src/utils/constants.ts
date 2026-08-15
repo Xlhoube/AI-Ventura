@@ -1,8 +1,38 @@
 export type Language = 'pt' | 'en' | 'fr';
 
-export const APP_VERSION = '0.0.49';
+export const APP_VERSION = '0.0.50';
 
 export const changelogData = [
+  {
+    version: '0.0.50',
+    date: new Date().toISOString().split('T')[0],
+    changes: {
+      pt: [
+        'IA: Transição completa e estável para a nova gama de modelos Gemini 3 (gemini-3.5-flash).',
+        'Biblioteca: Resolvido o erro de acesso às Obras Concluídas adicionando a rota de navegação em falta.',
+        'Setup: Implementada a tabela dinâmica e mapa de conexões/ramificações genealógicas para as personagens.',
+        'Setup: Novo ecrã animado com livro a desfolhar em 3D e barra de progresso ao começar a escrever.',
+        'Escrita: Abas (Tabs) de Capítulos dinâmicas no fluxo da história para isolar cada capítulo.',
+        'Escrita: Nova funcionalidade de clique interativo em qualquer palavra do Editor IA para substituição e correção rápidas.'
+      ],
+      en: [
+        'AI: Complete stable transition to the new Gemini 3 model lineup (gemini-3.5-flash).',
+        'Library: Fixed navigation issue to Completed Works by adding the missing route mapping.',
+        'Setup: Implemented dynamic connection table and genealogical relationship map for characters.',
+        'Setup: New loading screen featuring 3D flipping book page animations and progress bar on setup complete.',
+        'Writing: Dynamic Chapter Navigation Tabs inside the story view to read chapter-by-chapter.',
+        'Writing: Clickable words inside AI paragraphs to quickly select, modify and replace terms.'
+      ],
+      fr: [
+        'IA: Migration stable vers le nouveau modèle Gemini 3 (gemini-3.5-flash).',
+        'Bibliothèque: Résolution du bug d\'accès aux œuvres terminées avec la route correcte.',
+        'Setup: Ajout du tableau de connexions dynamiques et arbre généalogique pour les personnages.',
+        'Setup: Écran de chargement animé avec un livre 3D et une barre de progression.',
+        'Ecriture: Onglets (Tabs) de chapitres dynamiques pour filtrer la lecture.',
+        'Ecriture: Mots cliquables dans la zone narrative pour modifier et remplacer à la volée.'
+      ]
+    }
+  },
   {
     version: '0.0.49',
     date: new Date().toISOString().split('T')[0],
