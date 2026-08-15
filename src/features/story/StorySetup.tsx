@@ -312,22 +312,141 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
             )}
 
             {step === 3 && (
-                <div className="max-w-4xl mx-auto space-y-6 bg-white dark:bg-[#121214] p-8 lg:p-12 rounded-[32px] border border-gray-200 dark:border-white/10 shadow-2xl mt-8">
+                <div className="max-w-5xl mx-auto space-y-8 bg-white dark:bg-[#121214] p-8 lg:p-12 rounded-[32px] border border-gray-200 dark:border-white/10 shadow-2xl mt-8">
                     <div className="flex items-center gap-4 mb-4">
                         <div className="w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500"><Users2 size={32} /></div>
                         <div>
                             <h3 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{t.charLinksTitle}</h3>
                         </div>
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium text-lg leading-relaxed max-w-2xl">
-                        {t.charLinksDesc}
+                    <p className="text-slate-500 dark:text-slate-400 mb-6 font-medium text-lg leading-relaxed max-w-2xl">
+                        {lang === 'pt' 
+                          ? 'Desenha o mapa de relações e ramificações entre as personagens. Podes criar múltiplas ligações para definir laços familiares, rivalidades ou alianças.'
+                          : 'Design the relationship and connection map between characters. You can create multiple links to define family ties, rivalries, or alliances.'}
                     </p>
-                    <textarea
-                        value={config.charLinks}
-                        onChange={(e) => handleConfigChange({ ...config, charLinks: e.target.value })}
-                        placeholder={t.charLinksPlaceholder}
-                        className="w-full h-64 lg:h-64 bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 rounded-3xl p-6 lg:p-8 text-gray-900 dark:text-white outline-none focus:ring-2 ring-purple-500/30 resize-none text-lg leading-relaxed shadow-inner"
-                    />
+
+                    {/* Criador de Relações Dinâmico */}
+                    <div className="bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 p-6 rounded-3xl space-y-6">
+                        <h4 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                            {lang === 'pt' ? '🔗 Adicionar Nova Conexão' : '🔗 Add New Connection'}
+                        </h4>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
+                                    {lang === 'pt' ? 'Personagem A' : 'Character A'}
+                                </label>
+                                <select 
+                                    id="char-a-select"
+                                    className="w-full bg-white dark:bg-[#1A1A1E] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-purple-500/20 font-medium text-sm text-gray-900 dark:text-white"
+                                >
+                                    <option value="">{lang === 'pt' ? 'Selecionar...' : 'Select...'}</option>
+                                    {config.charProfiles.map((c: any, idx: number) => (
+                                        <option key={idx} value={c.name}>{c.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
+                                    {lang === 'pt' ? 'Ligação / Relação' : 'Relationship / Connection'}
+                                </label>
+                                <input 
+                                    id="relation-input"
+                                    type="text" 
+                                    placeholder={lang === 'pt' ? 'Ex: Irmão de, Pai de, Rival de' : 'Ex: Brother of, Father of, Rival of'}
+                                    className="w-full bg-white dark:bg-[#1A1A1E] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-purple-500/20 font-medium text-sm text-gray-900 dark:text-white"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
+                                    {lang === 'pt' ? 'Personagem B' : 'Character B'}
+                                </label>
+                                <select 
+                                    id="char-b-select"
+                                    className="w-full bg-white dark:bg-[#1A1A1E] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-purple-500/20 font-medium text-sm text-gray-900 dark:text-white"
+                                >
+                                    <option value="">{lang === 'pt' ? 'Selecionar...' : 'Select...'}</option>
+                                    {config.charProfiles.map((c: any, idx: number) => (
+                                        <option key={idx} value={c.name}>{c.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={() => {
+                                const selectA = document.getElementById('char-a-select') as HTMLSelectElement;
+                                const inputRel = document.getElementById('relation-input') as HTMLInputElement;
+                                const selectB = document.getElementById('char-b-select') as HTMLSelectElement;
+
+                                if (selectA?.value && inputRel?.value && selectB?.value) {
+                                    if (selectA.value === selectB.value) {
+                                        if (onShowToast) onShowToast(lang === 'pt' ? 'Uma personagem não pode ligar-se a si mesma.' : 'A character cannot connect to themselves.', 'error');
+                                        return;
+                                    }
+                                    const linkText = `${selectA.value} é ${inputRel.value} ${selectB.value}`;
+                                    const currentLinks = config.charLinks ? config.charLinks.split('\n').filter((l: string) => l.trim() !== '') : [];
+                                    
+                                    if (!currentLinks.includes(linkText)) {
+                                        currentLinks.push(linkText);
+                                        handleConfigChange({ ...config, charLinks: currentLinks.join('\n') });
+                                    }
+                                    inputRel.value = '';
+                                } else {
+                                    if (onShowToast) onShowToast(lang === 'pt' ? 'Preenche todos os campos da conexão.' : 'Fill in all connection fields.', 'error');
+                                }
+                            }}
+                            className="w-full py-3 bg-purple-600 text-white font-bold uppercase tracking-widest text-xs rounded-xl hover:bg-purple-500 transition-colors shadow-lg shadow-purple-600/10"
+                        >
+                            {lang === 'pt' ? 'Criar Ligação' : 'Create Connection'}
+                        </button>
+                    </div>
+
+                    {/* Tabela / Mapa de Relações */}
+                    <div className="space-y-4">
+                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">
+                            {lang === 'pt' ? '📋 Conexões Definidas (Ramificações)' : '📋 Defined Connections (Branches)'}
+                        </h4>
+                        
+                        <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                            {config.charLinks ? (
+                                config.charLinks.split('\n').filter((l: string) => l.trim() !== '').map((link: string, idx: number) => (
+                                    <div key={idx} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/5 animate-in fade-in">
+                                        <span className="text-sm font-bold text-gray-800 dark:text-slate-300">{link}</span>
+                                        <button 
+                                            onClick={() => {
+                                                const currentLinks = config.charLinks.split('\n').filter((l: string) => l.trim() !== '');
+                                                currentLinks.splice(idx, 1);
+                                                handleConfigChange({ ...config, charLinks: currentLinks.join('\n') });
+                                            }}
+                                            className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-sm text-slate-400 italic text-center py-6 border border-dashed border-gray-200 dark:border-white/10 rounded-2xl">
+                                    {lang === 'pt' ? 'Nenhuma relação configurada.' : 'No relationships configured.'}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Editor Manual de Apoio */}
+                    <div className="pt-4 border-t border-gray-200 dark:border-white/10 space-y-3">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            {lang === 'pt' ? '✍️ Notas ou Detalhes Adicionais da Dinâmica' : '✍️ Additional Notes or Dynamics Details'}
+                        </label>
+                        <textarea
+                            value={config.charLinks}
+                            onChange={(e) => handleConfigChange({ ...config, charLinks: e.target.value })}
+                            placeholder={t.charLinksPlaceholder}
+                            className="w-full h-32 bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/10 rounded-3xl p-5 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 ring-purple-500/20 resize-none leading-relaxed shadow-inner"
+                        />
+                    </div>
                 </div>
             )}
 
