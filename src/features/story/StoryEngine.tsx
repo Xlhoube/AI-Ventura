@@ -346,9 +346,9 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
             const suggs = await generateSuggestions(finalMsgs, lang);
             setSuggestions(suggs);
             
-            // Extrair inventário e relações apenas a cada 3 respostas da IA (reduz chamadas à API)
+            // Extrair inventário e relações na primeira mensagem e depois a cada 3 respostas (otimização de custos e UI reativa)
             const aiMsgCount = finalMsgs.filter(m => m.role === 'ai').length;
-            if (aiMsgCount % 3 === 0) {
+            if (aiMsgCount === 1 || aiMsgCount % 3 === 0) {
                 // Atraso adicional para não colidir com as sugestões
                 setTimeout(() => {
                     extractStoryState(finalMsgs, lang).then(state => {
