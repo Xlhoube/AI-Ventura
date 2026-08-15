@@ -354,7 +354,7 @@ ${text.substring(0, 6000)}`;
   }
 };
 
-export const generatePremises = async (lang: string, genre?: string) => {
+export const generatePremises = async (lang: string, genre?: string, subTema?: string, timePeriod?: string) => {
   try {
     // const ai = getAIInstance();
     const seeds = [
@@ -373,14 +373,20 @@ export const generatePremises = async (lang: string, genre?: string) => {
 
     const prompts: Record<string, string> = {
       pt: `Gera 3 conceitos de obras literárias (ideias base para livros) ALTAMENTE ORIGINAIS e ÚNICAS (foge de clichés comuns) ${genre ? `do género literário "${genre}"` : "de géneros variados"} em PORTUGUÊS.
+      ${subTema && subTema !== 'none' ? `Tema / Matiz Adicional: ${subTema}.` : ''}
+      ${timePeriod ? `Posição no Tempo / Época da Narrativa: ${timePeriod}.` : ''}
       Para garantir variedade, foca-te subtilmente neste elemento narrativo: "${randomSeed}".
       Devolve apenas um array JSON de strings com os resumos das obras.`,
 
       en: `Generate 3 HIGHLY ORIGINAL and UNIQUE literary work concepts (book premises) (avoiding common clichés) ${genre ? `of the literary genre "${genre}"` : "of varied genres"} in ENGLISH.
+      ${subTema && subTema !== 'none' ? `Theme / Additional Nuance: ${subTema}.` : ''}
+      ${timePeriod ? `Time Period / Setting Era: ${timePeriod}.` : ''}
       To ensure variety, focus subtly on this narrative element: "${randomSeed}".
       Return only a JSON array of strings with the summaries of the works.`,
 
       fr: `Générez 3 concepts d'œuvres littéraires (idées de base pour des livres) HAUTEMENT ORIGINAUX et UNIQUES (évitez les clichés courants) ${genre ? `du genre littéraire "${genre}"` : "de genres variés"} en FRANÇAIS.
+      ${subTema && subTema !== 'none' ? `Thème / Nuance supplémentaire : ${subTema}.` : ''}
+      ${timePeriod ? `Période temporelle / Époque du récit : ${timePeriod}.` : ''}
       Pour assurer la variété, concentrez-vous subtilement sur cet élément narratif : "${randomSeed}".
       Renvoyez uniquement un tableau JSON de chaînes avec les résumés des œuvres.`
     };

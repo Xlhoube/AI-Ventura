@@ -9,7 +9,7 @@ import { useAppStore } from '@/store/useAppStore';
 export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onShowToast }: { t: any, lang: Language, onBack: () => void, onComplete: (config: any) => void, sessionCode?: string, user?: any, onShowToast?: (msg: string, type: 'error' | 'success' | 'info') => void }) => {
     const [step, setStep] = useState(1);
     const [mode, setMode] = useState<'own' | 'ai'>('own');
-    const [config, setConfig] = useState<any>({ idea: '', genre: 'fantasy', quality: 'rich', charProfiles: [], mainChar: '', charLinks: '', playAsYourself: false });
+    const [config, setConfig] = useState<any>({ idea: '', genre: 'fantasy', subTema: 'none', timePeriod: 'present', quality: 'rich', charProfiles: [], mainChar: '', charLinks: '', playAsYourself: false });
     const [aiIdeas, setAiIdeas] = useState<string[]>([]);
     const [loadingAI, setLoadingAI] = useState(false);
     const [loadingCharsAI, setLoadingCharsAI] = useState(false);
@@ -75,11 +75,11 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
         
         setLoadingAI(true);
         try {
-            const ideas = await generatePremises(lang, config.genre);
+            const ideas = await generatePremises(lang, config.genre, config.subTema, config.timePeriod);
             setAiIdeas(ideas);
             if (ideas.length > 0) {
                 // Auto-select the first idea to prevent users from getting stuck
-                handleConfigChange((prev: any) => ({ ...prev, idea: ideas[0] }));
+                handleConfigChange({ ...config, idea: ideas[0] });
             }
         } catch (e: any) {
             console.error(e);
@@ -157,15 +157,58 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                             />
                         )}
                         {mode === 'ai' && (
-                            <div className="space-y-4 bg-white dark:bg-[#121214] p-6 lg:p-8 rounded-3xl border border-gray-200 dark:border-white/10 shadow-xl">
-                                <h4 className="font-bold text-gray-900 dark:text-white mb-4 text-lg">{t.step1Genre}</h4>
-                                <div className="flex flex-wrap gap-2 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
-                                    {Object.keys(t.genres).map(g => (
-                                        <button key={g} onClick={() => setConfig({ ...config, genre: g })} className={`px-4 py-3 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-widest whitespace-nowrap border transition-all ${config.genre === g ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/30' : 'bg-gray-50 dark:bg-white/5 text-slate-500 border-gray-200 dark:border-white/10 hover:border-indigo-400/50 hover:text-indigo-400'}`}>
-                                            {t.genres[g] || g}
-                                        </button>
-                                    ))}
+                            <div className="space-y-6 bg-white dark:bg-[#121214] p-6 lg:p-8 rounded-3xl border border-gray-200 dark:border-white/10 shadow-xl">
+                                <div className="space-y-2">
+                                    <h4 className="font-bold text-gray-900 dark:text-white text-base">{t.step1Genre}</h4>
+                                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                        {Object.keys(t.genres).map(g => (
+                                            <button key={g} onClick={() => setConfig({ ...config, genre: g })} className={`px-3 py-2 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest whitespace-nowrap border transition-all ${config.genre === g ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/30' : 'bg-gray-50 dark:bg-white/5 text-slate-500 border-gray-200 dark:border-white/10 hover:border-indigo-400/50 hover:text-indigo-400'}`}>
+                                                {t.genres[g] || g}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                            {lang === 'pt' ? '🎭 Sub-Tema / Foco' : '🎭 Sub-Theme / Focus'}
+                                        </label>
+                                        <select 
+                                            value={config.subTema} 
+                                            onChange={e => handleConfigChange({ ...config, subTema: e.target.value })}
+                                            className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-indigo-500/20 font-medium text-sm text-gray-900 dark:text-white"
+                                        >
+                                            <option value="none">{lang === 'pt' ? 'Nenhum' : 'None'}</option>
+                                            <option value="romance">{lang === 'pt' ? 'Romance / Relações' : 'Romance / Relationships'}</option>
+                                            <option value="medieval">{lang === 'pt' ? 'Medieval / Épico' : 'Medieval / Epic'}</option>
+                                            <option value="scifi">{lang === 'pt' ? 'Ficção Científica / Tecnologia' : 'Science Fiction / Tech'}</option>
+                                            <option value="humor">{lang === 'pt' ? 'Comédia / Humor' : 'Comedy / Humor'}</option>
+                                            <option value="veridica">{lang === 'pt' ? 'História Real / Verídica' : 'Real / True Story'}</option>
+                                            <option value="mystery">{lang === 'pt' ? 'Mistério / Investigação' : 'Mystery / Investigation'}</option>
+                                            <option value="drama">{lang === 'pt' ? 'Drama / Conflito Familiar' : 'Drama / Family Conflict'}</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                            {lang === 'pt' ? '⏳ Posição no Tempo' : '⏳ Position in Time'}
+                                        </label>
+                                        <select 
+                                            value={config.timePeriod} 
+                                            onChange={e => handleConfigChange({ ...config, timePeriod: e.target.value })}
+                                            className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-indigo-500/20 font-medium text-sm text-gray-900 dark:text-white"
+                                        >
+                                            <option value="present">{lang === 'pt' ? 'Contemporâneo / Atual' : 'Contemporary / Present'}</option>
+                                            <option value="past_medieval">{lang === 'pt' ? 'Passado Medieval / Feudal' : 'Medieval Past / Feudal'}</option>
+                                            <option value="past_century">{lang === 'pt' ? 'Século Passado (XIX/XX)' : 'Last Century (19th/20th)'}</option>
+                                            <option value="future_near">{lang === 'pt' ? 'Futuro Próximo / Distopia' : 'Near Future / Dystopia'}</option>
+                                            <option value="future_far">{lang === 'pt' ? 'Futuro Distante / Espacial' : 'Far Future / Space Era'}</option>
+                                            <option value="timeless">{lang === 'pt' ? 'Atemporal / Fantástico' : 'Timeless / Mythological'}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <button onClick={fetchAI} disabled={loadingAI} className="w-full py-5 mt-4 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-black tracking-widest uppercase text-sm rounded-2xl hover:bg-indigo-200 dark:hover:bg-indigo-500/30 transition-all flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 shadow-lg shadow-indigo-500/10">
                                     {loadingAI ? <Loader2 className="animate-spin" size={24} /> : <Wand2 size={24} />}
                                     {loadingAI ? t.generatingConcepts : t.generateMagicSuggestions}
