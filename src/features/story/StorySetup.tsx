@@ -179,14 +179,14 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                             onChange={e => handleConfigChange({ ...config, subTema: e.target.value })}
                                             className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-indigo-500/20 font-medium text-sm text-gray-900 dark:text-white"
                                         >
-                                            <option value="none">{lang === 'pt' ? 'Nenhum' : 'None'}</option>
-                                            <option value="romance">{lang === 'pt' ? 'Romance / Relações' : 'Romance / Relationships'}</option>
-                                            <option value="medieval">{lang === 'pt' ? 'Medieval / Épico' : 'Medieval / Epic'}</option>
-                                            <option value="scifi">{lang === 'pt' ? 'Ficção Científica / Tecnologia' : 'Science Fiction / Tech'}</option>
-                                            <option value="humor">{lang === 'pt' ? 'Comédia / Humor' : 'Comedy / Humor'}</option>
-                                            <option value="veridica">{lang === 'pt' ? 'História Real / Verídica' : 'Real / True Story'}</option>
-                                            <option value="mystery">{lang === 'pt' ? 'Mistério / Investigação' : 'Mystery / Investigation'}</option>
-                                            <option value="drama">{lang === 'pt' ? 'Drama / Conflito Familiar' : 'Drama / Family Conflict'}</option>
+                                            <option value="none" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Nenhum' : 'None'}</option>
+                                            <option value="romance" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Romance / Relações' : 'Romance / Relationships'}</option>
+                                            <option value="medieval" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Medieval / Épico' : 'Medieval / Epic'}</option>
+                                            <option value="scifi" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Ficção Científica / Tecnologia' : 'Science Fiction / Tech'}</option>
+                                            <option value="humor" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Comédia / Humor' : 'Comedy / Humor'}</option>
+                                            <option value="veridica" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'História Real / Verídica' : 'Real / True Story'}</option>
+                                            <option value="mystery" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Mistério / Investigação' : 'Mystery / Investigation'}</option>
+                                            <option value="drama" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Drama / Conflito Familiar' : 'Drama / Family Conflict'}</option>
                                         </select>
                                     </div>
 
@@ -199,12 +199,12 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                             onChange={e => handleConfigChange({ ...config, timePeriod: e.target.value })}
                                             className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-indigo-500/20 font-medium text-sm text-gray-900 dark:text-white"
                                         >
-                                            <option value="present">{lang === 'pt' ? 'Contemporâneo / Atual' : 'Contemporary / Present'}</option>
-                                            <option value="past_medieval">{lang === 'pt' ? 'Passado Medieval / Feudal' : 'Medieval Past / Feudal'}</option>
-                                            <option value="past_century">{lang === 'pt' ? 'Século Passado (XIX/XX)' : 'Last Century (19th/20th)'}</option>
-                                            <option value="future_near">{lang === 'pt' ? 'Futuro Próximo / Distopia' : 'Near Future / Dystopia'}</option>
-                                            <option value="future_far">{lang === 'pt' ? 'Futuro Distante / Espacial' : 'Far Future / Space Era'}</option>
-                                            <option value="timeless">{lang === 'pt' ? 'Atemporal / Fantástico' : 'Timeless / Mythological'}</option>
+                                            <option value="present" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Contemporâneo / Atual' : 'Contemporary / Present'}</option>
+                                            <option value="past_medieval" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Passado Medieval / Feudal' : 'Medieval Past / Feudal'}</option>
+                                            <option value="past_century" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Século Passado (XIX/XX)' : 'Last Century (19th/20th)'}</option>
+                                            <option value="future_near" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Futuro Próximo / Distopia' : 'Near Future / Dystopia'}</option>
+                                            <option value="future_far" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Futuro Distante / Espacial' : 'Far Future / Space Era'}</option>
+                                            <option value="timeless" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Atemporal / Fantástico' : 'Timeless / Mythological'}</option>
                                         </select>
                                     </div>
                                 </div>
