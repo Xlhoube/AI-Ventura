@@ -19,7 +19,26 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
     const [kicked, setKicked] = useState(false);
     const [showApiSetup, setShowApiSetup] = useState(false);
     const [extraCharsB, setExtraCharsB] = useState<string[]>([]);
+    
+    // Relações customizadas carregadas do localStorage (sugestões salvas)
+    const [customRelations, setCustomRelations] = useState<string[]>(() => {
+        try {
+            const saved = localStorage.getItem('aiventura_custom_relations');
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            return [];
+        }
+    });
+
     const { apiKeys, activeProvider } = useAppStore();
+
+    useEffect(() => {
+        try {
+            localStorage.setItem('aiventura_custom_relations', JSON.stringify(customRelations));
+        } catch (e) {
+            console.error('Falha ao gravar relações no localStorage', e);
+        }
+    }, [customRelations]);
 
     useEffect(() => {
         if (!sessionCode || !user) return;
@@ -402,12 +421,36 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                     <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
                                         {lang === 'pt' ? 'Ligação / Relação' : 'Relationship / Connection'}
                                     </label>
-                                    <input 
-                                        id="relation-input"
-                                        type="text" 
-                                        placeholder={lang === 'pt' ? 'Ex: Irmão de, Pai de, Rival de' : 'Ex: Brother of, Father of, Rival of'}
-                                        className="w-full bg-white dark:bg-[#1A1A1E] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-purple-500/20 font-medium text-sm text-gray-900 dark:text-white"
-                                    />
+                                    <div className="relative">
+                                        <input 
+                                            id="relation-input"
+                                            type="text" 
+                                            placeholder={lang === 'pt' ? 'Ex: Irmão de, Pai de, Rival de' : 'Ex: Brother of, Father of, Rival of'}
+                                            className="w-full bg-white dark:bg-[#1A1A1E] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-purple-500/20 font-medium text-sm text-gray-900 dark:text-white"
+                                            list="custom-relations-list"
+                                        />
+                                        <datalist id="custom-relations-list">
+                                            {/* Relações Padrão */}
+                                            <option value={lang === 'pt' ? 'Irmão' : 'Brother'} />
+                                            <option value={lang === 'pt' ? 'Irmã' : 'Sister'} />
+                                            <option value={lang === 'pt' ? 'Pai' : 'Father'} />
+                                            <option value={lang === 'pt' ? 'Mãe' : 'Mother'} />
+                                            <option value={lang === 'pt' ? 'Filho' : 'Son'} />
+                                            <option value={lang === 'pt' ? 'Filha' : 'Daughter'} />
+                                            <option value={lang === 'pt' ? 'Cônjuge' : 'Spouse'} />
+                                            <option value={lang === 'pt' ? 'Namorado(a)' : 'Boyfriend/Girlfriend'} />
+                                            <option value={lang === 'pt' ? 'Amigo(a)' : 'Friend'} />
+                                            <option value={lang === 'pt' ? 'Rival' : 'Rival'} />
+                                            <option value={lang === 'pt' ? 'Inimigo(a)' : 'Enemy'} />
+                                            <option value={lang === 'pt' ? 'Aliado(a)' : 'Ally'} />
+                                            <option value={lang === 'pt' ? 'Mentor' : 'Mentor'} />
+                                            <option value={lang === 'pt' ? 'Aprendiz' : 'Apprentice'} />
+                                            {/* Relações Adicionadas por utilizadores */}
+                                            {customRelations.map((rel, rIdx) => (
+                                                <option key={`custom-${rIdx}`} value={rel} />
+                                            ))}
+                                        </datalist>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
@@ -507,6 +550,12 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                     if (newLinkAdded) {
                                         handleConfigChange({ ...config, charLinks: currentLinks.join('\n') });
                                         if (onShowToast) onShowToast(lang === 'pt' ? 'Ligações criadas com sucesso!' : 'Connections created successfully!', 'success');
+                                        
+                                        // Guardar a relação na lista customizada se não for uma relação padrão vazia e ainda não existir
+                                        const cleanRelation = relation.trim();
+                                        if (cleanRelation && !customRelations.includes(cleanRelation)) {
+                                            setCustomRelations([...customRelations, cleanRelation]);
+                                        }
                                     }
                                     
                                     inputRel.value = '';
