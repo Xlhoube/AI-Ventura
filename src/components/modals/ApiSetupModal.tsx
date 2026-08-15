@@ -155,13 +155,25 @@ export const ApiSetupModal: React.FC<ApiSetupModalProps> = ({ isOpen, onClose, f
                             <p className="text-[10px] text-slate-400">{t?.apiKeyLocalSecurity || 'A chave é guardada localmente no teu dispositivo e nunca é enviada para os nossos servidores.'}</p>
                         </div>
 
-                        <button
-                            onClick={handleSave}
-                            disabled={!keyValue.trim()}
-                            className="w-full py-3.5 bg-indigo-600 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:text-slate-500 text-white font-black uppercase tracking-widest text-xs rounded-xl hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-600/10 flex items-center justify-center gap-2"
-                        >
-                            {saved ? <><Check size={16}/> {t?.saved || 'Guardado'}</> : (t?.saveAndContinue || 'Guardar e Continuar')}
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleSave}
+                                disabled={!keyValue.trim()}
+                                className="flex-1 py-3.5 bg-indigo-600 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:text-slate-500 text-white font-black uppercase tracking-widest text-xs rounded-xl hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-600/10 flex items-center justify-center gap-2"
+                            >
+                                {saved ? <><Check size={16}/> {t?.saved || 'Guardado'}</> : (t?.saveAndContinue || 'Guardar Chave')}
+                            </button>
+
+                            {/* Mostrar botão de fechar/confirmar se a chave atual corresponder à chave guardada no store */}
+                            {apiKeys[currentProvider] === keyValue && keyValue.trim() !== '' && onClose && (
+                                <button
+                                    onClick={onClose}
+                                    className="px-6 py-3.5 bg-emerald-600 text-white font-black uppercase tracking-widest text-xs rounded-xl hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-600/10 flex items-center justify-center gap-2 animate-in fade-in zoom-in-95 duration-200"
+                                >
+                                    <Check size={16}/> {t?.confirm || 'Confirmar'}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
