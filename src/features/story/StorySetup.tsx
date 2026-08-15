@@ -117,11 +117,17 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
     const next = () => setStep(step + 1);
     const prev = () => setStep(step - 1);
 
+    const [isFinishing, setIsFinishing] = useState(false);
+
     const finish = () => {
-        onComplete(config);
-        if (sessionCode && isHost) {
-            updateSessionPhase(sessionCode, 'active', { config, participants: sessionParticipants, currentTurnIndex: 0, messages: [] });
-        }
+        setIsFinishing(true);
+        // Pequena simulação de processamento/carregamento para feedback visual
+        setTimeout(() => {
+            onComplete(config);
+            if (sessionCode && isHost) {
+                updateSessionPhase(sessionCode, 'active', { config, participants: sessionParticipants, currentTurnIndex: 0, messages: [] });
+            }
+        }, 2200);
     };
 
     return (
@@ -470,6 +476,43 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
             </div>
 
             <ApiSetupModal t={t} isOpen={showApiSetup} onClose={() => setShowApiSetup(false)} forceSetup={false} />
+
+            {/* Livro a desfolhar & Barra de Progresso Overlay */}
+            {isFinishing && (
+                <div className="fixed inset-0 z-[300] bg-gray-950/95 backdrop-blur-md flex flex-col items-center justify-center space-y-12 animate-in fade-in duration-300">
+                    <div className="relative w-40 h-28 flex items-center justify-center [perspective:1000px]">
+                        {/* Book Spine */}
+                        <div className="absolute left-1/2 -translate-x-1/2 w-1.5 h-full bg-slate-800 rounded-full shadow-2xl z-20" />
+                        
+                        {/* Left Static Page */}
+                        <div className="absolute right-1/2 w-20 h-full bg-white dark:bg-slate-100 rounded-l-lg border-r border-slate-200 shadow-md origin-right" />
+                        
+                        {/* Right Static Page */}
+                        <div className="absolute left-1/2 w-20 h-full bg-white dark:bg-slate-100 rounded-r-lg border-l border-slate-200 shadow-md origin-left" />
+
+                        {/* Flipping Pages (3 Layers) */}
+                        <div className="absolute left-1/2 w-20 h-full bg-white dark:bg-slate-50 rounded-r-lg border-l border-slate-200 shadow-lg animate-page-flip-1" />
+                        <div className="absolute left-1/2 w-20 h-full bg-white dark:bg-slate-50 rounded-r-lg border-l border-slate-200 shadow-lg animate-page-flip-2" />
+                        <div className="absolute left-1/2 w-20 h-full bg-white dark:bg-slate-50 rounded-r-lg border-l border-slate-200 shadow-lg animate-page-flip-3" />
+                    </div>
+
+                    <div className="text-center space-y-4 max-w-sm px-6">
+                        <h4 className="text-white font-black text-xl tracking-tight uppercase tracking-[0.2em] text-indigo-400">
+                            {lang === 'pt' ? 'A Preparar Aventura' : 'Preparing Adventure'}
+                        </h4>
+                        <p className="text-slate-400 text-xs font-semibold leading-relaxed">
+                            {lang === 'pt' 
+                               ? 'O Editor está a alinhar as personagens e a carregar a premissa narrativa...' 
+                               : 'The Editor is aligning the characters and loading the narrative premise...'}
+                        </p>
+                        
+                        {/* Custom Loading Progress Bar Container */}
+                        <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-6">
+                            <div className="h-full bg-indigo-500 rounded-full animate-progress-bar" />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

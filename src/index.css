@@ -87,3 +87,37 @@
   pointer-events: none;
 }
 
+/* Flipping Book Page Animation */
+@keyframes pageFlip {
+  0% { transform: rotate3d(0, 1, 0, 0deg); }
+  50% { transform: rotate3d(0, 1, 0, -90deg); }
+  100% { transform: rotate3d(0, 1, 0, -180deg); }
+}
+
+.animate-page-flip-1 {
+  transform-origin: left center;
+  animation: pageFlip 1.6s infinite ease-in-out;
+}
+
+.animate-page-flip-2 {
+  transform-origin: left center;
+  animation: pageFlip 1.6s infinite ease-in-out;
+  animation-delay: 0.3s;
+}
+
+.animate-page-flip-3 {
+  transform-origin: left center;
+  animation: pageFlip 1.6s infinite ease-in-out;
+  animation-delay: 0.6s;
+}
+
+/* Pulsing Progress Bar */
+@keyframes loadingBar {
+  0% { width: 0%; }
+  50% { width: 70%; }
+  100% { width: 100%; }
+}
+
+.animate-progress-bar {
+  animation: loadingBar 3s infinite ease-in-out;
+}
