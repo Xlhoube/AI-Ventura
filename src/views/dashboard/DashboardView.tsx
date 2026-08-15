@@ -1,16 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import {
    PlusCircle, FileText, Library, Globe, Users2, History, Wifi, Loader2,
-   X, Sparkles, HelpCircle, UserCircle, Trash2, Trophy, Book, User, Archive, BarChart2, Key, AlertTriangle, Save, Cloud
+   X, Sparkles, HelpCircle, UserCircle, Trash2, Trophy, Book, User, Archive, BarChart2, Key, AlertTriangle, Save, Cloud, Download
 } from 'lucide-react';
 import { ChangelogModal, CoopInfoModal, JoinInviteModal, AuthorRankingModal, TutorialModal, InteractiveTour, ApiSetupModal } from '@/components';
 import { account, joinCollaborationSession, createLobbySession } from '@/services/services';
+import { getLocalStories } from '@/services/story.services';
 import { APP_VERSION, Language } from '@/utils/constants';
 
 export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode, onShowToast, isGuest }: { t: any, username: string, onNavigate: (v: any) => void, lang: Language, activeSessionCode?: string | null, onShowToast: (msg: string, type: 'success' | 'error' | 'info') => void, isGuest?: boolean }) => {
    const [joinCode, setJoinCode] = useState('');
    const [isJoining, setIsJoining] = useState(false);
    const [errorJoin, setErrorJoin] = useState<string | null>(null);
+
+   const handleLocalBackup = () => {
+      const stories = getLocalStories();
+      const blob = new Blob([JSON.stringify(stories, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ai-ventura-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+   };
 
    // MODAL STATES
    const [showChangelog, setShowChangelog] = useState(false);
@@ -248,26 +260,35 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
                         <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
                            <Save size={32} />
                         </div>
-                        <div>
+                        <div className="flex-1">
                            <h4 className="text-lg font-black text-gray-900 dark:text-white mb-1">{t.storageLocal || 'Dispositivo Local'}</h4>
                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{t.storageLocalDesc || 'Guardado apenas neste browser. Acesso offline, mas perde-se se limpares o cache.'}</p>
                         </div>
+                        <button
+                           onClick={(e) => { e.stopPropagation(); handleLocalBackup(); }}
+                           title={t.backupHint || 'Fazer backup das obras locais'}
+                           className="shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-500/10 text-indigo-500 hover:bg-indigo-200 dark:hover:bg-indigo-500/20 transition-colors"
+                        >
+                           <Download size={18} />
+                        </button>
                      </button>
-                     <button onClick={isGuest ? undefined : () => { setShowStorageSelect(false); onNavigate('setup?storage=cloud'); }} disabled={isGuest} className={`flex items-center gap-6 p-6 rounded-[32px] border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] transition-all text-left group relative ${isGuest ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white dark:hover:bg-white/5 hover:border-emerald-500 dark:hover:border-emerald-500/50'}`}>
-                        <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
-                           <Cloud size={32} />
+                     {!isGuest && (
+                        <button onClick={() => { setShowStorageSelect(false); onNavigate('setup?storage=cloud'); }} className="flex items-center gap-6 p-6 rounded-[32px] border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] hover:bg-white dark:hover:bg-white/5 hover:border-emerald-500 dark:hover:border-emerald-500/50 transition-all text-left group">
+                           <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                              <Cloud size={32} />
+                           </div>
+                           <div>
+                              <h4 className="text-lg font-black text-gray-900 dark:text-white mb-1">{t.storageCloud || 'Nuvem'}</h4>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{t.storageCloudDesc || 'Sincronizado na tua conta. Acede em qualquer dispositivo sem perderes nada.'}</p>
+                           </div>
+                        </button>
+                     )}
+                     {isGuest && (
+                        <div className="flex items-start gap-4 p-4 rounded-[24px] border border-amber-500/20 bg-amber-500/5">
+                           <AlertTriangle size={20} className="shrink-0 mt-0.5 text-amber-500" />
+                           <p className="text-xs text-amber-600 dark:text-amber-400 font-medium leading-relaxed">{t.guestCloudWarning || 'A opção Nuvem requer uma conta registada. Inicia sessão para a desbloquear.'}</p>
                         </div>
-                        <div>
-                           <h4 className="text-lg font-black text-gray-900 dark:text-white mb-1">{t.storageCloud || 'Nuvem'}</h4>
-                           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{t.storageCloudDesc || 'Sincronizado na tua conta. Acede em qualquer dispositivo sem perderes nada.'}</p>
-                           {isGuest && (
-                              <div className="mt-3 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs font-bold px-3 py-2 rounded-xl flex items-start gap-2">
-                                 <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                                 <span>{t.guestCloudWarning || 'Requer conta registada para guardar na Nuvem.'}</span>
-                              </div>
-                           )}
-                        </div>
-                     </button>
+                     )}
                   </div>
                </div>
             </div>
