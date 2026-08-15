@@ -27,6 +27,10 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
     const [relationships, setRelationships] = useState<any>(initialConfig?.relationships || {});
     const [isSpeaking, setIsSpeaking] = useState<string | null>(null);
 
+    // Estados para Edição de Palavras / Substituição
+    const [selectedWordInfo, setSelectedWordInfo] = useState<{ msgId: string, word: string, index: number, fullText: string } | null>(null);
+    const [newWordValue, setNewWordValue] = useState('');
+
     const fontSizes = ['text-sm', 'text-base', 'text-lg', 'text-xl', 'text-2xl'];
     const [fontSizeIndex, setFontSizeIndex] = useState(1);
     const [lastAuthorId, setLastAuthorId] = useState<string | null>(null);
@@ -581,7 +585,33 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                                                 </div>
                                             )}
 
-                                            {isAI ? renderNarrativeWithBreaks(msg.content) : msg.content}
+                                            {isAI ? (
+                                                <div className="narrative-segment whitespace-pre-wrap">
+                                                    {msg.content.split(' ').map((word: string, wIdx: number) => {
+                                                        const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "").trim();
+                                                        return (
+                                                            <span
+                                                                key={wIdx}
+                                                                onClick={() => {
+                                                                    if (cleanWord.length > 1 && !isTyping) {
+                                                                        setSelectedWordInfo({
+                                                                            msgId: msg.id,
+                                                                            word: cleanWord,
+                                                                            index: wIdx,
+                                                                            fullText: msg.content
+                                                                        });
+                                                                        setNewWordValue(cleanWord);
+                                                                    }
+                                                                }}
+                                                                className="cursor-pointer hover:bg-indigo-500/20 hover:text-indigo-400 rounded px-0.5 transition-all inline-block"
+                                                                title={lang === 'pt' ? 'Clicar para modificar palavra' : 'Click to modify word'}
+                                                            >
+                                                                {word}{' '}
+                                                            </span>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ) : msg.content}
                                             {isAI && i === messages.length - 1 && isTyping && <span className="inline-block w-2 h-4 bg-indigo-500 ml-1 animate-pulse"></span>}
                                         </div>
 
@@ -825,6 +855,87 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                 onNudge={handleNudge}
                 onRenovate={handleRenovateCode}
             />
+
+            {/* Modal de Edição de Palavras */}
+            {selectedWordInfo && (
+                <div className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-[#121214] w-full max-w-md rounded-[32px] p-8 space-y-6 border border-gray-200 dark:border-white/10 shadow-2xl animate-in zoom-in-95">
+                        <div className="flex justify-between items-center">
+                            <h3 className="font-black text-xl text-gray-900 dark:text-white">
+                                {lang === 'pt' ? 'Modificar Palavra' : 'Modify Word'}
+                            </h3>
+                            <button 
+                                onClick={() => setSelectedWordInfo(null)}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-all"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">
+                                    {lang === 'pt' ? 'Termo Original' : 'Original Term'}
+                                </label>
+                                <span className="font-semibold text-gray-700 dark:text-slate-300">
+                                    "{selectedWordInfo.word}"
+                                </span>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-indigo-500 block">
+                                    {lang === 'pt' ? 'Novo Termo' : 'New Term'}
+                                </label>
+                                <input 
+                                    autoFocus
+                                    type="text"
+                                    value={newWordValue}
+                                    onChange={(e) => setNewWordValue(e.target.value)}
+                                    placeholder={lang === 'pt' ? 'Ex: Douro' : 'Ex: Thames'}
+                                    className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none focus:ring-2 ring-indigo-500/20 font-medium text-gray-900 dark:text-white"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                            <button 
+                                onClick={() => setSelectedWordInfo(null)} 
+                                className="flex-1 py-4 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors rounded-2xl text-xs font-black uppercase tracking-widest text-slate-500"
+                            >
+                                {t.cancel}
+                            </button>
+                            <button 
+                                onClick={async () => {
+                                    if (newWordValue.trim() && newWordValue.trim() !== selectedWordInfo.word) {
+                                        const escapedVal = selectedWordInfo.word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                                        const regex = new RegExp(`\\b${escapedVal}\\b`, 'g');
+                                        const updatedText = selectedWordInfo.fullText.replace(regex, newWordValue.trim());
+
+                                        const updatedMessages = messages.map((m: any) => 
+                                            m.id === selectedWordInfo.msgId 
+                                                ? { ...m, content: updatedText } 
+                                                : m
+                                        );
+
+                                        setMessages(updatedMessages);
+
+                                        if (sessionCode) {
+                                            await updateSessionStory(sessionCode, getFullPayload(updatedMessages, currentTurnIndex));
+                                        } else {
+                                            onAutoSave(updatedMessages);
+                                        }
+                                        onShowToast(lang === 'pt' ? 'Palavra atualizada!' : 'Word updated!', 'success');
+                                    }
+                                    setSelectedWordInfo(null);
+                                }} 
+                                className="flex-1 py-4 bg-indigo-600 text-white hover:bg-indigo-500 transition-colors rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20"
+                            >
+                                {lang === 'pt' ? 'Substituir' : 'Replace'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
