@@ -340,7 +340,7 @@ export const AppRoutes = () => {
                                         navigate('/story'); 
                                     }} onArchive={archiveLocalStory} onBack={() => navigate('/dashboard')} />} />
                                     <Route path="/archive" element={<ArchiveView t={t} onBack={() => navigate('/dashboard')} />} />
-                                    <Route path="/library" element={<PrivateLibraryView t={t} onRead={(s: any) => { setCurrentStory(s); navigate('/preview'); }} onArchive={archiveLocalStory} onBack={() => navigate('/dashboard')} />} />
+                                    <Route path="/library" element={<PrivateLibraryView t={t} onRead={(s: any) => { setCurrentStory(s); navigate('/preview'); }} onArchive={archiveLocalStory} onBack={() => navigate('/dashboard')} onShowToast={showToast} />} />
                                     <Route path="/explore" element={<PublicLibraryView t={t} onRead={(s: any) => { setCurrentStory(s); navigate('/preview'); }} onBack={() => navigate('/dashboard')} />} />
                                     <Route path="/author/:id" element={<PublicLibraryView t={t} authorId={selectedAuthorId} onRead={(s: any) => { setCurrentStory(s); navigate('/preview'); }} onBack={() => navigate('/authors')} />} />
                                     <Route path="/authors" element={<AuthorsClubView t={t} onViewAuthor={(id: any) => { setSelectedAuthorId(id); navigate(`/author/${id}`); }} onBack={() => navigate('/dashboard')} />} />

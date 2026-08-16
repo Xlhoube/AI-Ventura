@@ -6,7 +6,7 @@ import { getLocalStories, saveLocalStory } from '@/services/story.services';
 import { account, databases, DATABASE_ID, COL_PUBLIC_STORIES, publishStoryToGlobal, unpublishStoryByTitle, syncStoriesCount, isCloudEnabled } from '@/services/services';
 import { Query } from 'appwrite';
 
-export const PrivateLibraryView = ({ t, onRead, onArchive, onBack }: { t: any, onRead: (s: any) => void, onArchive: (id: string) => void, onBack: () => void }) => {
+export const PrivateLibraryView = ({ t, onRead, onArchive, onBack, onShowToast }: { t: any, onRead: (s: any) => void, onArchive: (id: string) => void, onBack: () => void, onShowToast?: (msg: string, type: 'success' | 'error' | 'info') => void }) => {
   const [soloLibrary, setSoloLibrary] = useState<any[]>([]);
   const [coopLibrary, setCoopLibrary] = useState<any[]>([]);
   const [selectedForDelete, setSelectedForDelete] = useState<any>(null);
@@ -78,7 +78,11 @@ export const PrivateLibraryView = ({ t, onRead, onArchive, onBack }: { t: any, o
             next.delete(story.id);
             return next;
          });
-         alert(t.unpublishSuccess || "Obra removida da Biblioteca Global.");
+         if (onShowToast) {
+            onShowToast(t.unpublishSuccess || "Obra removida da Biblioteca Global.", 'success');
+         } else {
+            alert(t.unpublishSuccess || "Obra removida da Biblioteca Global.");
+         }
          return;
       }
       
@@ -91,15 +95,18 @@ export const PrivateLibraryView = ({ t, onRead, onArchive, onBack }: { t: any, o
       const res = await publishStoryToGlobal(story, user.$id, userName, currentLang);
       
       if (res.success) {
-        alert(t.publishedSuccess);
+        if (onShowToast) onShowToast(t.publishedSuccess, 'success');
+        else alert(t.publishedSuccess);
         setPublishedIds(prev => new Set(prev).add(story.id));
       } else if (res.message === 'already_exists') {
-        alert(t.alreadyPublished);
+        if (onShowToast) onShowToast(t.alreadyPublished, 'info');
+        else alert(t.alreadyPublished);
         setPublishedIds(prev => new Set(prev).add(story.id));
       }
     } catch (e) {
       console.error(e);
-      alert(t.publishError);
+      if (onShowToast) onShowToast(t.publishError, 'error');
+      else alert(t.publishError);
     } finally {
       setIsPublishing(null);
     }
@@ -130,13 +137,16 @@ export const PrivateLibraryView = ({ t, onRead, onArchive, onBack }: { t: any, o
               return [json, ...filtered];
             });
           }
-          alert(isPt ? "Obra importada com sucesso!" : "Story imported successfully!");
+          if (onShowToast) onShowToast(isPt ? "Obra importada com sucesso!" : "Story imported successfully!", 'success');
+          else alert(isPt ? "Obra importada com sucesso!" : "Story imported successfully!");
         } else {
-          alert(isPt ? "Ficheiro inválido. Certifique-se de que é um backup do AI Ventura." : "Invalid file. Make sure it's an AI Ventura backup.");
+          if (onShowToast) onShowToast(isPt ? "Ficheiro inválido. Certifique-se de que é um backup do AI Ventura." : "Invalid file. Make sure it's an AI Ventura backup.", 'error');
+          else alert(isPt ? "Ficheiro inválido. Certifique-se de que é um backup do AI Ventura." : "Invalid file. Make sure it's an AI Ventura backup.");
         }
       } catch (err) {
         console.error(err);
-        alert(isPt ? "Erro ao ler o ficheiro." : "Error reading file.");
+        if (onShowToast) onShowToast(isPt ? "Erro ao ler o ficheiro." : "Error reading file.", 'error');
+        else alert(isPt ? "Erro ao ler o ficheiro." : "Error reading file.");
       }
       if (fileInputRef.current) fileInputRef.current.value = '';
     };
