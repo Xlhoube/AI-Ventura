@@ -28,7 +28,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
     const [isSpeaking, setIsSpeaking] = useState<string | null>(null);
 
     // Estados para Edição de Palavras / Substituição
-    const [selectedWordInfo, setSelectedWordInfo] = useState<{ msgId: string, word: string, index: number, fullText: string } | null>(null);
+    const [selectedWordInfo, setSelectedWordInfo] = useState<{ word: string, messageId: string, paragraphIndex: number, wordIndex: number } | null>(null);
     const [newWordValue, setNewWordValue] = useState('');
 
     // Estado para Abas de Capítulos
@@ -516,6 +516,76 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
         </div>
     );
 
+    const getWordRegex = (word: string) => {
+        const escaped = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        return new RegExp(`(?<=^|[^\\wÀ-ú-])${escaped}(?=[^\\wÀ-ú-]|$)`, 'g');
+    };
+
+    const getWordOccurrencesCount = (targetWord: string) => {
+        if (!targetWord) return 0;
+        const regex = getWordRegex(targetWord);
+        let count = 0;
+        messages.forEach((m: any) => {
+            if (m.content) {
+                const matches = m.content.match(regex);
+                if (matches) count += matches.length;
+            }
+        });
+        return count;
+    };
+
+    const handleReplaceWord = async (replaceAll: boolean = true) => {
+        if (!selectedWordInfo || !newWordValue.trim() || newWordValue.trim() === selectedWordInfo.word) {
+            setSelectedWordInfo(null);
+            return;
+        }
+
+        const regex = getWordRegex(selectedWordInfo.word);
+        const replacement = newWordValue.trim();
+        let totalReplaced = 0;
+
+        const updatedMessages = messages.map((m: any) => {
+            if (!m.content) return m;
+            if (replaceAll) {
+                const matches = m.content.match(regex);
+                if (matches) totalReplaced += matches.length;
+                return {
+                    ...m,
+                    content: m.content.replace(regex, replacement)
+                };
+            } else if (m.id === selectedWordInfo.messageId) {
+                let replaced = false;
+                const newContent = m.content.replace(regex, (match: string) => {
+                    if (!replaced) {
+                        replaced = true;
+                        totalReplaced++;
+                        return replacement;
+                    }
+                    return match;
+                });
+                return { ...m, content: newContent };
+            }
+            return m;
+        });
+
+        setMessages(updatedMessages);
+
+        if (sessionCode) {
+            await updateSessionStory(sessionCode, getFullPayload(updatedMessages, currentTurnIndex));
+        } else {
+            onAutoSave(updatedMessages);
+        }
+
+        const toastMsg = replaceAll
+            ? (lang === 'pt' 
+                ? `${totalReplaced} ocorrência(s) de "${selectedWordInfo.word}" substituída(s) em toda a obra!` 
+                : `${totalReplaced} occurrence(s) of "${selectedWordInfo.word}" replaced across the entire story!`)
+            : (lang === 'pt' ? 'Palavra atualizada com sucesso!' : 'Word updated successfully!');
+
+        onShowToast(toastMsg, 'success');
+        setSelectedWordInfo(null);
+    };
+
     return (
         <div className={`flex flex-col bg-white dark:bg-[#121214] overflow-hidden animate-in zoom-in-95 duration-500 relative ${zenMode ? 'fixed inset-0 z-[500] w-full h-full rounded-none border-none max-w-none' : 'h-[calc(100vh-140px)] w-full max-w-[95vw] mx-auto rounded-[40px] shadow-2xl border border-gray-200 dark:border-white/5'}`}>
 
@@ -923,85 +993,88 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
             />
 
             {/* Modal de Edição de Palavras */}
-            {selectedWordInfo && (
-                <div className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-[#121214] w-full max-w-md rounded-[32px] p-8 space-y-6 border border-gray-200 dark:border-white/10 shadow-2xl animate-in zoom-in-95">
-                        <div className="flex justify-between items-center">
-                            <h3 className="font-black text-xl text-gray-900 dark:text-white">
-                                {lang === 'pt' ? 'Modificar Palavra' : 'Modify Word'}
-                            </h3>
-                            <button 
-                                onClick={() => setSelectedWordInfo(null)}
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-all"
-                            >
-                                <X size={18} />
-                            </button>
-                        </div>
-                        
-                        <div className="space-y-4">
-                            <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
-                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">
-                                    {lang === 'pt' ? 'Termo Original' : 'Original Term'}
-                                </label>
-                                <span className="font-semibold text-gray-700 dark:text-slate-300">
-                                    "{selectedWordInfo.word}"
-                                </span>
+            {selectedWordInfo && (() => {
+                const occurrences = getWordOccurrencesCount(selectedWordInfo.word);
+                return (
+                    <div className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+                        <div className="bg-white dark:bg-[#121214] w-full max-w-md rounded-[32px] p-8 space-y-6 border border-gray-200 dark:border-white/10 shadow-2xl animate-in zoom-in-95">
+                            <div className="flex justify-between items-center">
+                                <h3 className="font-black text-xl text-gray-900 dark:text-white">
+                                    {lang === 'pt' ? 'Modificar Palavra' : 'Modify Word'}
+                                </h3>
+                                <button 
+                                    onClick={() => setSelectedWordInfo(null)} 
+                                    className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-all text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                                >
+                                    <X size={18} />
+                                </button>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 flex items-center justify-between">
+                                    <div>
+                                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">
+                                            {lang === 'pt' ? 'Termo Original' : 'Original Term'}
+                                        </label>
+                                        <span className="font-semibold text-gray-700 dark:text-slate-300">
+                                            "{selectedWordInfo.word}"
+                                        </span>
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-500/20">
+                                        {lang === 'pt' ? `${occurrences} na obra` : `${occurrences} in story`}
+                                    </span>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[9px] font-black uppercase tracking-widest text-indigo-500 block">
+                                        {lang === 'pt' ? 'Novo Termo' : 'New Term'}
+                                    </label>
+                                    <input 
+                                        autoFocus
+                                        type="text"
+                                        value={newWordValue}
+                                        onChange={(e) => setNewWordValue(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && newWordValue.trim() && newWordValue.trim() !== selectedWordInfo.word) {
+                                                handleReplaceWord(true);
+                                            }
+                                        }}
+                                        placeholder={lang === 'pt' ? 'Ex: Douro' : 'Ex: Thames'}
+                                        className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none focus:ring-2 ring-indigo-500/20 font-medium text-gray-900 dark:text-white"
+                                    />
+                                </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[9px] font-black uppercase tracking-widest text-indigo-500 block">
-                                    {lang === 'pt' ? 'Novo Termo' : 'New Term'}
-                                </label>
-                                <input 
-                                    autoFocus
-                                    type="text"
-                                    value={newWordValue}
-                                    onChange={(e) => setNewWordValue(e.target.value)}
-                                    placeholder={lang === 'pt' ? 'Ex: Douro' : 'Ex: Thames'}
-                                    className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-4 outline-none focus:ring-2 ring-indigo-500/20 font-medium text-gray-900 dark:text-white"
-                                />
+                            <div className="flex flex-col gap-2 pt-2">
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => setSelectedWordInfo(null)} 
+                                        className="py-3 px-4 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors rounded-xl text-xs font-black uppercase tracking-widest text-slate-500"
+                                    >
+                                        {t.cancel}
+                                    </button>
+                                    {occurrences > 1 && (
+                                        <button 
+                                            onClick={() => handleReplaceWord(false)}
+                                            disabled={!newWordValue.trim() || newWordValue.trim() === selectedWordInfo.word}
+                                            className="flex-1 py-3 px-3 bg-white dark:bg-white/10 hover:bg-gray-50 dark:hover:bg-white/20 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-slate-200 transition-colors rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-40"
+                                        >
+                                            {lang === 'pt' ? 'Apenas Esta' : 'Only This'}
+                                        </button>
+                                    )}
+                                    <button 
+                                        onClick={() => handleReplaceWord(true)}
+                                        disabled={!newWordValue.trim() || newWordValue.trim() === selectedWordInfo.word}
+                                        className="flex-1 py-3 px-4 bg-indigo-600 text-white hover:bg-indigo-500 transition-colors rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 disabled:opacity-40"
+                                    >
+                                        {lang === 'pt' ? (occurrences > 1 ? `Substituir Todas (${occurrences})` : 'Substituir') : (occurrences > 1 ? `Replace All (${occurrences})` : 'Replace')}
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-
-                        <div className="flex gap-3 pt-2">
-                            <button 
-                                onClick={() => setSelectedWordInfo(null)} 
-                                className="flex-1 py-4 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors rounded-2xl text-xs font-black uppercase tracking-widest text-slate-500"
-                            >
-                                {t.cancel}
-                            </button>
-                            <button 
-                                onClick={async () => {
-                                    if (newWordValue.trim() && newWordValue.trim() !== selectedWordInfo.word) {
-                                        const escapedVal = selectedWordInfo.word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                                        const regex = new RegExp(`\\b${escapedVal}\\b`, 'g');
-                                        const updatedText = selectedWordInfo.fullText.replace(regex, newWordValue.trim());
-
-                                        const updatedMessages = messages.map((m: any) => 
-                                            m.id === selectedWordInfo.msgId 
-                                                ? { ...m, content: updatedText } 
-                                                : m
-                                        );
-
-                                        setMessages(updatedMessages);
-
-                                        if (sessionCode) {
-                                            await updateSessionStory(sessionCode, getFullPayload(updatedMessages, currentTurnIndex));
-                                        } else {
-                                            onAutoSave(updatedMessages);
-                                        }
-                                        onShowToast(lang === 'pt' ? 'Palavra atualizada!' : 'Word updated!', 'success');
-                                    }
-                                    setSelectedWordInfo(null);
-                                }} 
-                                className="flex-1 py-4 bg-indigo-600 text-white hover:bg-indigo-500 transition-colors rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20"
-                            >
-                                {lang === 'pt' ? 'Substituir' : 'Replace'}
-                            </button>
                         </div>
                     </div>
-                </div>
-            )}
+                );
+            })()}
         </div>
     );
 };
