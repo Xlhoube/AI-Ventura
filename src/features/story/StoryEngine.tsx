@@ -683,26 +683,29 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                                                     </div>
                                                 ) : msg.content}
                                                 {isAI && i === messages.length - 1 && isTyping && <span className="inline-block w-2 h-4 bg-indigo-500 ml-1 animate-pulse"></span>}
-                                            </div>
-
-                                            {isAI && !isTyping && (
-                                                <div className="absolute top-0 -right-2 translate-x-full pl-4 py-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-50">
-                                                    <button
-                                                        onClick={() => handleTTS(msg.content, msg.id)}
-                                                        className={`p-2 rounded-lg transition-all ${isSpeaking === msg.id ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-white/5 text-slate-400 hover:text-indigo-500 shadow-sm border border-gray-100 dark:border-white/10'}`}
-                                                    >
-                                                        {isSpeaking === msg.id ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                                                    </button>
-                                                    {!msg.imageUrl && (
+                                                {isAI && !isTyping && (
+                                                    <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-gray-200/50 dark:border-white/5 pt-4">
                                                         <button
-                                                            onClick={() => handleGenerateImage(msg.id, msg.content)}
-                                                            className="p-2 bg-white dark:bg-white/5 text-slate-400 hover:text-indigo-500 rounded-lg shadow-sm border border-gray-100 dark:border-white/10 transition-all"
+                                                            onClick={() => handleTTS(msg.content, msg.id)}
+                                                            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 shadow-sm border ${isSpeaking === msg.id ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 text-slate-500 hover:text-indigo-500 hover:border-indigo-200 dark:hover:border-indigo-500/30'}`}
+                                                            title={lang === 'pt' ? 'Ouvir/Parar texto' : 'Listen/Stop text'}
                                                         >
-                                                            <Sparkles size={14} />
+                                                            {isSpeaking === msg.id ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                                                            <span className="text-[10px] font-black uppercase tracking-widest">{isSpeaking === msg.id ? (lang === 'pt' ? 'Parar' : 'Stop') : (lang === 'pt' ? 'Ouvir' : 'Listen')}</span>
                                                         </button>
-                                                    )}
-                                                </div>
-                                            )}
+                                                        {!msg.imageUrl && (
+                                                            <button
+                                                                onClick={() => handleGenerateImage(msg.id, msg.content)}
+                                                                className="px-3 py-1.5 bg-white dark:bg-white/5 text-slate-500 hover:text-indigo-500 rounded-lg shadow-sm border border-gray-200 dark:border-white/10 hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all flex items-center gap-2"
+                                                                title={lang === 'pt' ? 'Gerar ilustração baseada no texto' : 'Generate illustration based on text'}
+                                                            >
+                                                                <Sparkles size={14} />
+                                                                <span className="text-[10px] font-black uppercase tracking-widest">{lang === 'pt' ? 'Ilustrar' : 'Illustrate'}</span>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
