@@ -548,10 +548,37 @@ export const generateCharacters = async (config: any, lang: string = 'pt', count
       const cleanText = cleanAIJSON(responseText);
       const start = cleanText.indexOf('[');
       const end = cleanText.lastIndexOf(']');
+      let parsed = [];
       if (start !== -1 && end !== -1) {
-        return JSON.parse(cleanText.substring(start, end + 1));
+        parsed = JSON.parse(cleanText.substring(start, end + 1));
+      } else {
+        parsed = JSON.parse(cleanText);
       }
-      return JSON.parse(cleanText);
+      
+      const array = Array.isArray(parsed) ? parsed : [parsed];
+      
+      return array.map((item: any) => {
+         if (typeof item !== 'object' || item === null) {
+            return { name: 'Desconhecido', role: 'Sidekick' };
+         }
+         
+         let nameStr = item.name;
+         if (typeof nameStr === 'object' && nameStr !== null) {
+            // Se a IA devolver name: { "Lysandra": "Protagonist" }
+            nameStr = Object.keys(nameStr)[0];
+         }
+         
+         // Se a IA usar o nome como chave em vez de 'name'
+         if (!nameStr) {
+            const keys = Object.keys(item).filter(k => k !== 'role' && k !== 'name');
+            if (keys.length > 0) nameStr = keys[0];
+         }
+         
+         return {
+            name: typeof nameStr === 'string' ? nameStr : 'Personagem',
+            role: typeof item.role === 'string' ? item.role : 'Sidekick'
+         };
+      });
     } catch (parseErr) {
       console.warn("[generateCharacters] JSON parse failed", parseErr);
       return [];

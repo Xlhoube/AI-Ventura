@@ -308,8 +308,8 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
 
                 // Extração visual e em tempo real
                 let displayContent = currentAIContent;
-                if (displayContent.includes('---SUGGESTIONS---')) {
-                    displayContent = displayContent.split('---SUGGESTIONS---')[0].trim();
+                if (/[-*]*SUGGESTIONS[-*]*/i.test(displayContent)) {
+                    displayContent = displayContent.split(/[-*]*SUGGESTIONS[-*]*/i)[0].trim();
                     // Também limpamos markdown de negrito e listas se a IA vazar formato
                     displayContent = displayContent.replace(/\n\**[1-3]\.\s*\*\*.+/g, '');
                 }
@@ -319,8 +319,8 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
 
             // Sanitização final do conteúdo antes de guardar na BD
             let finalCleanContent = currentAIContent;
-            if (finalCleanContent.includes('---SUGGESTIONS---')) {
-                finalCleanContent = finalCleanContent.split('---SUGGESTIONS---')[0].trim();
+            if (/[-*]*SUGGESTIONS[-*]*/i.test(finalCleanContent)) {
+                finalCleanContent = finalCleanContent.split(/[-*]*SUGGESTIONS[-*]*/i)[0].trim();
                 finalCleanContent = finalCleanContent.replace(/\n\**[1-3]\.\s*\*\*.+/g, '');
             }
 
