@@ -735,16 +735,6 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                                                                 {isSpeaking === msg.id ? <VolumeX size={14} /> : <Volume2 size={14} />}
                                                                 <span className="text-[10px] font-black uppercase tracking-widest">{isSpeaking === msg.id ? (lang === 'pt' ? 'Parar' : 'Stop') : (lang === 'pt' ? 'Ouvir' : 'Listen')}</span>
                                                             </button>
-                                                            {!msg.imageUrl && (
-                                                                <button
-                                                                    onClick={() => handleGenerateImage(msg.id, msg.content)}
-                                                                    className="px-3 py-1.5 bg-white dark:bg-white/5 text-slate-500 hover:text-indigo-500 rounded-lg shadow-sm border border-gray-200 dark:border-white/10 hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all flex items-center gap-2"
-                                                                    title={lang === 'pt' ? 'Gerar ilustração baseada no texto' : 'Generate illustration based on text'}
-                                                                >
-                                                                    <Sparkles size={14} />
-                                                                    <span className="text-[10px] font-black uppercase tracking-widest">{lang === 'pt' ? 'Ilustrar' : 'Illustrate'}</span>
-                                                                </button>
-                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
