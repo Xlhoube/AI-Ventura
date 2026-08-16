@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PenTool, Sparkles, Loader2, Wand2, Shield, Trash2, CheckCircle, Users2, Plus, Minus } from 'lucide-react';
 import { PageHeader, ApiSetupModal } from '@/components';
 import { Language } from '@/utils/constants';
-import { generatePremises, generateCharacters } from '@/services/ai';
+import { generatePremises, generateCharacters, generateRelationships } from '@/services/ai';
 import { joinCollaborationSession, updateSessionStory, updateSessionPhase } from '@/services/services';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -13,6 +13,7 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
     const [aiIdeas, setAiIdeas] = useState<string[]>([]);
     const [loadingAI, setLoadingAI] = useState(false);
     const [loadingCharsAI, setLoadingCharsAI] = useState(false);
+    const [loadingLinksAI, setLoadingLinksAI] = useState(false);
     const [editingChar, setEditingChar] = useState<any>(null);
     const [isHost, setIsHost] = useState(false);
     const [sessionParticipants, setSessionParticipants] = useState<any[]>([]);
@@ -147,6 +148,32 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
             }
         } finally {
             setLoadingCharsAI(false);
+        }
+    };
+
+    const fetchLinksAI = async () => {
+        if (!apiKeys[activeProvider]) {
+            setShowApiSetup(true);
+            return;
+        }
+
+        setLoadingLinksAI(true);
+        try {
+            const linksStr = await generateRelationships(config, lang);
+            if (linksStr && linksStr.trim() !== '') {
+                const currentLinks = config.charLinks ? config.charLinks + '\n' + linksStr : linksStr;
+                handleConfigChange({ ...config, charLinks: currentLinks });
+                if (onShowToast) onShowToast(lang === 'pt' ? 'Ligações mágicas geradas!' : 'Magic links generated!', 'success');
+            } else {
+                if (onShowToast) onShowToast(lang === 'pt' ? 'A IA não conseguiu gerar ligações.' : 'AI failed to generate links.', 'error');
+            }
+        } catch (e: any) {
+            console.error(e);
+            if (onShowToast) {
+                onShowToast(e.message || "Erro ao gerar ligações.", 'error');
+            }
+        } finally {
+            setLoadingLinksAI(false);
         }
     };
 
@@ -389,11 +416,17 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
 
             {step === 3 && (
                 <div className="max-w-5xl mx-auto space-y-8 bg-white dark:bg-[#121214] p-8 lg:p-12 rounded-[32px] border border-gray-200 dark:border-white/10 shadow-2xl mt-8">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500"><Users2 size={32} /></div>
-                        <div>
-                            <h3 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{t.charLinksTitle}</h3>
+                    <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500"><Users2 size={32} /></div>
+                            <div>
+                                <h3 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{t.charLinksTitle}</h3>
+                            </div>
                         </div>
+                        <button onClick={fetchLinksAI} disabled={loadingLinksAI || config.charProfiles.length < 2} className="px-5 py-2.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors flex items-center gap-2" title={lang === 'pt' ? 'Gera ligações automáticas baseadas nas personagens e na ideia' : 'Auto-generate connections based on characters and idea'}>
+                            {loadingLinksAI ? <Loader2 className="animate-spin" size={14} /> : <Wand2 size={14} />}
+                            <span className="hidden sm:inline">{lang === 'pt' ? 'Gerar Ligações' : 'Generate Links'}</span>
+                        </button>
                     </div>
                     <p className="text-slate-500 dark:text-slate-400 mb-6 font-medium text-lg leading-relaxed max-w-2xl">
                         {lang === 'pt' 

@@ -561,3 +561,24 @@ export const generateCharacters = async (config: any, lang: string = 'pt', count
     return [];
   }
 };
+
+export const generateRelationships = async (config: any, lang: string = 'pt') => {
+  try {
+    const charsList = config.charProfiles?.map((c: any) => c.name).join(', ') || '';
+    if (!charsList) return "";
+
+    const prompts: Record<string, string> = {
+      pt: `Baseado nesta história e nestes personagens, gera algumas ligações interpessoais ricas.\nIdeia: ${config.idea}\nPersonagens: ${charsList}\n\nDevolve APENAS um texto com ligações separadas por nova linha. Formato: Nome A é [relação] de Nome B\nNome C é [relação] de Nome A. Sem listas enumeradas, apenas uma frase por linha.`,
+      en: `Based on this story and characters, generate rich interpersonal connections.\nIdea: ${config.idea}\nCharacters: ${charsList}\n\nReturn ONLY text with connections separated by newline. Format: Name A is [relation] of Name B\nName C is [relation] of Name A. No bulleted lists, just one sentence per line.`,
+      fr: `Sur la base de cette histoire et de ces personnages, générez des liens interpersonnels riches.\nIdée: ${config.idea}\nPersonnages: ${charsList}\n\nRenvoyez UNIQUEMENT un texte avec des connexions séparées par un saut de ligne. Format: Nom A est [relation] de Nom B\nNom C est [relation] de Nom A. Pas de listes à puces, juste une phrase par ligne.`
+    };
+
+    const promptText = prompts[lang] || prompts['pt'];
+    const responseText = await executeUnifiedAI(promptText);
+    
+    return responseText.replace(/"/g, '').trim();
+  } catch (e) {
+    console.error("[generateRelationships] Erro:", e);
+    return "";
+  }
+};
