@@ -112,25 +112,108 @@ const cleanAIJSON = (text: string) => {
 
 
 const PT_PT_STRICT_RULES = `
-NORMAS LINGUÍSTICAS OBRIGATÓRIAS (PORTUGUÊS DE PORTUGAL - PT-PT):
-- É TERMINANTEMENTE PROIBIDO qualquer vocabulário, sintaxe ou estrutura de Português do Brasil (PT-BR).
-- PROIBIÇÃO DE GERÚNDIO: NUNCA uses gerúndio (ex: NÃO uses "fazendo", "andando", "enfrentando"; usa SEMPRE o infinitivo com preposição: "a fazer", "a andar", "a enfrentar").
-- PROIBIÇÃO DE "EM UM / EM UMA": NUNCA uses "em um" ou "em uma"; usa SEMPRE as contrações "num", "numa", "nuns", "numas".
-- PRONOMES E COLOCAÇÃO PRONOMINAL: Usa a próclise e ênclise de acordo com a norma de Portugal (ex: "lança-se", "revelou-se", "não se viu").
-- ARTIGOS COM POSSESSIVOS: Em PT-PT usa-se sempre o artigo antes do pronome possessivo (ex: "o seu fato", "a sua espada", "as suas capacidades", NUNCA "seu fato", "sua espada").
-- VOCABULÁRIO ESPECÍFICO PT-PT:
-  * "fato" em vez de "traje" ou "terno"
-  * "equipa" em vez de "equipe"
-  * "ecrã" em vez de "tela"
-  * "comboio" em vez de "trem"
-  * "autocarro" em vez de "ônibus"
-  * "casa de banho" em vez de "banheiro"
-  * "telemóvel" em vez de "celular"
-  * "rapariga" em vez de "garota" / "moça"
-  * "miúdo/a" em vez de "garoto/a"
-  * "facto" (com c) em vez de "fato" (acontecimento)
-  * "hipótese" / "probabilidade" em vez de "chance"
-  * Moeda: SEMPRE Euros (€), NUNCA Reais (R$).
+═══════════════════════════════════════════════════════════════════
+NORMAS ESTRITAS DE PORTUGUÊS EUROPEU (PT-PT) — OBRIGATÓRIAS
+═══════════════════════════════════════════════════════════════════
+
+▌ 1. FORMAS VERBAIS E ASPETO PROGRESSIVO
+────────────────────────────────────────
+• PROIBIDO gerúndio para ação em curso. Portugal usa "ESTAR A + INFINITIVO".
+  ✗ ERRADO (PT-BR): "Estava fazendo", "está correndo", "foi chegando"
+  ✓ CORRETO (PT-PT): "Estava a fazer", "está a correr", "foi chegando" → "foi chegando" usa-se somente como modo adverbial
+• O gerúndio só é aceitável como modo adverbial isolado:
+  ✓ "Suspirando, afastou-se" (= enquanto suspirava) — uso adverbial válido.
+• Para perífrases de progressão, usa SEMPRE "a + infinitivo":
+  "estava a trabalhar", "continua a chover", "ficou a olhar"
+
+▌ 2. COLOCAÇÃO PRONOMINAL (ÊNCLISE vs. PRÓCLISE)
+──────────────────────────────────────────────────
+• Portugal prefere a ÊNCLISE (pronome DEPOIS do verbo) em frases afirmativas:
+  ✓ "Deu-lhe um sorriso", "Levantou-se", "Sentiu-o aproximar-se"
+  ✗ Evitar próclise em início de frase: NÃO "Se levantou", NÃO "Me olhou"
+• PRÓCLISE é obrigatória após palavras negativas e subordinadores:
+  ✓ "Não se viu", "Que o faça", "Nunca me esquecerei", "Já o sabia"
+• Com "ESTAR A + INFINITIVO", o pronome liga-se ao INFINITIVO:
+  ✓ "Estava a vestir-se" (não: "estava-se a vestir" exceto registo informal)
+
+▌ 3. CONTRAÇÕES OBRIGATÓRIAS
+──────────────────────────────
+• "em + um/uma/uns/umas" → SEMPRE "num / numa / nuns / numas"
+  ✗ "em um momento"  ✓ "num momento"
+  ✗ "em uma noite"   ✓ "numa noite"
+• "de + o/a/os/as" → "do / da / dos / das"
+• "a + o/a/os/as" → "ao / à / aos / às"
+• "por + o/a" → "pelo / pela / pelos / pelas"
+• "de + este/esta/estes/estas" → "deste / desta / destes / destas"
+• "de + esse/essa" → "desse / dessa"
+• "de + aquele/aquela" → "daquele / daquela"
+• "em + este/essa/aquele" → "neste / nessa / naquele" etc.
+
+▌ 4. ARTIGO COM PRONOME POSSESSIVO
+────────────────────────────────────
+• Em PT-PT usa-se SEMPRE o artigo definido antes do possessivo:
+  ✓ "o seu fato", "a sua espada", "os seus livros", "as suas palavras"
+  ✗ NUNCA "seu fato", "sua espada" (construção brasileira)
+• "tu" → possessivo "teu/tua/teus/tuas" (com artigo: "o teu", "a tua")
+• "você/o senhor/ela" → possessivo "seu/sua/seus/suas" (com artigo: "o seu")
+
+▌ 5. FORMAS DE TRATAMENTO
+───────────────────────────
+• Informal (amigos, família, pares): "TU" + verbo na 2.ª pessoa do singular
+  ✓ "Tu vais?", "Tu queres?", "Sabes o que aconteceu?"
+• Formal (desconhecidos, hierarquia): "O SENHOR / A SENHORA" + 3.ª pessoa
+  ✓ "O senhor quer acompanhar-me?", "A senhora tem razão"
+• "Você" é usado com moderação em PT-PT; evitar em tom neutro — pode soar frio.
+• NUNCA misturar tratamentos: se usar "tu", nunca dizer "seu" (diga "teu").
+
+▌ 6. VOCABULÁRIO — PT-PT OBRIGATÓRIO
+───────────────────────────────────────
+Usar SEMPRE a forma europeia:
+  PT-PT          ↔  PT-BR PROIBIDO
+  ─────────────────────────────────
+  fato (roupa)   ↔  terno / traje
+  equipa         ↔  equipe
+  ecrã           ↔  tela
+  autocarro      ↔  ônibus
+  comboio        ↔  trem
+  casa de banho  ↔  banheiro
+  telemóvel      ↔  celular
+  rapariga       ↔  garota / moça
+  miúdo / miúda  ↔  garoto / garota (criança)
+  apelido        ↔  sobrenome
+  hipótese       ↔  chance
+  média (comunicação) ↔ mídia
+  à vontade      ↔  à vontade (igual — mas "em casa" sem "à")
+  boleia         ↔  carona
+  fixe / bestial ↔  legal / bacana
+  facto (acontecimento) ↔ fato (acontecimento — PT-BR)
+  frigorífico    ↔  geladeira
+  bife / prego   ↔  bife (igual, mas "prego" é sande em PT-PT)
+  sandes / sanduíche ↔ lanche / sanduíche (PT-BR)
+  Euros (€)      ↔  Reais (R$) — PROIBIDO usar Reais
+
+▌ 7. ORTOGRAFIA (ACORDO ORTOGRÁFICO DE 1990 — VERSÃO PT)
+──────────────────────────────────────────────────────────
+• Em PT o AO90 suprimiu consoantes mudas (antes pronunciadas em PT-BR):
+  ✓ "ato" (não "acto"), "receção" (não "recepção"), "ótimo" (não "ótimo" — igual)
+  ✓ "adotar", "adepto", "facto" mantém o 'c' pois é pronunciado em PT
+• Acento diferencial mantido: "pôr" (verbo) vs "por" (preposição)
+• "pôde" (passado) vs "pode" (presente)
+
+▌ 8. SINTAXE E ESTILO LITERÁRIO PT-PT
+────────────────────────────────────────
+• Preferência pela OMISSÃO DO PRONOME SUJEITO quando a conjugação é clara:
+  ✓ "Foi ao mercado" (não "Ele foi ao mercado" sem necessidade de ênfase)
+• Uso literário do conjuntivo (PT-BR: subjuntivo):
+  ✓ "Esperava que viesse", "Era necessário que soubesse"
+• Advérbios de negação: "não... nem" (não "não... nem que")
+• "Ir + infinitivo" para futuro próximo: "vou sair", "vais ver"
+• Preposição "a" com movimento: "vou ao cinema" (não "vou no cinema")
+
+═══════════════════════════════════════════════════════════════════
+VERIFICA SEMPRE: nenhum termo, estrutura ou expressão brasileira.
+O texto deve soar natural a um leitor português de Portugal.
+═══════════════════════════════════════════════════════════════════
 `;
 
 // NOVA FUNÇÃO: Gerar Apenas Sugestões (Para Resume/Reload) - OTIMIZADA
