@@ -91,6 +91,28 @@ const cleanAIJSON = (text: string) => {
 };
 
 
+const PT_PT_STRICT_RULES = `
+NORMAS LINGUÍSTICAS OBRIGATÓRIAS (PORTUGUÊS DE PORTUGAL - PT-PT):
+- É TERMINANTEMENTE PROIBIDO qualquer vocabulário, sintaxe ou estrutura de Português do Brasil (PT-BR).
+- PROIBIÇÃO DE GERÚNDIO: NUNCA uses gerúndio (ex: NÃO uses "fazendo", "andando", "enfrentando"; usa SEMPRE o infinitivo com preposição: "a fazer", "a andar", "a enfrentar").
+- PROIBIÇÃO DE "EM UM / EM UMA": NUNCA uses "em um" ou "em uma"; usa SEMPRE as contrações "num", "numa", "nuns", "numas".
+- PRONOMES E COLOCAÇÃO PRONOMINAL: Usa a próclise e ênclise de acordo com a norma de Portugal (ex: "lança-se", "revelou-se", "não se viu").
+- ARTIGOS COM POSSESSIVOS: Em PT-PT usa-se sempre o artigo antes do pronome possessivo (ex: "o seu fato", "a sua espada", "as suas capacidades", NUNCA "seu fato", "sua espada").
+- VOCABULÁRIO ESPECÍFICO PT-PT:
+  * "fato" em vez de "traje" ou "terno"
+  * "equipa" em vez de "equipe"
+  * "ecrã" em vez de "tela"
+  * "comboio" em vez de "trem"
+  * "autocarro" em vez de "ônibus"
+  * "casa de banho" em vez de "banheiro"
+  * "telemóvel" em vez de "celular"
+  * "rapariga" em vez de "garota" / "moça"
+  * "miúdo/a" em vez de "garoto/a"
+  * "facto" (com c) em vez de "fato" (acontecimento)
+  * "hipótese" / "probabilidade" em vez de "chance"
+  * Moeda: SEMPRE Euros (€), NUNCA Reais (R$).
+`;
+
 // NOVA FUNÇÃO: Gerar Apenas Sugestões (Para Resume/Reload) - OTIMIZADA
 export const generateSuggestions = async (
   messages: any[],
@@ -107,7 +129,8 @@ export const generateSuggestions = async (
     const historyStr = recentMessages.map(m => `${m.role === 'user' ? 'AUTOR' : 'EDITOR'}: ${m.content}`).join('\n\n');
 
     const instructions = {
-      pt: "Com base neste excerto recente da história, devolve APENAS um array JSON contendo 3 sugestões curtas e criativas (strings) para a próxima ação do Autor. Usa OBRIGATORIAMENTE Português de Portugal (PT-PT). É PROIBIDO o uso de gerúndio e de construções como 'em um/uma' (usa 'num/numa'). Usa SEMPRE Euros (€) e NUNCA Reais (R$).",
+      pt: `Com base neste excerto recente da história, devolve APENAS um array JSON contendo 3 sugestões curtas e criativas (strings) para a próxima ação do Autor.
+${PT_PT_STRICT_RULES}`,
       en: "Based on this recent excerpt of the story, return ONLY a JSON array containing 3 short and creative suggestions (strings) for the Author's next action, in English.",
       fr: "Basé sur cet extrait récent de l'histoire, retournez UNIQUEMENT un tableau JSON contenant 3 suggestions courtes et créatives (chaînes) pour la prochaine action de l'Auteur, en Français."
     };
@@ -265,7 +288,14 @@ export const streamAIConversation = async (
 
     // INSTRUÇÕES REFORÇADAS PARA IGNORAR COMANDOS E EVITAR META-COMENTÁRIOS E LISTAS MARKDOWN NAS SUGESTOES
     const instructions = {
-      pt: "DESENVOLVER PROSA: Escreve a narrativa em PORTUGUÊS DE PORTUGAL (PT-PT). REGRAS DE OURO: 1. NUNCA respondas a comentários do autor. 2. Se o input for uma instrução, apenas escreve a história ignorando o comando. 3. O teu output deve ser 100% narrativa literária. 4. Usa SEMPRE a moeda Euro (€) e NUNCA Reais (R$). 5. No final, adiciona EXATAMENTE '---SUGGESTIONS---' seguido de 3 opções separadas por ' | ' sem qualquer markdown ou listas (exemplo: ---SUGGESTIONS---Opção UM | Opção DOIS | Opção TRES).",
+      pt: `DESENVOLVER PROSA LITERÁRIA: Escreve a narrativa estritamente em PORTUGUÊS DE PORTUGAL (PT-PT).
+REGRAS DE OURO:
+1. ${PT_PT_STRICT_RULES}
+2. NUNCA respondas a comentários do autor (ex: 'ok', 'desculpa').
+3. Se o input for uma instrução, apenas escreve a história integrando o pedido sem meta-comentários.
+4. O teu output deve ser 100% narrativa literária imersiva e de alta qualidade.
+5. Cada fala de personagem deve estar num novo parágrafo com travessão (—).
+6. No final, adiciona EXATAMENTE '---SUGGESTIONS---' seguido de 3 opções curtas em PT-PT separadas por ' | ' sem markdown ou listas (exemplo: ---SUGGESTIONS---Investigar o cofre | Conversar com o guarda | Fugir pelas traseiras).`,
       en: "DEVELOP PROSE: Write the narrative in ENGLISH. GOLDEN RULES: 1. NEVER reply to user comments (e.g., 'ok', 'sorry'). 2. If the input is 'continue' or a command, just write the story and ignore the command text in the narrative. 3. Your output must be 100% literary narrative. 4. At the end, add EXACTLY '---SUGGESTIONS---' followed by 3 options separated by ' | ' without any markdown, numbers, or lists (example: ---SUGGESTIONS---Option ONE | Option TWO | Option THREE).",
       fr: "DÉVELOPPER LA PROSE : Écrivez la narration en FRANÇAIS. RÈGLES D'OR : 1. NE JAMAIS répondre aux commentaires de l'auteur (ex : 'ok', 'désolé'). 2. Si l'entrée est une commande, écrivez juste l'histoire et ignorez le texte de commande. 3. Votre sortie doit être 100% narrative. 4. À la fin, ajoutez EXACTEMENT '---SUGGESTIONS---' suivi de 3 options séparées par ' | ' sans aucun markdown, numéros ou listes (exemple: ---SUGGESTIONS---Option UNE | Option DEUX | Option TROIS)."
     };
@@ -291,7 +321,7 @@ export const polishManuscript = async (messages: any[], lang: string, currentTit
     : allAIContent;
 
   const promptLangMap: Record<string, string> = {
-    pt: 'PORTUGUÊS (PT-PT)',
+    pt: 'PORTUGUÊS DE PORTUGAL (PT-PT ESTRITO)',
     fr: 'FRANÇAIS',
     en: 'ENGLISH'
   };
@@ -299,10 +329,13 @@ export const polishManuscript = async (messages: any[], lang: string, currentTit
   const targetLang = promptLangMap[lang] || 'ENGLISH';
 
   const prompts: Record<string, string> = {
-    pt: `Atua como um editor literário sénior. Lê a história abaixo e cria o material editorial final em ${targetLang}.
+    pt: `Atua como um editor literário sénior de Lisboa. Lê a história abaixo e cria o material editorial final em PORTUGUÊS DE PORTUGAL (PT-PT).
+      
+      ${PT_PT_STRICT_RULES}
+      
       CRITÉRIOS OBRIGATÓRIOS:
-      1. CRIA EXATAMENTE 3 OPÇÕES DE TÍTULOS CRIATIVOS e DISTINTOS para a obra num array de strings.
-      2. Cria uma SINOPSE EDITORIAL envolvente.
+      1. CRIA EXATAMENTE 3 OPÇÕES DE TÍTULOS CRIATIVOS e DISTINTOS para a obra num array de strings em PT-PT.
+      2. Cria uma SINOPSE EDITORIAL envolvente rigorosamente em PT-PT (sem gerúndios, usando "numa", "o seu fato", "a enfrentar", etc. Proibido PT-BR!).
       
       Retorna APENAS JSON válido com "titleOptions" (Array de 3 strings) e "synopsis". Não devolvas o conteúdo nem markdown.`,
 
@@ -460,11 +493,14 @@ export const generatePremises = async (lang: string, genre?: string, subTema?: s
     const randomSeed = seeds[Math.floor(Math.random() * seeds.length)];
 
     const prompts: Record<string, string> = {
-      pt: `Gera 3 conceitos de obras literárias (ideias base para livros) ALTAMENTE ORIGINAIS e ÚNICAS (foge de clichés comuns) ${genre ? `do género literário "${genre}"` : "de géneros variados"} em PORTUGUÊS.
+      pt: `Gera 3 conceitos de obras literárias (ideias base para livros) ALTAMENTE ORIGINAIS e ÚNICAS (foge de clichés comuns) ${genre ? `do género literário "${genre}"` : "de géneros variados"} ESTRITAMENTE EM PORTUGUÊS DE PORTUGAL (PT-PT).
+      
+      ${PT_PT_STRICT_RULES}
+      
       ${subTema && subTema !== 'none' ? `Tema / Matiz Adicional: ${subTema}.` : ''}
       ${timePeriod ? `Posição no Tempo / Época da Narrativa: ${timePeriod}.` : ''}
       Para garantir variedade, foca-te subtilmente neste elemento narrativo: "${randomSeed}".
-      Devolve OBRIGATORIAMENTE um array JSON de strings. CADA STRING DEVE ESTAR NO FORMATO "TÍTULO DA OBRA: Resumo detalhado da premissa (2 a 3 frases)". NUNCA devolvas apenas o título.`,
+      Devolve OBRIGATORIAMENTE um array JSON de strings. CADA STRING DEVE ESTAR NO FORMATO "TÍTULO DA OBRA: Resumo detalhado da premissa (2 a 3 frases em PT-PT)". NUNCA devolvas apenas o título.`,
 
       en: `Generate 3 HIGHLY ORIGINAL and UNIQUE literary work concepts (book premises) (avoiding common clichés) ${genre ? `of the literary genre "${genre}"` : "of varied genres"} in ENGLISH.
       ${subTema && subTema !== 'none' ? `Theme / Additional Nuance: ${subTema}.` : ''}
@@ -523,12 +559,13 @@ export const generatePremises = async (lang: string, genre?: string, subTema?: s
 export const generateStoryTitle = async (config: any, lang: Language = 'pt') => {
   try {
     const prompts: Record<string, string> = {
-      pt: `Com base nesta ideia de história, gera um título literário ÚNICO, CURTO e CRIATIVO (máximo 6 palavras) ESTRITAMENTE EM PORTUGUÊS.
+      pt: `Com base nesta ideia de história, gera um título literário ÚNICO, CURTO e CRIATIVO (máximo 6 palavras) ESTRITAMENTE EM PORTUGUÊS DE PORTUGAL (PT-PT).
+      ${PT_PT_STRICT_RULES}
       Género: ${config.genre || 'Vários'}
       Ideia: ${config.idea}
       Personagens: ${config.characters || 'Várias'}
       
-      Devolve APENAS o título em PORTUGUÊS, sem aspas ou explicações.`,
+      Devolve APENAS o título em PT-PT, sem aspas ou explicações.`,
 
       en: `Based on this story idea, generate a UNIQUE, SHORT, and CREATIVE literary title (maximum 6 words) STRICTLY IN ENGLISH.
       Genre: ${config.genre || 'Various'}
@@ -580,7 +617,13 @@ export const testGeminiAPIKey = async (apiKey: string): Promise<boolean> => {
 export const generateCharacters = async (config: any, lang: string = 'pt', count: number = 3) => {
   try {
     const prompts: Record<string, string> = {
-      pt: `Baseado nesta premissa de história, gera ${count} personagens interessantes.\nGénero: ${config.genre || 'Desconhecido'}\nIdeia: ${config.idea}\n\nDevolve APENAS um array JSON de objetos com este formato:\n[{"name": "Nome", "role": "Protagonist | Antagonist | Sidekick"}]`,
+      pt: `Baseado nesta premissa de história, gera ${count} personagens interessantes em PORTUGUÊS DE PORTUGAL (PT-PT).
+${PT_PT_STRICT_RULES}
+Género: ${config.genre || 'Desconhecido'}
+Ideia: ${config.idea}
+
+Devolve APENAS um array JSON de objetos com este formato:
+[{"name": "Nome", "role": "Protagonist | Antagonist | Sidekick"}]`,
       en: `Based on this story premise, generate ${count} interesting characters.\nGenre: ${config.genre || 'Unknown'}\nIdea: ${config.idea}\n\nReturn ONLY a JSON array of objects with this format:\n[{"name": "Name", "role": "Protagonist | Antagonist | Sidekick"}]`,
       fr: `Sur la base de cette prémisse d'histoire, générez ${count} personnages intéressants.\nGenre: ${config.genre || 'Inconnu'}\nIdée: ${config.idea}\n\nRenvoyez UNIQUEMENT un tableau JSON d'objets avec ce format:\n[{"name": "Nom", "role": "Protagonist | Antagonist | Sidekick"}]`
     };
@@ -640,7 +683,13 @@ export const generateRelationships = async (config: any, lang: string = 'pt') =>
     if (!charsList) return "";
 
     const prompts: Record<string, string> = {
-      pt: `Baseado nesta história e nestes personagens, gera algumas ligações interpessoais ricas.\nIdeia: ${config.idea}\nPersonagens: ${charsList}\n\nDevolve APENAS um texto com ligações separadas por nova linha. Formato: Nome A é [relação] de Nome B\nNome C é [relação] de Nome A. Sem listas enumeradas, apenas uma frase por linha.`,
+      pt: `Baseado nesta história e nestas personagens, gera ligações interpessoais ricas estritamente em PORTUGUÊS DE PORTUGAL (PT-PT).
+${PT_PT_STRICT_RULES}
+Ideia: ${config.idea}
+Personagens: ${charsList}
+
+Devolve APENAS um texto com ligações separadas por nova linha. Formato: Nome A é [relação em PT-PT] de Nome B
+Nome C é [relação em PT-PT] de Nome A. Sem listas enumeradas, apenas uma frase por linha.`,
       en: `Based on this story and characters, generate rich interpersonal connections.\nIdea: ${config.idea}\nCharacters: ${charsList}\n\nReturn ONLY text with connections separated by newline. Format: Name A is [relation] of Name B\nName C is [relation] of Name A. No bulleted lists, just one sentence per line.`,
       fr: `Sur la base de cette histoire et de ces personnages, générez des liens interpersonnels riches.\nIdée: ${config.idea}\nPersonnages: ${charsList}\n\nRenvoyez UNIQUEMENT un texte avec des connexions séparées par un saut de ligne. Format: Nom A est [relation] de Nom B\nNom C est [relation] de Nom A. Pas de listes à puces, juste une phrase par ligne.`
     };
