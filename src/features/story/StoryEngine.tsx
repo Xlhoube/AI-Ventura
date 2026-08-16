@@ -550,7 +550,49 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
 
             <div className="flex flex-1 overflow-hidden relative">
 
-                <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 scroll-smooth pb-48 relative">
+                <div className={`w-20 md:w-24 shrink-0 border-r border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-[#121214]/50 flex flex-col items-center py-6 gap-6 z-[600] transition-all duration-500 overflow-y-auto custom-scrollbar ${zenMode ? 'fixed left-0 top-0 bottom-0 h-full border-r border-white/10 bg-slate-900/80 dark:bg-black/80 backdrop-blur-xl' : 'relative'}`}>
+
+                    <div className="flex flex-col items-center gap-2 w-full px-2 mt-4">
+                        <button onClick={() => handleFontSizeChange(true)} className={`w-full h-10 flex items-center justify-center rounded-xl transition-all shadow-sm text-xs font-black border ${zenMode ? 'bg-white/10 text-white border-white/10 hover:bg-white/20' : 'bg-white dark:bg-white/5 text-slate-500 hover:bg-gray-100 dark:hover:bg-white/10 border-gray-200 dark:border-white/5'}`}>A+</button>
+                        <button onClick={() => handleFontSizeChange(false)} className={`w-full h-10 flex items-center justify-center rounded-xl transition-all shadow-sm text-xs font-black border ${zenMode ? 'bg-white/10 text-white border-white/10 hover:bg-white/20' : 'bg-white dark:bg-white/5 text-slate-500 hover:bg-gray-100 dark:hover:bg-white/10 border-gray-200 dark:border-white/5'}`}>A-</button>
+                    </div>
+
+                    <div className="w-8 h-px bg-gray-200 dark:bg-white/10 shrink-0"></div>
+
+                    <div className="flex flex-col items-center gap-2 w-full px-2">
+                        {sessionCode ? (
+                            <button
+                                onClick={() => setShowParticipants(true)}
+                                className={`w-full h-10 flex items-center justify-center rounded-xl transition-all relative border ${zenMode ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/40' : 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20 hover:bg-indigo-100 dark:hover:bg-indigo-500/20'}`}
+                                title={t.turnParticipants}
+                            >
+                                <span className="text-[10px] font-black uppercase">{lang === 'pt' ? 'Autores' : 'Authors'}</span>
+                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 text-white text-[8px] font-bold flex items-center justify-center rounded-full border-2 border-white dark:border-[#121214]">{participants.length}</span>
+                            </button>
+                        ) : (
+                            <button onClick={handleStartCoop} className={`w-full h-10 flex items-center justify-center rounded-xl transition-all shadow-sm border ${zenMode ? 'bg-white/10 text-white hover:text-indigo-300 border-white/10 hover:bg-white/20' : 'bg-white dark:bg-white/5 text-slate-500 hover:text-indigo-500 border-gray-200 dark:border-white/5 hover:border-indigo-200'}`} title={t.startLiveSession}>
+                                <span className="text-[10px] font-black uppercase">Co-Op</span>
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="w-8 h-px bg-gray-200 dark:bg-white/10 shrink-0"></div>
+
+                    <div className="flex flex-col items-center gap-3 w-full px-2">
+                        <button onClick={() => handleAction('ending')} className={`w-full h-10 flex items-center justify-center rounded-xl transition-all shadow-sm border ${zenMode ? 'bg-white/10 text-white border-white/10 hover:bg-white/20' : 'bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-white/10 border-gray-200 dark:border-white/5'}`} title={t.requestEnding}>
+                            <span className="text-[9px] font-black uppercase text-center leading-none">{lang === 'pt' ? 'Sugerir\nFinais' : 'Suggest\nEnds'}</span>
+                        </button>
+                        <button onClick={() => handleAction('definitive')} className={`w-full h-10 flex items-center justify-center rounded-xl transition-all shadow-sm border ${zenMode ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/40' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 border-emerald-200 dark:border-emerald-500/20'}`} title={t.requestDefinitiveEnding}>
+                            <span className="text-[9px] font-black uppercase text-center leading-none">{lang === 'pt' ? 'Fim\nTotal' : 'End'}</span>
+                        </button>
+                        <button onClick={() => onFinalizeBook(messages)} className={`w-full h-10 flex items-center justify-center rounded-xl transition-all shadow-sm border ${zenMode ? 'bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/40' : 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-500/20 border-purple-200 dark:border-purple-500/20'}`} title={t.exportBook}>
+                            <span className="text-[10px] font-black uppercase">{lang === 'pt' ? 'Ler' : 'Read'}</span>
+                        </button>
+                    </div>
+
+                </div>
+
+                <div ref={scrollContainerRef} className={`flex-1 overflow-y-auto p-4 md:p-8 space-y-8 scroll-smooth pb-48 relative ${zenMode ? 'pl-24 md:pl-32' : ''}`}>
                     {/* Botão para sair do Modo Zen */}
                     {zenMode && (
                         <button
@@ -718,48 +760,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
 
                 <InventorySidebar />
 
-                <div className={`w-16 md:w-20 border-l border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-[#121214]/50 flex flex-col items-center py-6 gap-6 z-10 transition-all duration-500 ${zenMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100 translate-x-0'}`}>
 
-                    <div className="flex flex-col items-center gap-2">
-                        <button onClick={() => handleFontSizeChange(true)} className="w-10 h-10 flex items-center justify-center bg-white dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-all text-slate-500 border border-gray-200 dark:border-white/5 shadow-sm"><Plus size={16} /></button>
-                        <span className="text-[10px] font-black text-slate-400"><Type size={14} /></span>
-                        <button onClick={() => handleFontSizeChange(false)} className="w-10 h-10 flex items-center justify-center bg-white dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-all text-slate-500 border border-gray-200 dark:border-white/5 shadow-sm"><Minus size={16} /></button>
-                    </div>
-
-                    <div className="w-8 h-px bg-gray-200 dark:bg-white/10"></div>
-
-                    <div className="flex flex-col items-center gap-2">
-                        {sessionCode ? (
-                            <button
-                                onClick={() => setShowParticipants(true)}
-                                className="w-10 h-10 flex items-center justify-center bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-200 dark:border-indigo-500/20 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all relative"
-                                title={t.turnParticipants}
-                            >
-                                <Users2 size={18} />
-                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 text-white text-[8px] font-bold flex items-center justify-center rounded-full border-2 border-white dark:border-[#121214]">{participants.length}</span>
-                            </button>
-                        ) : (
-                            <button onClick={handleStartCoop} className="w-10 h-10 flex items-center justify-center bg-white dark:bg-white/5 text-slate-500 hover:text-indigo-500 rounded-xl transition-all border border-gray-200 dark:border-white/5 hover:border-indigo-200 shadow-sm" title={t.startLiveSession}>
-                                <Wifi size={18} />
-                            </button>
-                        )}
-                    </div>
-
-                    <div className="w-8 h-px bg-gray-200 dark:bg-white/10"></div>
-
-                    <div className="flex flex-col items-center gap-3">
-                        <button onClick={() => handleAction('ending')} className="w-10 h-10 flex items-center justify-center bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all border border-gray-200 dark:border-white/5 shadow-sm" title={t.requestEnding}>
-                            <PenTool size={18} />
-                        </button>
-                        <button onClick={() => handleAction('definitive')} className="w-10 h-10 flex items-center justify-center bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 rounded-xl transition-all border border-emerald-200 dark:border-emerald-500/20 shadow-sm" title={t.requestDefinitiveEnding}>
-                            <CheckCircle size={18} />
-                        </button>
-                        <button onClick={() => onFinalizeBook(messages)} className="w-10 h-10 flex items-center justify-center bg-purple-50 dark:bg-purple-500/10 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-500/20 rounded-xl transition-all border border-purple-200 dark:border-purple-500/20 shadow-sm" title={t.exportBook}>
-                            <BookOpen size={18} />
-                        </button>
-                    </div>
-
-                </div>
             </div>
 
             <div className={`bg-white/90 dark:bg-[#0a0a0c]/90 backdrop-blur-xl border-t border-gray-200 dark:border-white/10 p-4 md:p-6 z-20 flex flex-col gap-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transition-all duration-500 ${zenMode ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
