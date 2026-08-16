@@ -13,7 +13,7 @@ export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, 
 
     const [confirmReopen, setConfirmReopen] = useState(false);
 
-    const manuscriptContent = story.manuscript?.content || story.messages?.filter((m: any) => m.role === 'ai').map((m: any) => m.content).join('\n\n') || '';
+    const manuscriptContent = story.manuscript?.content || story.messages?.filter((m: any) => m.role === 'ai').map((m: any) => m.imageUrl ? `${m.content}\n\n[IMAGE:${m.id}]` : m.content).join('\n\n') || '';
 
     const manuscript = {
         title: story.manuscript?.title || story.title,
@@ -105,7 +105,20 @@ export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, 
 
                 <div className="prose prose-lg dark:prose-invert max-w-none">
                     <div className="font-serif text-xl leading-[2] text-gray-800 dark:text-slate-200 print:text-black first-letter:text-6xl first-letter:font-black first-letter:mr-3 first-letter:float-left first-letter:text-indigo-500">
-                        {renderNarrativeWithBreaks(displayContent)}
+                        {displayContent.split(/\[IMAGE:([^\]]+)\]/).map((part: string, index: number) => {
+                            if (index % 2 === 1) {
+                                const msg = story.messages?.find((m: any) => m.id === part);
+                                if (msg && msg.imageUrl) {
+                                    return (
+                                        <div key={`img-${index}`} className="my-12 w-full flex justify-center break-inside-avoid">
+                                            <img src={msg.imageUrl} alt="Ilustração da Obra" className="max-w-full md:max-w-3xl h-auto rounded-xl shadow-2xl border-4 border-white dark:border-white/10 print:shadow-none print:border-none print:max-w-full" />
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            }
+                            return <React.Fragment key={`text-${index}`}>{renderNarrativeWithBreaks(part)}</React.Fragment>;
+                        })}
                     </div>
                 </div>
             </div>

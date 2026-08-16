@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    ChevronLeft, Sparkles, Loader2, Send, Wifi, Lock, PenTool, CheckCircle, Plus, Minus, Type, Users2, HelpCircle, Info, X, Map, Shield, Volume2, VolumeX, Eye, EyeOff, Trash2
+    ChevronLeft, Sparkles, Loader2, Send, Wifi, Lock, PenTool, CheckCircle, Plus, Minus, Type, Users2, HelpCircle, Info, X, Map, Shield, Volume2, VolumeX, Eye, EyeOff, Trash2, BookOpen
 } from 'lucide-react';
 import { requestImageGeneration, streamAIConversation, generateSuggestions, extractStoryState, generateImagePrompt } from '@/services/ai';
 import { ConfirmModal, ParticipantsModal } from '@/components';
@@ -344,6 +344,8 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
             if (isNewChapter) {
                 handleGenerateImage(aiMsgId, currentAIContent);
                 onShowToast('A gerar imagem para o novo capítulo...', 'info');
+            } else if (initialConfig.config?.autoGenerateImages) {
+                handleGenerateImage(aiMsgId, currentAIContent);
             }
 
             // Atraso de 3s antes de gerar sugestões para evitar rate limit
@@ -403,7 +405,8 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
         const context = [...messages, hiddenMsg];
 
         if (actionType === 'definitive') {
-            onFinalizeBook(messages);
+            const definitivePrompt = t.definitivePrompt || 'Escreve o texto de fecho da obra. Prepara o cenário para os momentos finais.';
+            await handleAIStream(definitivePrompt, 'ending', context, activeNodeId, false);
         } else {
             await handleAIStream(prompt, 'ending', context, activeNodeId, true);
         }
@@ -750,6 +753,9 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                         </button>
                         <button onClick={() => handleAction('definitive')} className="w-10 h-10 flex items-center justify-center bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 rounded-xl transition-all border border-emerald-200 dark:border-emerald-500/20 shadow-sm" title={t.requestDefinitiveEnding}>
                             <CheckCircle size={18} />
+                        </button>
+                        <button onClick={() => onFinalizeBook(messages)} className="w-10 h-10 flex items-center justify-center bg-purple-50 dark:bg-purple-500/10 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-500/20 rounded-xl transition-all border border-purple-200 dark:border-purple-500/20 shadow-sm" title={t.exportBook}>
+                            <BookOpen size={18} />
                         </button>
                     </div>
 

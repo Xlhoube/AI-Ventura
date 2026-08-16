@@ -609,6 +609,18 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                     </div>
                     <h3 className="text-5xl lg:text-7xl font-black text-gray-900 dark:text-white tracking-tighter mb-6">{t.allSetTitle}</h3>
                     <p className="text-xl lg:text-2xl text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-medium leading-relaxed">{t.allSetDesc}</p>
+                    
+                    <div className="pt-12 flex justify-center items-center gap-4">
+                        <span className="text-sm font-bold text-gray-700 dark:text-slate-300">
+                            {t.autoGenerateImages}
+                        </span>
+                        <button
+                            onClick={() => handleConfigChange({ ...config, autoGenerateImages: !config.autoGenerateImages })}
+                            className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 focus:outline-none ${config.autoGenerateImages ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-700'}`}
+                        >
+                            <div className={`w-6 h-6 rounded-full bg-white transition-transform duration-300 shadow-md ${config.autoGenerateImages ? 'translate-x-6' : 'translate-x-0'}`} />
+                        </button>
+                    </div>
                 </div>
             )}
 
