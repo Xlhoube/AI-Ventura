@@ -77,16 +77,36 @@ const formatAIError = (e: any): Error => {
   return new Error(msg);
 };
 
-// HELPER: Limpar JSON vindo da IA (remove ```json e ```)
+// HELPER: Limpar JSON vindo da IA (extrai blocos ```json ou [ / { com máxima robustez)
 const cleanAIJSON = (text: string) => {
   if (!text) return "";
   let cleaned = text.trim();
+
   // Remove blocos de código markdown se existirem
-  if (cleaned.startsWith('```json')) {
-    cleaned = cleaned.replace(/^```json/, '').replace(/```$/, '');
-  } else if (cleaned.startsWith('```')) {
-    cleaned = cleaned.replace(/^```/, '').replace(/```$/, '');
+  const codeBlockMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (codeBlockMatch) {
+    cleaned = codeBlockMatch[1].trim();
   }
+
+  // Encontra o primeiro [ ou { e o último ] ou }
+  const firstBracket = cleaned.indexOf('[');
+  const firstBrace = cleaned.indexOf('{');
+  
+  let startIdx = -1;
+  let endIdx = -1;
+
+  if (firstBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
+    startIdx = firstBracket;
+    endIdx = cleaned.lastIndexOf(']');
+  } else if (firstBrace !== -1) {
+    startIdx = firstBrace;
+    endIdx = cleaned.lastIndexOf('}');
+  }
+
+  if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+    cleaned = cleaned.substring(startIdx, endIdx + 1);
+  }
+
   return cleaned.trim();
 };
 
@@ -568,56 +588,99 @@ export const generatePremises = async (lang: string, genre?: string, subTema?: s
       
       ${subTema && subTema !== 'none' ? `Tema / Matiz Adicional: ${subTema}.` : ''}
       ${timePeriod ? `Posição no Tempo / Época da Narrativa: ${timePeriod}.` : ''}
-      Para garantir variedade, foca-te subtilmente neste elemento narrativo: "${randomSeed}".
-      Devolve OBRIGATORIAMENTE um array JSON de strings. CADA STRING DEVE ESTAR NO FORMATO "TÍTULO DA OBRA: Resumo detalhado da premissa (2 a 3 frases em PT-PT)". NUNCA devolvas apenas o título.`,
+      Elemento narrativo inspirador: "${randomSeed}".
+
+      Retorna OBRIGATORIAMENTE APENAS um array JSON de objetos no seguinte formato exato:
+      [
+        { "title": "Título da Obra 1", "premise": "Resumo detalhado da premissa (2 a 3 frases em PT-PT)..." },
+        { "title": "Título da Obra 2", "premise": "Resumo detalhado da premissa (2 a 3 frases em PT-PT)..." },
+        { "title": "Título da Obra 3", "premise": "Resumo detalhado da premissa (2 a 3 frases em PT-PT)..." }
+      ]`,
 
       en: `Generate 3 HIGHLY ORIGINAL and UNIQUE literary work concepts (book premises) (avoiding common clichés) ${genre ? `of the literary genre "${genre}"` : "of varied genres"} in ENGLISH.
       ${subTema && subTema !== 'none' ? `Theme / Additional Nuance: ${subTema}.` : ''}
       ${timePeriod ? `Time Period / Setting Era: ${timePeriod}.` : ''}
       To ensure variety, focus subtly on this narrative element: "${randomSeed}".
-      Return ONLY a JSON array of strings. EACH STRING MUST BE IN THE FORMAT "STORY TITLE: Detailed premise summary (2 to 3 sentences)". NEVER return just the title.`,
+      Return ONLY a JSON array of objects:
+      [
+        { "title": "Story Title 1", "premise": "Detailed premise summary (2 to 3 sentences)..." },
+        { "title": "Story Title 2", "premise": "Detailed premise summary (2 to 3 sentences)..." },
+        { "title": "Story Title 3", "premise": "Detailed premise summary (2 to 3 sentences)..." }
+      ]`,
 
       fr: `Générez 3 concepts d'œuvres littéraires (idées de base pour des livres) HAUTEMENT ORIGINAUX et UNIQUES (évitez les clichés courants) ${genre ? `du genre littéraire "${genre}"` : "de genres variés"} en FRANÇAIS.
       ${subTema && subTema !== 'none' ? `Thème / Nuance supplémentaire : ${subTema}.` : ''}
       ${timePeriod ? `Période temporelle / Époque du récit : ${timePeriod}.` : ''}
       Pour assurer la variété, concentrez-vous subtilement sur cet élément narratif : "${randomSeed}".
-      Renvoyez UNIQUEMENT un tableau JSON de chaînes. CHAQUE CHAÎNE DOIT ÊTRE AU FORMAT "TITRE DE L'HISTOIRE : Résumé détaillé de la prémisse (2 à 3 phrases)". Ne renvoyez JAMAIS uniquement le titre.`
+      Renvoyez UNIQUEMENT un tableau JSON d'objets :
+      [
+        { "title": "Titre de l'histoire 1", "premise": "Résumé détaillé de la prémisse (2 à 3 phrases)..." },
+        { "title": "Titre de l'histoire 2", "premise": "Résumé détaillé de la prémisse (2 à 3 phrases)..." },
+        { "title": "Titre de l'histoire 3", "premise": "Résumé détaillé de la prémisse (2 à 3 phrases)..." }
+      ]`
     };
 
     const promptText = prompts[lang] || prompts['en'];
 
-    const responseText = await executeUnifiedAI(promptText);
+    const responseText = await executeUnifiedAI(promptText, { jsonMode: true });
 
+    let array: any[] = [];
     try {
-      // Parse Robustez
       const cleanText = cleanAIJSON(responseText);
-      const start = cleanText.indexOf('[');
-      const end = cleanText.lastIndexOf(']');
-      let parsed = [];
-      if (start !== -1 && end !== -1) {
-        parsed = JSON.parse(cleanText.substring(start, end + 1));
-      } else {
-        parsed = JSON.parse(cleanText);
+      const parsed = JSON.parse(cleanText);
+      if (Array.isArray(parsed)) {
+        array = parsed;
+      } else if (parsed && typeof parsed === 'object') {
+        const innerArray = Object.values(parsed).find(v => Array.isArray(v));
+        if (innerArray) array = innerArray as any[];
+        else array = [parsed];
       }
-      
-      const array = Array.isArray(parsed) ? parsed : [parsed];
-      // Garante que são strings mesmo que a IA devolva objetos (ex: [{"premise": "..."}])
-      return array.map((item: any) => {
-         if (typeof item === 'string') return item;
-         if (typeof item === 'object' && item !== null) {
-            // Se for objeto, tenta obter o primeiro valor (ex: premise)
-            const values = Object.values(item);
-            if (values.length > 0 && typeof values[0] === 'string') {
-               return values[0];
-            }
-            return JSON.stringify(item);
-         }
-         return String(item);
-      });
-    } catch (parseErr) {
-      console.warn("[generatePremises] Fallback parse failed, returning raw text as one premise", parseErr);
-      return [responseText.trim()];
+    } catch (jsonErr) {
+      console.warn("[generatePremises] Fallback JSON parse, using regex extraction", jsonErr);
+      const matches = [...responseText.matchAll(/"title":\s*"([^"]+)"[\s\S]*?"premise":\s*"([^"]+)"/gi)];
+      if (matches.length > 0) {
+        array = matches.map(m => ({ title: m[1], premise: m[2] }));
+      } else {
+        const stringMatches = [...responseText.matchAll(/"([^"]{30,})"/g)];
+        if (stringMatches.length >= 2) {
+          array = stringMatches.slice(0, 3).map(m => m[1]);
+        }
+      }
     }
+
+    if (array.length === 0) {
+      const lines = responseText.split(/\n(?=\d+\.|\bOpção|\bConceito|\bTítulo)/i).map(l => l.trim()).filter(l => l.length > 20);
+      if (lines.length >= 2) {
+        array = lines.slice(0, 3);
+      } else {
+        array = [responseText.trim()];
+      }
+    }
+
+    return array.map((item: any) => {
+      if (typeof item === 'string') return item.replace(/^["'\s]+|["'\s]+$/g, '');
+      if (typeof item === 'object' && item !== null) {
+        if (item.title && item.premise) {
+          return `${item.title}: ${item.premise}`;
+        }
+        if (item.title && item.description) {
+          return `${item.title}: ${item.description}`;
+        }
+        const keys = Object.keys(item);
+        if (keys.length === 1 && typeof item[keys[0]] === 'string') {
+          return `${keys[0]}: ${item[keys[0]]}`;
+        }
+        const values = Object.values(item).filter(v => typeof v === 'string');
+        if (values.length >= 2) {
+          return `${values[0]}: ${values[1]}`;
+        }
+        if (values.length === 1) {
+          return String(values[0]);
+        }
+        return JSON.stringify(item);
+      }
+      return String(item);
+    });
   } catch (e) {
     console.error("[generatePremises] Erro:", e);
     throw formatAIError(e);
