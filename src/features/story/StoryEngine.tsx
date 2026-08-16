@@ -552,7 +552,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                     {zenMode && (
                         <button
                             onClick={() => setZenMode(false)}
-                            className="fixed top-6 right-6 z-[600] px-6 py-4 bg-slate-900/80 dark:bg-white/20 backdrop-blur-xl rounded-full text-white hover:bg-slate-900 dark:hover:bg-white/30 transition-all shadow-2xl border border-white/10 flex items-center gap-3 animate-bounce"
+                            className="fixed bottom-8 right-8 z-[600] px-6 py-4 bg-slate-900/80 dark:bg-white/20 backdrop-blur-xl rounded-full text-white hover:bg-slate-900 dark:hover:bg-white/30 transition-all shadow-2xl border border-white/10 flex items-center gap-3"
                         >
                             <Eye size={24} />
                             <span className="text-xs font-black tracking-widest uppercase">{lang === 'pt' ? 'Sair do Zen' : 'Exit Zen'}</span>
