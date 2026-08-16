@@ -614,103 +614,101 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                             displayedMessages = chaptersList[activeChapterIndex] || messages;
                         }
 
-                        return displayedMessages.map((msg, i) => {
-                            const isAI = msg.role === 'ai';
-                            const isMe = msg.author_id === user.id;
-                            const style = !isAI ? getAuthorStyle(msg.author_id) : null;
+                        return (
+                            <div className={`transition-all duration-700 mx-auto w-full ${zenMode ? 'max-w-3xl' : ''}`}>
+                                {displayedMessages.map((msg, i) => {
+                                    const isAI = msg.role === 'ai';
+                                    const isMe = msg.author_id === user.id;
+                                    const style = !isAI ? getAuthorStyle(msg.author_id) : null;
 
-                            if (msg.hidden) return null;
+                                    if (msg.hidden) return null;
 
-                            return (
-                                <div key={msg.id || i} className={`flex gap-4 ${isMe ? 'flex-row-reverse' : ''} animate-writing`}>
-                                    <div className={`w-8 h-8 md:w-10 md:h-10 rounded-2xl flex-shrink-0 flex items-center justify-center overflow-hidden border-2 ${isAI ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-600/20' : `${style?.bg} ${style?.border}`}`}>
-                                        {isAI ? <Sparkles className="text-white" size={16} /> : (
-                                            msg.author_avatar ? <img src={msg.author_avatar} className="w-full h-full object-cover" /> : <span className="font-bold text-xs">{msg.author_name?.[0]}</span>
-                                        )}
-                                    </div>
-                                    <div className={`max-w-[85%] md:max-w-[80%] ${isAI ? 'w-full' : ''}`}>
-                                        <div className={`flex items-center gap-2 mb-1 ${isMe ? 'flex-row-reverse' : ''}`}>
-                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{isAI ? 'Editor IA' : msg.author_name}</span>
-                                        </div>
-
-                                        <div className="relative group">
-                                            <div className={`prose dark:prose-invert text-justify ${isAI ? `max-w-none leading-relaxed font-serif text-gray-800 dark:text-slate-300 ${fontSizes[fontSizeIndex]}` : `bg-white dark:bg-[#1a1a1c] p-4 rounded-2xl border border-gray-200 dark:border-white/5 shadow-sm text-sm ${isMe ? 'rounded-tr-sm bg-indigo-50/50 dark:bg-indigo-500/5' : ''}`}`}>
-
-                                                {isAI && msg.imageUrl && (
-                                                    <div className="story-image-container mb-6 animate-in fade-in zoom-in-95 duration-700 overflow-hidden rounded-2xl">
-                                                        <img
-                                                            src={msg.imageUrl}
-                                                            className="w-full h-auto object-cover max-h-[400px]"
-                                                            alt="Ilustração da cena"
-                                                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                                            onLoad={(e) => { (e.target as HTMLImageElement).style.display = 'block'; }}
-                                                            style={{ display: 'block' }}
-                                                        />
+                                    return (
+                                        <div key={msg.id || i} className={`flex gap-4 mb-8 ${isMe ? 'flex-row-reverse' : ''} animate-writing ${zenMode && !isAI ? 'justify-center' : ''}`}>
+                                            {!zenMode && (
+                                                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-2xl flex-shrink-0 flex items-center justify-center overflow-hidden border-2 ${isAI ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-600/20' : `${style?.bg} ${style?.border}`}`}>
+                                                    {isAI ? <Sparkles className="text-white" size={16} /> : (
+                                                        msg.author_avatar ? <img src={msg.author_avatar} className="w-full h-full object-cover" /> : <span className="font-bold text-xs">{msg.author_name?.[0]}</span>
+                                                    )}
+                                                </div>
+                                            )}
+                                            <div className={`${zenMode ? 'w-full max-w-full' : 'max-w-[85%] md:max-w-[80%]'} ${isAI ? 'w-full' : ''}`}>
+                                                {!zenMode && (
+                                                    <div className={`flex items-center gap-2 mb-1 ${isMe ? 'flex-row-reverse' : ''}`}>
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{isAI ? 'Editor IA' : msg.author_name}</span>
                                                     </div>
                                                 )}
 
-                                                {isAI ? (
-                                                    <div className="narrative-segment whitespace-pre-wrap">
-                                                        {msg.content.split('\n').map((paragraph: string, pIdx: number) => (
-                                                            <p key={pIdx} className="mb-4 text-justify">
-                                                                {paragraph.split(' ').map((word: string, wIdx: number) => {
-                                                                    const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "").trim();
-                                                                    // Gerar uma chave única global para esta palavra no parágrafo
-                                                                    const globalWordIndex = `${pIdx}-${wIdx}`;
+                                                <div className="relative group">
+                                                    <div className={`prose dark:prose-invert text-justify ${isAI ? `max-w-none leading-relaxed font-serif text-gray-800 dark:text-slate-300 ${fontSizes[fontSizeIndex]}` : `bg-white dark:bg-[#1a1a1c] p-4 rounded-2xl border border-gray-200 dark:border-white/5 shadow-sm text-sm ${isMe ? 'rounded-tr-sm bg-indigo-50/50 dark:bg-indigo-500/5' : ''}`}`}>
+
+                                                        {isAI && msg.imageUrl && (
+                                                            <div className="story-image-container mb-6 animate-in fade-in zoom-in-95 duration-700 overflow-hidden rounded-2xl flex justify-center">
+                                                                <img src={msg.imageUrl} alt="Cena da história" className="w-full max-w-3xl h-auto object-cover hover:scale-105 transition-transform duration-700 rounded-2xl shadow-lg" />
+                                                            </div>
+                                                        )}
+
+                                                        {msg.content ? msg.content.split('\n').map((paragraph, pIdx) => (
+                                                            <p key={pIdx} className="mb-4">
+                                                                {paragraph.split(' ').map((word, wIdx) => {
+                                                                    const cleanWord = word.replace(/[^\wÀ-ú-]/g, '');
+                                                                    if (!cleanWord || !isAI) return <span key={wIdx}>{word} </span>;
+                                                                    
                                                                     return (
-                                                                        <span
-                                                                            key={globalWordIndex}
+                                                                        <span 
+                                                                            key={wIdx}
                                                                             onClick={() => {
-                                                                                if (cleanWord.length > 1 && !isTyping) {
+                                                                                if (!zenMode) {
                                                                                     setSelectedWordInfo({
-                                                                                        msgId: msg.id,
                                                                                         word: cleanWord,
-                                                                                        index: wIdx, // mantemos o index da palavra ou podemos referenciar por regex
-                                                                                        fullText: msg.content
+                                                                                        messageId: msg.id,
+                                                                                        paragraphIndex: pIdx,
+                                                                                        wordIndex: wIdx
                                                                                     });
                                                                                     setNewWordValue(cleanWord);
                                                                                 }
                                                                             }}
-                                                                            className="cursor-pointer hover:bg-indigo-500/20 hover:text-indigo-400 rounded px-0.5 transition-all inline"
-                                                                            title={lang === 'pt' ? 'Clicar para modificar palavra' : 'Click to modify word'}
+                                                                            className={`${!zenMode ? 'cursor-pointer hover:bg-indigo-500/20 hover:text-indigo-400 rounded px-0.5 transition-all' : ''} inline`}
+                                                                            title={!zenMode ? (lang === 'pt' ? 'Clicar para modificar palavra' : 'Click to modify word') : ''}
                                                                         >
                                                                             {word}{' '}
                                                                         </span>
                                                                     );
                                                                 })}
                                                             </p>
-                                                        ))}
+                                                        )) : null}
+                                                        {isAI && i === displayedMessages.length - 1 && isTyping && <span className="inline-block w-2 h-4 bg-indigo-500 ml-1 animate-pulse"></span>}
                                                     </div>
-                                                ) : msg.content}
-                                                {isAI && i === messages.length - 1 && isTyping && <span className="inline-block w-2 h-4 bg-indigo-500 ml-1 animate-pulse"></span>}
-                                                {isAI && !isTyping && (
-                                                    <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-gray-200/50 dark:border-white/5 pt-4">
-                                                        <button
-                                                            onClick={() => handleTTS(msg.content, msg.id)}
-                                                            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 shadow-sm border ${isSpeaking === msg.id ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 text-slate-500 hover:text-indigo-500 hover:border-indigo-200 dark:hover:border-indigo-500/30'}`}
-                                                            title={lang === 'pt' ? 'Ouvir/Parar texto' : 'Listen/Stop text'}
-                                                        >
-                                                            {isSpeaking === msg.id ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                                                            <span className="text-[10px] font-black uppercase tracking-widest">{isSpeaking === msg.id ? (lang === 'pt' ? 'Parar' : 'Stop') : (lang === 'pt' ? 'Ouvir' : 'Listen')}</span>
-                                                        </button>
-                                                        {!msg.imageUrl && (
+
+                                                    {isAI && !isTyping && !zenMode && (
+                                                        <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-gray-200/50 dark:border-white/5 pt-4">
                                                             <button
-                                                                onClick={() => handleGenerateImage(msg.id, msg.content)}
-                                                                className="px-3 py-1.5 bg-white dark:bg-white/5 text-slate-500 hover:text-indigo-500 rounded-lg shadow-sm border border-gray-200 dark:border-white/10 hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all flex items-center gap-2"
-                                                                title={lang === 'pt' ? 'Gerar ilustração baseada no texto' : 'Generate illustration based on text'}
+                                                                onClick={() => handleTTS(msg.content, msg.id)}
+                                                                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 shadow-sm border ${isSpeaking === msg.id ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 text-slate-500 hover:text-indigo-500 hover:border-indigo-200 dark:hover:border-indigo-500/30'}`}
+                                                                title={lang === 'pt' ? 'Ouvir/Parar texto' : 'Listen/Stop text'}
                                                             >
-                                                                <Sparkles size={14} />
-                                                                <span className="text-[10px] font-black uppercase tracking-widest">{lang === 'pt' ? 'Ilustrar' : 'Illustrate'}</span>
+                                                                {isSpeaking === msg.id ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                                                                <span className="text-[10px] font-black uppercase tracking-widest">{isSpeaking === msg.id ? (lang === 'pt' ? 'Parar' : 'Stop') : (lang === 'pt' ? 'Ouvir' : 'Listen')}</span>
                                                             </button>
-                                                        )}
-                                                    </div>
-                                                )}
+                                                            {!msg.imageUrl && (
+                                                                <button
+                                                                    onClick={() => handleGenerateImage(msg.id, msg.content)}
+                                                                    className="px-3 py-1.5 bg-white dark:bg-white/5 text-slate-500 hover:text-indigo-500 rounded-lg shadow-sm border border-gray-200 dark:border-white/10 hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all flex items-center gap-2"
+                                                                    title={lang === 'pt' ? 'Gerar ilustração baseada no texto' : 'Generate illustration based on text'}
+                                                                >
+                                                                    <Sparkles size={14} />
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest">{lang === 'pt' ? 'Ilustrar' : 'Illustrate'}</span>
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            );
-                        });
+                                    );
+                                })}
+                            </div>
+                        );
                     })()}
                     <div ref={messagesEndRef} />
                 </div>
