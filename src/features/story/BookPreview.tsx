@@ -8,7 +8,7 @@ import { ConfirmModal } from '@/components';
 export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, story: any, onBack: () => void, onReopen: (s: any) => void, userLang?: Language }) => {
     const [isTranslated, setIsTranslated] = useState(false);
     const [translationLoading, setTranslationLoading] = useState(false);
-    const [translationCache, setTranslationCache] = useState<Partial<Record<Language, { title: string, content: string }>>>({});
+    const [translationCache, setTranslationCache] = useState<Partial<Record<Language, { title: string, synopsis: string, content: string }>>>({});
     const [currentTranslatedLang, setCurrentTranslatedLang] = useState<Language | null>(null);
 
     const [confirmReopen, setConfirmReopen] = useState(false);
@@ -40,11 +40,15 @@ export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, 
 
         setTranslationLoading(true);
         try {
-            const tTitle = await translateManuscript(manuscript.title, targetLang);
-            const tContent = await translateManuscript(manuscript.content, targetLang);
+            const [tTitle, tSynopsis, tContent] = await Promise.all([
+                translateManuscript(manuscript.title, targetLang, 'title'),
+                manuscript.synopsis ? translateManuscript(manuscript.synopsis, targetLang, 'synopsis') : Promise.resolve(''),
+                translateManuscript(manuscript.content, targetLang, 'content')
+            ]);
+
             setTranslationCache(prev => ({
                 ...prev,
-                [targetLang]: { title: tTitle, content: tContent }
+                [targetLang]: { title: tTitle, synopsis: tSynopsis, content: tContent }
             }));
             setIsTranslated(true);
         } catch (e) {
@@ -55,6 +59,7 @@ export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, 
     };
 
     const displayTitle = isTranslated && currentTranslatedLang && translationCache[currentTranslatedLang] ? translationCache[currentTranslatedLang]!.title : manuscript.title;
+    const displaySynopsis = isTranslated && currentTranslatedLang && translationCache[currentTranslatedLang] ? translationCache[currentTranslatedLang]!.synopsis : manuscript.synopsis;
     const displayContent = isTranslated && currentTranslatedLang && translationCache[currentTranslatedLang] ? translationCache[currentTranslatedLang]!.content : manuscript.content;
 
     return (
@@ -96,10 +101,10 @@ export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, 
                     <p className="text-[12px] font-black uppercase tracking-[0.4em] text-indigo-500 dark:text-indigo-400">{story.author_name}</p>
                 </div>
 
-                {manuscript.synopsis && !isTranslated && (
+                {displaySynopsis && (
                     <div className="py-12 border-y border-gray-200 dark:border-white/5 space-y-6">
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-500">{t.synopsis}</h4>
-                        <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed italic text-lg">{manuscript.synopsis}</p>
+                        <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed italic text-lg">{displaySynopsis}</p>
                     </div>
                 )}
 

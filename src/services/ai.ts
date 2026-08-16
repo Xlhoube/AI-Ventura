@@ -378,18 +378,63 @@ export const polishManuscript = async (messages: any[], lang: string, currentTit
   }
 };
 
-export const translateManuscript = async (text: string, targetLang: Language): Promise<string> => {
+export const translateManuscript = async (
+  text: string,
+  targetLang: Language,
+  contextType: 'title' | 'synopsis' | 'content' = 'content'
+): Promise<string> => {
   if (!text || !targetLang) return text;
   const langNames: Record<string, string> = {
-    pt: 'Portuguese (PT-PT)',
-    en: 'English',
-    fr: 'French'
+    pt: 'European Portuguese (Português de Portugal, PT-PT, strict European grammar without Brazilian idioms or gerunds)',
+    en: 'English (fluent, natural, literary English)',
+    fr: 'French (Français littéraire, elegant and grammatically precise)',
+    es: 'Spanish (Español estándar y literario)'
   };
-  try {
-    const prompt = `Translate the following literary text to ${langNames[targetLang] || targetLang}. Preserve the style, tone, and formatting exactly. Return ONLY the translated text, nothing else:
 
-${text.substring(0, 6000)}`;
-    const result = await executeUnifiedAI(prompt, {});
+  const targetLangName = langNames[targetLang] || targetLang;
+
+  let prompt = '';
+  if (contextType === 'title') {
+    prompt = `You are a professional literary translator.
+TASK: Translate the following book title into ${targetLangName}.
+
+CRITICAL CONSTRAINTS:
+1. Translate ONLY the title words accurately and concisely.
+2. DO NOT write a story, DO NOT expand, DO NOT write a premise or prologue.
+3. Keep fictional universe names / proper nouns intact if appropriate (e.g. "Sopa-D", "Nova Atlantis").
+4. Return ONLY the translated title, nothing else. No quotes, no markdown.
+
+Title:
+${text.trim()}`;
+  } else if (contextType === 'synopsis') {
+    prompt = `You are a professional literary translator.
+TASK: Translate the following editorial book synopsis into ${targetLangName}.
+
+CRITICAL CONSTRAINTS:
+1. Translate the synopsis accurately, preserving its compelling editorial blurb tone and style.
+2. DO NOT invent new plot elements or write narrative scenes.
+3. Return ONLY the translated synopsis text.
+
+Synopsis:
+${text.trim()}`;
+  } else {
+    prompt = `You are an acclaimed literary translator.
+TASK: Translate the following book manuscript content into ${targetLangName}.
+
+CRITICAL CONSTRAINTS:
+1. Translate accurately, preserving literary depth, nuances, rhythm, dialogues, and paragraph structures.
+2. If translating to Portuguese, use STRICT European Portuguese (PT-PT) grammar, syntax, and vocabulary (no Brazilian Portuguese, no gerunds, no "em um/uma").
+3. Preserve all formatting, dialogue dashes, and special image placeholders like [IMAGE:...] EXACTLY as they appear.
+4. DO NOT add meta-commentary, notes, or extra scenes. Return ONLY the translated manuscript text.
+
+Text to translate:
+${text.substring(0, 8000)}`;
+  }
+
+  try {
+    const result = await executeUnifiedAI(prompt, {
+      systemInstruction: "You are a master literary translator specializing in faithful, high-quality translations across English, European Portuguese (PT-PT), French, and Spanish."
+    });
     return result?.trim() || text;
   } catch (e) {
     console.warn('[translateManuscript] Failed:', e);
