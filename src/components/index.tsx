@@ -11,3 +11,4 @@ export * from './modals/AuthorRankingModal';
 export * from './ui/InteractiveTour';
 export * from './modals/NotificationCenter';
 export * from './modals/ApiSetupModal';
+export * from './modals/EndingOptionsModal';

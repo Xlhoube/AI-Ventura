@@ -3,7 +3,7 @@ import {
     ChevronLeft, Sparkles, Loader2, Send, Wifi, Lock, PenTool, CheckCircle, Plus, Minus, Type, Users2, HelpCircle, Info, X, Map, Volume2, VolumeX, Eye, EyeOff, Trash2, BookOpen, ScrollText, RotateCw
 } from 'lucide-react';
 import { requestImageGeneration, streamAIConversation, generateSuggestions, generateDynamicSummary, generateImagePrompt } from '@/services/ai';
-import { ConfirmModal, ParticipantsModal } from '@/components';
+import { ConfirmModal, ParticipantsModal, EndingOptionsModal } from '@/components';
 import { updateSessionStory, joinCollaborationSession, createCollaborationSession, updateSessionPhase, regenerateSessionCode, getProfileSettings, updateProfileSettings, getSpectatorSession } from '@/services/services';
 import { renderNarrativeWithBreaks, getAuthorStyle } from '@/utils/utils';
 
@@ -17,6 +17,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
     const [participants, setParticipants] = useState<any[]>(initialConfig?.participants || []);
     const [showParticipants, setShowParticipants] = useState(false);
     const [showConfig, setShowConfig] = useState(false);
+    const [showEndingModal, setShowEndingModal] = useState(false);
     const [currentTurnIndex, setCurrentTurnIndex] = useState(initialConfig?.currentTurnIndex || 0);
     const [isHost, setIsHost] = useState(false);
 
@@ -374,6 +375,14 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                 }, 4000);
             }
 
+            // Se for o desfecho definitivo, transita automaticamente para a finalização e polimento da obra
+            if (mode === 'definitive_ending') {
+                onShowToast(lang === 'pt' ? 'Capítulo final redigido! A preparar a edição...' : 'Final chapter completed! Preparing manuscript...', 'success');
+                setTimeout(() => {
+                    onFinalizeBook(finalMsgs);
+                }, 1800);
+            }
+
         } catch (e: any) {
             console.error(e);
             onShowToast(`${t.connectionError} ${e.message ? `(${e.message})` : ''}`, 'error');
@@ -383,6 +392,18 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
         } finally {
             setIsTyping(false);
         }
+    };
+
+    const handleConfirmEndingChoice = async (choice: { title: string; description: string; isCustom: boolean }) => {
+        setShowEndingModal(false);
+        onShowToast(lang === 'pt' ? 'O Editor está a redigir o grande desfecho da obra...' : 'Writing the grand finale...', 'info');
+
+        const endingInstruction = `Escreve o grande capítulo final e conclusão definitiva desta obra com base no seguinte desfecho:\n\nTÍTULO DO DESFECHO: ${choice.title}\nDIRETRIZ DE CONCLUSÃO: ${choice.description}\n\nREGRAS CRÍTICAS:\n1. Conclui todos os arcos dramáticos, encerra a jornada dos protagonistas e entrega um final arrebatador.\n2. Não deixes ganchos ou mistérios por resolver.\n3. Escreve ESTRITAMENTE em Português de Portugal (PT-PT estrito, sem gerúndios, usando 'num/numa' e artigos antes dos possessivos).`;
+
+        const hiddenMsg = { role: 'user', content: `[DESFECHO ESCOLHIDO: ${choice.title}]`, author_id: 'system', hidden: true };
+        const context = [...messages, hiddenMsg];
+
+        await handleAIStream(endingInstruction, 'definitive_ending', context, activeNodeId, false);
     };
 
     // GERAÇÃO INICIAL MOVIDA PARA DEPOIS DE HANDLEAISTREAM PARA ACESSO À FUNÇÃO
@@ -726,7 +747,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                         <button onClick={() => handleAction('ending')} className={`w-full h-10 flex items-center justify-center rounded-xl transition-all shadow-sm border ${zenMode ? 'bg-white/10 text-white border-white/10 hover:bg-white/20' : 'bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-white/10 border-gray-200 dark:border-white/5'}`} title={t.requestEnding}>
                             <span className="text-[9px] font-black uppercase text-center leading-none">{lang === 'pt' ? 'Fechar\nCapítulo' : 'Close\nChapter'}</span>
                         </button>
-                        <button onClick={() => onFinalizeBook(messages)} className={`w-full h-10 flex items-center justify-center rounded-xl transition-all shadow-sm border ${zenMode ? 'bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/40' : 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-500/20 border-purple-200 dark:border-purple-500/20'}`} title={t.exportBook}>
+                        <button onClick={() => setShowEndingModal(true)} className={`w-full h-10 flex items-center justify-center rounded-xl transition-all shadow-sm border ${zenMode ? 'bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/40' : 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-500/20 border-purple-200 dark:border-purple-500/20'}`} title={t.exportBook}>
                             <span className="text-[9px] font-black uppercase text-center leading-none">{lang === 'pt' ? 'Finalizar\nObra' : 'Finalize\nBook'}</span>
                         </button>
                     </div>
@@ -1064,6 +1085,15 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                 currentTurnIndex={currentTurnIndex}
                 onNudge={handleNudge}
                 onRenovate={handleRenovateCode}
+            />
+
+            <EndingOptionsModal
+                isOpen={showEndingModal}
+                onClose={() => setShowEndingModal(false)}
+                onConfirmEnding={handleConfirmEndingChoice}
+                messages={messages}
+                lang={lang}
+                t={t}
             />
 
             {/* Modal de Edição de Palavras */}

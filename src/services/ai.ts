@@ -276,6 +276,74 @@ export const generateDynamicSummary = async (messages: any[], lang: Language = '
   }
 };
 
+// Gerar Opções de Desfecho ao Finalizar a Obra
+export interface EndingOption {
+  id: number;
+  title: string;
+  description: string;
+}
+
+export const generateEndingOptions = async (messages: any[], lang: Language = 'pt'): Promise<EndingOption[]> => {
+  try {
+    const storyText = messages.map(m => `${m.role === 'user' ? 'AUTOR' : 'HISTÓRIA'}: ${m.content}`).join('\n\n');
+
+    const prompts: Record<string, string> = {
+      pt: `Atuas como um consultor literário e mestre de narrativa em Portugal.
+Lê toda a obra escrita até agora e cria 3 PROPOSTAS DISTINTAS E IMPACTANTES PARA O FINAL/CLÍMAX DA HISTÓRIA.
+
+${PT_PT_STRICT_RULES}
+
+As 3 opções devem ter tons contrastantes em PORTUGUÊS DE PORTUGAL:
+Opção 1: Triunfante / Heróico ou Redentor;
+Opção 2: Dramático / Sacrifício Emocional ou Agridoce;
+Opção 3: Reviravolta Inesperada / Mistério Revelado ou Psicológico.
+
+Devolve OBRIGATORIAMENTE um array JSON no seguinte formato:
+[
+  {
+    "id": 1,
+    "title": "Título curto do desfecho (máx 5 palavras)",
+    "description": "Explicação concisa de 2 a 3 frases em PT-PT de como a história se conclui, amarrando as pontas soltas."
+  },
+  {
+    "id": 2,
+    "title": "Título curto do desfecho (máx 5 palavras)",
+    "description": "Explicação concisa de 2 a 3 frases em PT-PT de como a história se conclui."
+  },
+  {
+    "id": 3,
+    "title": "Título curto do desfecho (máx 5 palavras)",
+    "description": "Explicação concisa de 2 a 3 frases em PT-PT de como a história se conclui."
+  }
+]`,
+      en: `Act as a master literary consultant. Read the story so far and create 3 DISTINCT AND IMPACTFUL PROPOSALS FOR THE STORY CLIMAX/ENDING.
+Return ONLY a JSON array with [{ "id": 1, "title": "...", "description": "..." }, ...].`,
+      fr: `Agissez en tant que consultant littéraire chevronné. Lisez l'histoire jusqu'à présent et créez 3 PROPOSITIONS DISTINCTES ET IMPACTANTES POUR LE DÉNOUEMENT/CLIMAX DE L'HISTOIRE.
+Renvoyez UNIQUEMENT un tableau JSON avec [{ "id": 1, "title": "...", "description": "..." }, ...].`
+    };
+
+    const promptText = `${prompts[lang] || prompts['pt']}\n\nMANUSCRITO DA OBRA:\n${storyText.slice(-8000)}`;
+    const responseText = await executeUnifiedAI(promptText, { jsonMode: true });
+    const cleanJson = cleanAIJSON(responseText);
+    const parsed = JSON.parse(cleanJson);
+    if (Array.isArray(parsed) && parsed.length >= 3) {
+      return parsed.slice(0, 3);
+    }
+    return [
+      { id: 1, title: 'Desfecho Triunfante', description: 'Os protagonistas superam as adversidades finais e encontram a paz merecida.' },
+      { id: 2, title: 'Sacrifício Heroico', description: 'Uma escolha difícil sela o destino de todos com grande peso emocional.' },
+      { id: 3, title: 'A Grande Revelação', description: 'Um segredo oculto desde o início vem à tona e muda a perspetiva sobre a jornada.' }
+    ];
+  } catch (e) {
+    console.warn("[generateEndingOptions] Erro:", e);
+    return [
+      { id: 1, title: 'Desfecho Triunfante', description: 'Os protagonistas superam as adversidades finais e encontram a paz merecida.' },
+      { id: 2, title: 'Sacrifício Heroico', description: 'Uma escolha difícil sela o destino de todos com grande peso emocional.' },
+      { id: 3, title: 'A Grande Revelação', description: 'Um segredo oculto desde o início vem à tona e muda a perspetiva sobre a jornada.' }
+    ];
+  }
+};
+
 // NOVA FUNÇÃO OTIMIZADA PARA STREAMING
 export const streamAIConversation = async (
   messages: any[],
