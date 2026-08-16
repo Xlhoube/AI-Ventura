@@ -117,9 +117,25 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
             return;
         }
         
+        const promptText = lang === 'pt' 
+            ? 'Quantas personagens pretendes gerar? (Recomendado: 1 a 5)'
+            : lang === 'fr'
+            ? 'Combien de personnages souhaitez-vous générer ? (Recommandé : 1 à 5)'
+            : 'How many characters do you want to generate? (Recommended: 1 to 5)';
+            
+        const countStr = window.prompt(promptText, '3');
+        if (countStr === null) return; // cancelled
+        
+        const count = parseInt(countStr, 10);
+        if (isNaN(count) || count < 1 || count > 10) {
+            const errorMsg = lang === 'pt' ? 'Número inválido. Insere um valor entre 1 e 10.' : 'Invalid number. Please enter a value between 1 and 10.';
+            if (onShowToast) onShowToast(errorMsg, 'error');
+            return;
+        }
+
         setLoadingCharsAI(true);
         try {
-            const chars = await generateCharacters(config, lang);
+            const chars = await generateCharacters(config, lang, count);
             if (chars && chars.length > 0) {
                 const newProfiles = [...(config.charProfiles || []), ...chars];
                 handleConfigChange({ ...config, charProfiles: newProfiles });

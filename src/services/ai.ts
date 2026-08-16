@@ -532,12 +532,12 @@ export const testGeminiAPIKey = async (apiKey: string): Promise<boolean> => {
   }
 };
 
-export const generateCharacters = async (config: any, lang: string = 'pt') => {
+export const generateCharacters = async (config: any, lang: string = 'pt', count: number = 3) => {
   try {
     const prompts: Record<string, string> = {
-      pt: `Baseado nesta premissa de história, gera 3 personagens interessantes.\nGénero: ${config.genre || 'Desconhecido'}\nIdeia: ${config.idea}\n\nDevolve APENAS um array JSON de objetos com este formato:\n[{"name": "Nome", "role": "Protagonist | Antagonist | Sidekick"}]`,
-      en: `Based on this story premise, generate 3 interesting characters.\nGenre: ${config.genre || 'Unknown'}\nIdea: ${config.idea}\n\nReturn ONLY a JSON array of objects with this format:\n[{"name": "Name", "role": "Protagonist | Antagonist | Sidekick"}]`,
-      fr: `Sur la base de cette prémisse d'histoire, générez 3 personnages intéressants.\nGenre: ${config.genre || 'Inconnu'}\nIdée: ${config.idea}\n\nRenvoyez UNIQUEMENT un tableau JSON d'objets avec ce format:\n[{"name": "Nom", "role": "Protagonist | Antagonist | Sidekick"}]`
+      pt: `Baseado nesta premissa de história, gera ${count} personagens interessantes.\nGénero: ${config.genre || 'Desconhecido'}\nIdeia: ${config.idea}\n\nDevolve APENAS um array JSON de objetos com este formato:\n[{"name": "Nome", "role": "Protagonist | Antagonist | Sidekick"}]`,
+      en: `Based on this story premise, generate ${count} interesting characters.\nGenre: ${config.genre || 'Unknown'}\nIdea: ${config.idea}\n\nReturn ONLY a JSON array of objects with this format:\n[{"name": "Name", "role": "Protagonist | Antagonist | Sidekick"}]`,
+      fr: `Sur la base de cette prémisse d'histoire, générez ${count} personnages intéressants.\nGenre: ${config.genre || 'Inconnu'}\nIdée: ${config.idea}\n\nRenvoyez UNIQUEMENT un tableau JSON d'objets avec ce format:\n[{"name": "Nom", "role": "Protagonist | Antagonist | Sidekick"}]`
     };
 
     const promptText = prompts[lang] || prompts['pt'];
