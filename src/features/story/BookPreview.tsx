@@ -21,7 +21,7 @@ export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, 
         content: manuscriptContent
     };
 
-    const originalLang = story.original_language || 'en';
+    const originalLang = story.original_language || userLang || 'pt';
     // Permitir tradução sempre que houver um idioma de utilizador definido, para garantir acessibilidade
     const showTranslateButton = !!userLang;
 
