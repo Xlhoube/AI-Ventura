@@ -107,7 +107,7 @@ export const generateSuggestions = async (
     const historyStr = recentMessages.map(m => `${m.role === 'user' ? 'AUTOR' : 'EDITOR'}: ${m.content}`).join('\n\n');
 
     const instructions = {
-      pt: "Com base neste excerto recente da história, devolve APENAS um array JSON contendo 3 sugestões curtas e criativas (strings) para a próxima ação do Autor, em Português de Portugal (PT-PT). Usa SEMPRE Euros (€) e NUNCA Reais (R$).",
+      pt: "Com base neste excerto recente da história, devolve APENAS um array JSON contendo 3 sugestões curtas e criativas (strings) para a próxima ação do Autor. Usa OBRIGATORIAMENTE Português de Portugal (PT-PT). É PROIBIDO o uso de gerúndio e de construções como 'em um/uma' (usa 'num/numa'). Usa SEMPRE Euros (€) e NUNCA Reais (R$).",
       en: "Based on this recent excerpt of the story, return ONLY a JSON array containing 3 short and creative suggestions (strings) for the Author's next action, in English.",
       fr: "Basé sur cet extrait récent de l'histoire, retournez UNIQUEMENT un tableau JSON contenant 3 suggestions courtes et créatives (chaînes) pour la prochaine action de l'Auteur, en Français."
     };
