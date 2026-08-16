@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    ChevronLeft, Sparkles, Loader2, Send, Wifi, Lock, PenTool, CheckCircle, Plus, Minus, Type, Users2, HelpCircle, Info, X, Map, Shield, Volume2, VolumeX, Eye, EyeOff, Trash2, BookOpen
+    ChevronLeft, Sparkles, Loader2, Send, Wifi, Lock, PenTool, CheckCircle, Plus, Minus, Type, Users2, HelpCircle, Info, X, Map, Volume2, VolumeX, Eye, EyeOff, Trash2, BookOpen, ScrollText, RotateCw
 } from 'lucide-react';
-import { requestImageGeneration, streamAIConversation, generateSuggestions, extractStoryState, generateImagePrompt } from '@/services/ai';
+import { requestImageGeneration, streamAIConversation, generateSuggestions, generateDynamicSummary, generateImagePrompt } from '@/services/ai';
 import { ConfirmModal, ParticipantsModal } from '@/components';
 import { updateSessionStory, joinCollaborationSession, createCollaborationSession, updateSessionPhase, regenerateSessionCode, getProfileSettings, updateProfileSettings, getSpectatorSession } from '@/services/services';
 import { renderNarrativeWithBreaks, getAuthorStyle } from '@/utils/utils';
@@ -23,8 +23,8 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
     // Novos estados para extensões
     const [zenMode, setZenMode] = useState(false);
     const [showTree, setShowTree] = useState(false);
-    const [inventory, setInventory] = useState<string[]>(initialConfig?.inventory || []);
-    const [relationships, setRelationships] = useState<any>(initialConfig?.relationships || {});
+    const [dynamicSummary, setDynamicSummary] = useState<string>(initialConfig?.dynamicSummary || initialConfig?.idea || '');
+    const [isSummaryUpdating, setIsSummaryUpdating] = useState<boolean>(false);
     const [isSpeaking, setIsSpeaking] = useState<string | null>(null);
 
     // Estados para Edição de Palavras / Substituição
@@ -353,24 +353,25 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
             const suggs = await generateSuggestions(finalMsgs, lang);
             setSuggestions(suggs);
             
-            // Extrair inventário e relações na primeira mensagem e depois a cada 3 respostas (otimização de custos e UI reativa)
+            // Atualizar o resumo dinâmico na 1ª mensagem de IA e a cada 2 respostas
             const aiMsgCount = finalMsgs.filter(m => m.role === 'ai').length;
-            if (aiMsgCount === 1 || aiMsgCount % 3 === 0) {
-                // Atraso adicional para não colidir com as sugestões
+            if (aiMsgCount === 1 || aiMsgCount % 2 === 0) {
                 setTimeout(() => {
-                    extractStoryState(finalMsgs, lang).then(state => {
-                        if (state.inventory.length > 0) setInventory(state.inventory);
-                        if (Object.keys(state.relationships).length > 0) setRelationships(state.relationships);
-                        
-                        if (sessionCode) {
-                            updateSessionStory(sessionCode, {
-                                ...getFullPayload(finalMsgs, currentTurnIndex),
-                                inventory: state.inventory.length > 0 ? state.inventory : inventory,
-                                relationships: Object.keys(state.relationships).length > 0 ? state.relationships : relationships
-                            });
+                    setIsSummaryUpdating(true);
+                    generateDynamicSummary(finalMsgs, lang).then(summary => {
+                        if (summary) {
+                            setDynamicSummary(summary);
+                            if (sessionCode) {
+                                updateSessionStory(sessionCode, {
+                                    ...getFullPayload(finalMsgs, currentTurnIndex),
+                                    dynamicSummary: summary
+                                });
+                            }
                         }
+                    }).finally(() => {
+                        setIsSummaryUpdating(false);
                     });
-                }, 5000);
+                }, 4000);
             }
 
         } catch (e: any) {
@@ -471,50 +472,123 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
         );
     };
 
-    const InventorySidebar = () => (
-        <div className={`w-64 border-l border-gray-200 dark:border-white/5 bg-white/30 dark:bg-[#0a0a0c]/30 backdrop-blur-xl transition-all duration-500 overflow-hidden flex flex-col ${zenMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100 translate-x-0'}`}>
-            <div className="p-6 space-y-8">
-                <div>
-                    <div className="flex items-center gap-2 mb-4 text-indigo-500">
-                        <Shield size={18} />
-                        <h3 className="text-[10px] font-black uppercase tracking-widest">{lang === 'pt' ? 'Inventário' : lang === 'fr' ? 'Inventaire' : 'Inventory'}</h3>
-                    </div>
-                    {inventory.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                            {inventory.map((item, idx) => (
-                                <span key={idx} className="px-3 py-1 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-lg text-[10px] font-bold shadow-sm">{item}</span>
-                            ))}
+    const handleManualRefreshSummary = async () => {
+        if (messages.length === 0 || isSummaryUpdating) return;
+        setIsSummaryUpdating(true);
+        try {
+            const summary = await generateDynamicSummary(messages, lang);
+            if (summary) {
+                setDynamicSummary(summary);
+                if (sessionCode) {
+                    updateSessionStory(sessionCode, {
+                        ...getFullPayload(messages, currentTurnIndex),
+                        dynamicSummary: summary
+                    });
+                }
+                onShowToast(lang === 'pt' ? 'Resumo atualizado com sucesso!' : 'Summary updated successfully!', 'success');
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsSummaryUpdating(false);
+        }
+    };
+
+    const StorySummarySidebar = () => {
+        const totalWordCount = messages
+            .filter(m => m.role === 'ai' && m.content)
+            .reduce((acc, m) => acc + m.content.trim().split(/\s+/).filter(Boolean).length, 0);
+
+        const chapterCount = messages.filter(m => /cap[ií]tulo/i.test(m.content) || m.imageUrl).length || 1;
+
+        return (
+            <div className={`w-72 md:w-80 shrink-0 border-l border-gray-200 dark:border-white/5 bg-white/40 dark:bg-[#0a0a0c]/40 backdrop-blur-2xl transition-all duration-500 overflow-hidden flex flex-col justify-between ${zenMode ? 'opacity-0 translate-x-10 pointer-events-none' : 'opacity-100 translate-x-0'}`}>
+                <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400">
+                            <ScrollText size={18} />
+                            <h3 className="text-[10px] font-black uppercase tracking-widest">
+                                {lang === 'pt' ? 'Resumo Dinâmico' : lang === 'fr' ? 'Résumé Dynamique' : 'Dynamic Summary'}
+                            </h3>
                         </div>
-                    ) : (
-                        <p className="text-[10px] italic opacity-40">{lang === 'pt' ? 'Mãos vazias...' : lang === 'fr' ? 'Mains vides...' : 'Empty hands...'}</p>
+                        <button
+                            onClick={handleManualRefreshSummary}
+                            disabled={isSummaryUpdating || messages.length === 0}
+                            className="p-1.5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-slate-400 hover:text-indigo-500 rounded-lg transition-all disabled:opacity-40"
+                            title={lang === 'pt' ? 'Atualizar Resumo com IA' : 'Refresh Summary with AI'}
+                        >
+                            <RotateCw size={14} className={isSummaryUpdating ? "animate-spin text-indigo-500" : ""} />
+                        </button>
+                    </div>
+
+                    <div className="relative">
+                        {isSummaryUpdating && (
+                            <div className="absolute inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-sm rounded-2xl flex items-center justify-center gap-2 z-10 animate-in fade-in">
+                                <Loader2 size={16} className="animate-spin text-indigo-500" />
+                                <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">
+                                    {lang === 'pt' ? 'A sintetizar...' : 'Summarizing...'}
+                                </span>
+                            </div>
+                        )}
+
+                        <div className="p-4 bg-white/70 dark:bg-white/5 border border-gray-200/70 dark:border-white/10 rounded-2xl shadow-sm space-y-3">
+                            <div className="flex items-center gap-1.5 text-indigo-500">
+                                <Sparkles size={13} />
+                                <span className="text-[9px] font-black uppercase tracking-widest">
+                                    {lang === 'pt' ? 'Estado Atual da Trama' : 'Plot Living State'}
+                                </span>
+                            </div>
+
+                            {dynamicSummary ? (
+                                <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-serif italic selection:bg-indigo-500/20">
+                                    "{dynamicSummary}"
+                                </p>
+                            ) : (
+                                <div className="space-y-2 py-2 text-center">
+                                    <BookOpen size={24} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+                                    <p className="text-xs text-slate-400 italic">
+                                        {initialConfig?.idea ? `"${initialConfig.idea}"` : (lang === 'pt' ? 'O resumo atualizar-se-á à medida que a narrativa avança...' : 'The summary will update as the story progresses...')}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Cartão de Contexto e Personagens Principais */}
+                    {initialConfig?.charProfiles && initialConfig.charProfiles.length > 0 && (
+                        <div className="p-4 bg-gray-50/50 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/5 rounded-2xl space-y-2">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
+                                {lang === 'pt' ? 'Protagonistas Ativos' : 'Active Cast'}
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                                {initialConfig.charProfiles.map((char: any, cIdx: number) => (
+                                    <span key={cIdx} className="text-[10px] font-semibold bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-300">
+                                        {char.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
                     )}
                 </div>
-                <div>
-                    <div className="flex items-center gap-2 mb-4 text-emerald-500">
-                        <Users2 size={18} />
-                        <h3 className="text-[10px] font-black uppercase tracking-widest">{lang === 'pt' ? 'Relações' : lang === 'fr' ? 'Relations' : 'Relationships'}</h3>
+
+                {/* Métricas e Estatísticas Rápidas da Obra no Rodapé da Barra */}
+                <div className="p-4 border-t border-gray-200/70 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] grid grid-cols-3 gap-2 text-center">
+                    <div className="p-2 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
+                        <span className="block text-[8px] font-black uppercase tracking-widest text-slate-400">{lang === 'pt' ? 'Capítulos' : 'Chapters'}</span>
+                        <span className="text-xs font-bold text-gray-900 dark:text-white">{chapterCount}</span>
                     </div>
-                    {Object.keys(relationships).length > 0 ? (
-                        <div className="space-y-3">
-                            {Object.entries(relationships).map(([name, level]: any) => (
-                                <div key={name}>
-                                    <div className="flex justify-between text-[9px] font-bold mb-1 uppercase tracking-tighter">
-                                        <span>{name}</span>
-                                        <span>{level}%</span>
-                                    </div>
-                                    <div className="h-1 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
-                                        <div className="h-full bg-emerald-500" style={{ width: `${level}%` }} />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-[10px] italic opacity-40">Nenhuma ligação...</p>
-                    )}
+                    <div className="p-2 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
+                        <span className="block text-[8px] font-black uppercase tracking-widest text-slate-400">{lang === 'pt' ? 'Palavras' : 'Words'}</span>
+                        <span className="text-xs font-bold text-indigo-500 dark:text-indigo-400">{totalWordCount}</span>
+                    </div>
+                    <div className="p-2 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
+                        <span className="block text-[8px] font-black uppercase tracking-widest text-slate-400">{lang === 'pt' ? 'Turnos' : 'Turns'}</span>
+                        <span className="text-xs font-bold text-emerald-500">{messages.length}</span>
+                    </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     const getWordRegex = (word: string) => {
         const escaped = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -815,7 +889,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                     <div ref={messagesEndRef} />
                 </div>
 
-                <InventorySidebar />
+                <StorySummarySidebar />
 
 
             </div>

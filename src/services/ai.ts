@@ -245,33 +245,34 @@ export const requestImageGeneration = async (prompt: string): Promise<string> =>
   return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=512&nologo=true&seed=${seed}&model=flux`;
 };
 
-// Extrair Estado (Inventário e Relações) da Narrativa
-export const extractStoryState = async (messages: any[], lang: Language = 'en') => {
+// Gerar Resumo Dinâmico da História em Tempo Real
+export const generateDynamicSummary = async (messages: any[], lang: Language = 'pt'): Promise<string> => {
   try {
-    const historyStr = messages.slice(-5).map(m => `${m.role === 'user' ? 'AUTOR' : 'EDITOR'}: ${m.content}`).join('\n\n');
-    const prompt = `Based on the recent story events, extract the current inventory (key items, weapons, artifacts held by the characters) and the current relationship levels (0 to 100) between the main characters.
-    
-    Return EXACTLY a JSON object with this format, and nothing else:
-    {
-      "inventory": ["Item 1", "Item 2"],
-      "relationships": { "Character A": 80, "Character B": 50 }
-    }
-    
-    If there are no items, return an empty array for inventory. If there are no clear relationships, return an empty object.
-    RECENT STORY:
-    ${historyStr}`;
+    const aiMessages = messages.filter(m => m.role === 'ai');
+    if (aiMessages.length === 0) return "";
 
-    const responseText = await executeUnifiedAI(prompt, { jsonMode: true });
-    const cleanJson = cleanAIJSON(responseText) || '{}';
-    
-    const parsed = JSON.parse(cleanJson);
-    return {
-      inventory: Array.isArray(parsed.inventory) ? parsed.inventory : [],
-      relationships: typeof parsed.relationships === 'object' ? parsed.relationships : {}
+    const historyStr = messages.map(m => `${m.role === 'user' ? 'AUTOR' : 'NARRATIVA'}: ${m.content}`).join('\n\n');
+
+    const prompts: Record<string, string> = {
+      pt: `Atua como um assistente literário sénior de Portugal. Lê os acontecimentos desta história e gera um RESUMO DINÂMICO E VIVO do que aconteceu até ao momento (máximo 3 a 4 frases concisas).
+      ${PT_PT_STRICT_RULES}
+      Destaca a situação atual das personagens, o conflito imediato e o objetivo em curso.
+      Retorna APENAS o texto do resumo em PORTUGUÊS DE PORTUGAL, sem introduções ou títulos.`,
+      en: `Act as a senior literary assistant. Read the events of this story and generate a DYNAMIC AND LIVING SUMMARY of what has occurred so far (maximum 3 to 4 concise sentences).
+      Highlight the current character situation, immediate conflict, and active objective.
+      Return ONLY the summary text in English, without introductions or titles.`,
+      fr: `Agissez comme un assistant littéraire senior. Lisez les événements de cette histoire et générez un RÉSUMÉ DYNAMIQUE ET VIVANT de ce qui s'est passé jusqu'à présent (maximum 3 à 4 phrases concises).
+      Mettez en valeur la situation actuelle des personnages, le conflit immédiat et l'objectif en cours.
+      Renvoyez UNIQUEMENT le texte du résumé en Français, sans introductions ni titres.`
     };
+
+    const promptText = `${prompts[lang] || prompts['pt']}\n\nHISTÓRIA COMPLETA / RECENTE:\n${historyStr.slice(-7000)}`;
+
+    const responseText = await executeUnifiedAI(promptText, {});
+    return responseText?.trim() || "";
   } catch (e) {
-    console.warn("[extractStoryState] Erro ao extrair estado:", e);
-    return { inventory: [], relationships: {} };
+    console.warn("[generateDynamicSummary] Erro:", e);
+    return "";
   }
 };
 
