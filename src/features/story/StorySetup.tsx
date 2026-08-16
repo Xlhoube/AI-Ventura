@@ -245,11 +245,17 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                         {t.step2Premise}
                                     </h4>
                                     <div className="space-y-4">
-                                        {aiIdeas.map((idea, i) => (
-                                            <div key={i} onClick={() => handleConfigChange({ ...config, idea })} className={`p-6 rounded-2xl border cursor-pointer hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 transition-all animate-in slide-in-from-bottom-2 ${config.idea === idea ? 'border-indigo-500 ring-4 ring-indigo-500/20 bg-indigo-50 dark:bg-indigo-500/10' : 'border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02]'}`} style={{ animationDelay: `${i * 100}ms` }}>
-                                                <p className="text-base font-medium text-slate-700 dark:text-slate-300 leading-relaxed">{idea}</p>
-                                            </div>
-                                        ))}
+                                        {aiIdeas.map((idea, i) => {
+                                            const match = idea.match(/^(.*?)(?::| - )(.*)$/);
+                                            const title = match ? match[1].replace(/\*\*/g, '').trim() : idea.replace(/\*\*/g, '');
+                                            const summary = match ? match[2].trim() : '';
+                                            return (
+                                                <div key={i} onClick={() => handleConfigChange({ ...config, idea })} className={`p-6 rounded-2xl border cursor-pointer hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 transition-all animate-in slide-in-from-bottom-2 ${config.idea === idea ? 'border-indigo-500 ring-4 ring-indigo-500/20 bg-indigo-50 dark:bg-indigo-500/10' : 'border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02]'}`} style={{ animationDelay: `${i * 100}ms` }}>
+                                                    <p className="text-base font-bold text-gray-900 dark:text-white mb-2">{title}</p>
+                                                    {summary && <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">{summary}</p>}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
