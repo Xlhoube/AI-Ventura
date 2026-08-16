@@ -580,13 +580,10 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
 
                     <div className="flex flex-col items-center gap-3 w-full px-2">
                         <button onClick={() => handleAction('ending')} className={`w-full h-10 flex items-center justify-center rounded-xl transition-all shadow-sm border ${zenMode ? 'bg-white/10 text-white border-white/10 hover:bg-white/20' : 'bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-white/10 border-gray-200 dark:border-white/5'}`} title={t.requestEnding}>
-                            <span className="text-[9px] font-black uppercase text-center leading-none">{lang === 'pt' ? 'Sugerir\nFinais' : 'Suggest\nEnds'}</span>
-                        </button>
-                        <button onClick={() => handleAction('definitive')} className={`w-full h-10 flex items-center justify-center rounded-xl transition-all shadow-sm border ${zenMode ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/40' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 border-emerald-200 dark:border-emerald-500/20'}`} title={t.requestDefinitiveEnding}>
-                            <span className="text-[9px] font-black uppercase text-center leading-none">{lang === 'pt' ? 'Fim\nTotal' : 'End'}</span>
+                            <span className="text-[9px] font-black uppercase text-center leading-none">{lang === 'pt' ? 'Fechar\nCapítulo' : 'Close\nChapter'}</span>
                         </button>
                         <button onClick={() => onFinalizeBook(messages)} className={`w-full h-10 flex items-center justify-center rounded-xl transition-all shadow-sm border ${zenMode ? 'bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/40' : 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-500/20 border-purple-200 dark:border-purple-500/20'}`} title={t.exportBook}>
-                            <span className="text-[10px] font-black uppercase">{lang === 'pt' ? 'Ler' : 'Read'}</span>
+                            <span className="text-[9px] font-black uppercase text-center leading-none">{lang === 'pt' ? 'Finalizar\nObra' : 'Finalize\nBook'}</span>
                         </button>
                     </div>
 
