@@ -392,7 +392,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
             const chars = config.charProfiles?.map((c: any) => `${c.name} (${c.role})`).join(', ') || t.noName;
             const prompt = t.aiInitialPrompt
                 ? t.aiInitialPrompt(config.idea, '', config.genre || '', chars, '', config.charLinks || '')
-                : `Saudações, Autor. Iniciamos a redação desta obra de ${config.genre || 'Fantasia'}. CONCEITO: ${config.idea}. ELENCO: ${chars}. RELAÇÕES: ${config.charLinks || ''}. Redige o primeiro capítulo focando na imersão e introdução das personagens.`;
+                : `Iniciamos a redação desta obra de ${config.genre || 'Fantasia'}. CONCEITO: ${config.idea}. ELENCO: ${chars}. RELAÇÕES: ${config.charLinks || ''}. Redige o primeiro capítulo com foco na imersão e introdução das personagens em Português de Portugal (PT-PT estrito, sem gerúndios).`;
 
             handleAIStream(prompt, 'continue', [], null, true);
         }
