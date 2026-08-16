@@ -764,9 +764,9 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                             <button
                                 key={i}
                                 onClick={() => { setInput(s); setWriteOwn(true); }}
-                                className="w-full text-left px-4 py-3 bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-xl text-xs text-slate-600 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all shadow-sm flex items-center group h-auto min-h-[3rem]"
+                                className="w-full text-left px-4 py-3 bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-xl text-xs text-slate-600 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all shadow-sm flex items-start group h-auto min-h-[3rem]"
                             >
-                                <span className="line-clamp-3 w-full group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-relaxed">{s}</span>
+                                <span className="w-full group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-relaxed">{s}</span>
                             </button>
                         ))}
                         <button
