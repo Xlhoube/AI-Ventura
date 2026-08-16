@@ -2,6 +2,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 import { getAPIKeys } from "./ai"; // We will modify ai.ts to export this or move it here
+import { useAppStore, AIProvider } from '@/store/useAppStore';
 
 export interface AIProviderConfig {
     systemInstruction?: string;
@@ -9,7 +10,7 @@ export interface AIProviderConfig {
     stream?: boolean;
 }
 
-export const executeUnifiedAI = async (
+const _executeUnifiedAIBase = async (
     prompt: string,
     config: AIProviderConfig = {}
 ) => {
@@ -152,4 +153,38 @@ export const executeUnifiedAI = async (
     }
     
     throw new Error(`Unsupported provider: ${provider}`);
+};
+
+export const executeUnifiedAI = async (
+    prompt: string,
+    config: AIProviderConfig = {},
+    attemptedProviders: AIProvider[] = []
+): Promise<any> => {
+    try {
+        return await _executeUnifiedAIBase(prompt, config);
+    } catch (e: any) {
+        const store = useAppStore.getState();
+        const currentProvider = store.activeProvider;
+        attemptedProviders.push(currentProvider);
+        
+        const availableProviders = ['google', 'openai', 'anthropic', 'groq', 'mistral'] as AIProvider[];
+        let nextProvider: AIProvider | null = null;
+        for (const p of availableProviders) {
+            if (!attemptedProviders.includes(p) && store.apiKeys[p] && store.apiKeysStatus[p] !== 'exceeded') {
+                nextProvider = p;
+                break;
+            }
+        }
+        
+        if (nextProvider) {
+            console.warn(`[AI Fallback] ${currentProvider} failed. Trying ${nextProvider}...`, e);
+            store.setActiveProvider(nextProvider);
+            window.dispatchEvent(new CustomEvent('ai_fallback_triggered', { 
+                detail: { from: currentProvider, to: nextProvider } 
+            }));
+            return executeUnifiedAI(prompt, config, attemptedProviders);
+        } else {
+            throw e;
+        }
+    }
 };

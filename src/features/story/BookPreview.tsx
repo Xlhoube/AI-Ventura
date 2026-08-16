@@ -63,7 +63,7 @@ export const BookPreview = ({ t, story, onBack, onReopen, userLang }: { t: any, 
                 <button onClick={onBack} className="flex items-center gap-2 text-slate-500 hover:text-gray-900 dark:hover:text-white transition-colors uppercase text-[10px] font-black tracking-widest"><ChevronLeft size={18} /> {t.back}</button>
 
                 <div className="flex items-center gap-2">
-                    {['pt', 'en', 'fr'].filter(l => l !== originalLang).map((lang) => {
+                    {['pt', 'en', 'fr', 'es'].filter(l => l !== originalLang).map((lang) => {
                         const isThisLang = isTranslated && currentTranslatedLang === lang;
                         const isLoadingThis = translationLoading && currentTranslatedLang === lang;
                         return (

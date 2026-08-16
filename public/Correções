@@ -1,0 +1,23 @@
+Dropdowns com cores no backgraond e letras da mesma cores
+Melhorar o botão zen mode e usar toda a janela para o texto
+Adicionar o Espanhol
+Alternar entre APIs esgotados
+Botões escondidos pelo icon na historia
+Adequirir uma voz Melhorar
+Quando se cria a primeira obra e não houver nenhuma API configurada deve ir autmaticamente para a configuração da API
+
+
+# --- MELHORIAS DE UI/UX ---
+
+- **Dropdowns:** Cor do background e da letra idênticas (verificar se o texto está visível em qualquer cor).
+- **Botão Zen Mode:** O texto da página deve ocupar a janela toda, eliminando as margens laterais.
+- **Badges:** Devem acompanhar o tamanho do texto (não podem ultrapassar a área do texto).
+- **Botões na História:** Ação dos botões duplicada pelo ícone, fazendo-os desaparecer e reaparecer desnecessariamente.
+
+# --- ADIÇÕES DE FUNCIONALIDADES ---
+
+- **Idiomas:** Adicionar Espanhol.
+- **APIs:**
+    - Alternar entre APIs quando uma estiver esgotada.
+    - Se for a primeira obra e não houver API configurada, redirecionar automaticamente para a página de configuração de API.
+- **Voz:** Adquirir uma voz (para leitura do texto?).

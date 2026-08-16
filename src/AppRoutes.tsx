@@ -112,6 +112,15 @@ export const AppRoutes = () => {
         setToast({ message, type });
     };
 
+    useEffect(() => {
+        const handleFallback = (e: any) => {
+            const { from, to } = e.detail;
+            showToast(`A API ${from} falhou. A utilizar ${to} como alternativa.`, 'info');
+        };
+        window.addEventListener('ai_fallback_triggered', handleFallback);
+        return () => window.removeEventListener('ai_fallback_triggered', handleFallback);
+    }, []);
+
     const handleAuth = async (e: React.FormEvent, mode: 'login' | 'signup') => {
         try {
             const res = await handleAuthSubmit(e, mode);
@@ -245,6 +254,7 @@ export const AppRoutes = () => {
                         <option value="pt" className="dark:bg-[#121214]">PT</option>
                         <option value="en" className="dark:bg-[#121214]">EN</option>
                         <option value="fr" className="dark:bg-[#121214]">FR</option>
+                        <option value="es" className="dark:bg-[#121214]">ES</option>
                     </select>
                     {currentUser && (
                         <div className="flex items-center gap-3 pl-2 border-l border-gray-200 dark:border-white/10">

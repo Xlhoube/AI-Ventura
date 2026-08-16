@@ -151,13 +151,18 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
             const langPrefix = lang === 'pt' ? 'pt' : lang === 'fr' ? 'fr' : 'en';
             const availableVoices = voices.filter(v => v.lang.toLowerCase().startsWith(langPrefix));
 
-            // Preferir vozes da nuvem ou de alta qualidade Neural/Natural/Google
-            const premiumVoice = availableVoices.find(v =>
-                v.name.includes('Google') ||
-                v.name.includes('Natural') ||
-                v.name.includes('Neural') ||
-                v.name.includes('Online')
-            );
+            // 1. First priority: Microsoft voices (requested by user)
+            let premiumVoice = availableVoices.find(v => v.name.includes('Microsoft'));
+            
+            // 2. Second priority: Other high quality voices
+            if (!premiumVoice) {
+                premiumVoice = availableVoices.find(v =>
+                    v.name.includes('Google') ||
+                    v.name.includes('Natural') ||
+                    v.name.includes('Neural') ||
+                    v.name.includes('Online')
+                );
+            }
 
             if (premiumVoice) {
                 utterance.voice = premiumVoice;
@@ -509,7 +514,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
     );
 
     return (
-        <div className={`flex flex-col h-[calc(100vh-140px)] w-full max-w-[95vw] mx-auto bg-white dark:bg-[#121214] rounded-[40px] shadow-2xl overflow-hidden border border-gray-200 dark:border-white/5 animate-in zoom-in-95 duration-500 relative ${zenMode ? 'zen-mode-active' : ''}`}>
+        <div className={`flex flex-col bg-white dark:bg-[#121214] overflow-hidden animate-in zoom-in-95 duration-500 relative ${zenMode ? 'fixed inset-0 z-[500] w-full h-full rounded-none border-none max-w-none' : 'h-[calc(100vh-140px)] w-full max-w-[95vw] mx-auto rounded-[40px] shadow-2xl border border-gray-200 dark:border-white/5'}`}>
 
             <div className={`h-16 border-b border-gray-200 dark:border-white/5 flex items-center justify-between px-8 bg-white/50 dark:bg-[#121214]/50 backdrop-blur-md z-[110] outline-none shrink-0 transition-all duration-500 ${zenMode ? 'opacity-0 -translate-y-5 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
                 <div className="flex items-center gap-4">
@@ -547,9 +552,10 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                     {zenMode && (
                         <button
                             onClick={() => setZenMode(false)}
-                            className="fixed top-8 right-8 z-[200] p-4 bg-white/10 backdrop-blur-md rounded-full text-white/50 hover:text-white hover:bg-white/20 transition-all animate-pulse"
+                            className="fixed top-6 right-6 z-[600] px-6 py-4 bg-slate-900/80 dark:bg-white/20 backdrop-blur-xl rounded-full text-white hover:bg-slate-900 dark:hover:bg-white/30 transition-all shadow-2xl border border-white/10 flex items-center gap-3 animate-bounce"
                         >
                             <Eye size={24} />
+                            <span className="text-xs font-black tracking-widest uppercase">{lang === 'pt' ? 'Sair do Zen' : 'Exit Zen'}</span>
                         </button>
                     )}
 
@@ -680,7 +686,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                                             </div>
 
                                             {isAI && !isTyping && (
-                                                <div className="absolute top-0 -right-12 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="absolute top-0 -right-2 translate-x-full pl-4 py-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-50">
                                                     <button
                                                         onClick={() => handleTTS(msg.content, msg.id)}
                                                         className={`p-2 rounded-lg transition-all ${isSpeaking === msg.id ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-white/5 text-slate-400 hover:text-indigo-500 shadow-sm border border-gray-100 dark:border-white/10'}`}

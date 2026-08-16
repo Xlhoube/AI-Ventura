@@ -140,6 +140,10 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
     const [isFinishing, setIsFinishing] = useState(false);
 
     const finish = () => {
+        if (!apiKeys[activeProvider]) {
+            setShowApiSetup(true);
+            return;
+        }
         setIsFinishing(true);
         // Pequena simulação de processamento/carregamento para feedback visual
         setTimeout(() => {
@@ -182,7 +186,7 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                     <h4 className="font-bold text-gray-900 dark:text-white text-base">{t.step1Genre}</h4>
                                     <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
                                         {Object.keys(t.genres).map(g => (
-                                            <button key={g} onClick={() => setConfig({ ...config, genre: g })} className={`px-3 py-2 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest whitespace-nowrap border transition-all ${config.genre === g ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/30' : 'bg-gray-50 dark:bg-white/5 text-slate-500 border-gray-200 dark:border-white/10 hover:border-indigo-400/50 hover:text-indigo-400'}`}>
+                                            <button key={g} onClick={() => setConfig({ ...config, genre: g })} className={`px-3 py-2 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest max-w-full break-words text-wrap border transition-all ${config.genre === g ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/30' : 'bg-gray-50 dark:bg-white/5 text-slate-500 border-gray-200 dark:border-white/10 hover:border-indigo-400/50 hover:text-indigo-400'}`}>
                                                 {t.genres[g] || g}
                                             </button>
                                         ))}
@@ -199,14 +203,14 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                             onChange={e => handleConfigChange({ ...config, subTema: e.target.value })}
                                             className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-indigo-500/20 font-medium text-sm text-gray-900 dark:text-white"
                                         >
-                                            <option value="none" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Nenhum' : 'None'}</option>
-                                            <option value="romance" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Romance / Relações' : 'Romance / Relationships'}</option>
-                                            <option value="medieval" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Medieval / Épico' : 'Medieval / Epic'}</option>
-                                            <option value="scifi" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Ficção Científica / Tecnologia' : 'Science Fiction / Tech'}</option>
-                                            <option value="humor" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Comédia / Humor' : 'Comedy / Humor'}</option>
-                                            <option value="veridica" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'História Real / Verídica' : 'Real / True Story'}</option>
-                                            <option value="mystery" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Mistério / Investigação' : 'Mystery / Investigation'}</option>
-                                            <option value="drama" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Drama / Conflito Familiar' : 'Drama / Family Conflict'}</option>
+                                            <option value="none" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Nenhum' : 'None'}</option>
+                                            <option value="romance" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Romance / Relações' : 'Romance / Relationships'}</option>
+                                            <option value="medieval" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Medieval / Épico' : 'Medieval / Epic'}</option>
+                                            <option value="scifi" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Ficção Científica / Tecnologia' : 'Science Fiction / Tech'}</option>
+                                            <option value="humor" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Comédia / Humor' : 'Comedy / Humor'}</option>
+                                            <option value="veridica" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'História Real / Verídica' : 'Real / True Story'}</option>
+                                            <option value="mystery" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Mistério / Investigação' : 'Mystery / Investigation'}</option>
+                                            <option value="drama" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Drama / Conflito Familiar' : 'Drama / Family Conflict'}</option>
                                         </select>
                                     </div>
 
@@ -219,12 +223,12 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                             onChange={e => handleConfigChange({ ...config, timePeriod: e.target.value })}
                                             className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-indigo-500/20 font-medium text-sm text-gray-900 dark:text-white"
                                         >
-                                            <option value="present" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Contemporâneo / Atual' : 'Contemporary / Present'}</option>
-                                            <option value="past_medieval" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Passado Medieval / Feudal' : 'Medieval Past / Feudal'}</option>
-                                            <option value="past_century" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Século Passado (XIX/XX)' : 'Last Century (19th/20th)'}</option>
-                                            <option value="future_near" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Futuro Próximo / Distopia' : 'Near Future / Dystopia'}</option>
-                                            <option value="future_far" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Futuro Distante / Espacial' : 'Far Future / Space Era'}</option>
-                                            <option value="timeless" className="text-gray-950 dark:text-gray-900">{lang === 'pt' ? 'Atemporal / Fantástico' : 'Timeless / Mythological'}</option>
+                                            <option value="present" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Contemporâneo / Atual' : 'Contemporary / Present'}</option>
+                                            <option value="past_medieval" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Passado Medieval / Feudal' : 'Medieval Past / Feudal'}</option>
+                                            <option value="past_century" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Século Passado (XIX/XX)' : 'Last Century (19th/20th)'}</option>
+                                            <option value="future_near" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Futuro Próximo / Distopia' : 'Near Future / Dystopia'}</option>
+                                            <option value="future_far" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Futuro Distante / Espacial' : 'Far Future / Space Era'}</option>
+                                            <option value="timeless" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Atemporal / Fantástico' : 'Timeless / Mythological'}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -412,7 +416,7 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                     >
                                         <option value="">{lang === 'pt' ? 'Selecionar...' : 'Select...'}</option>
                                         {config.charProfiles.map((c: any, idx: number) => (
-                                            <option key={idx} value={c.name} className="text-gray-900 dark:text-gray-900">{c.name}</option>
+                                            <option key={idx} value={c.name} className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{c.name}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -472,7 +476,7 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                     >
                                         <option value="">{lang === 'pt' ? 'Selecionar...' : 'Select...'}</option>
                                         {config.charProfiles.map((c: any, idx: number) => (
-                                            <option key={idx} value={c.name} className="text-gray-900 dark:text-gray-900">{c.name}</option>
+                                            <option key={idx} value={c.name} className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{c.name}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -509,7 +513,7 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
                                         >
                                             <option value="">{lang === 'pt' ? 'Selecionar...' : 'Select...'}</option>
                                             {config.charProfiles.map((c: any, idx: number) => (
-                                                <option key={idx} value={c.name} className="text-gray-900 dark:text-gray-900">{c.name}</option>
+                                                <option key={idx} value={c.name} className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{c.name}</option>
                                             ))}
                                         </select>
                                     </div>
