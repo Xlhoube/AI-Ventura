@@ -18,6 +18,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
     const [showParticipants, setShowParticipants] = useState(false);
     const [showConfig, setShowConfig] = useState(false);
     const [showEndingModal, setShowEndingModal] = useState(false);
+    const [loadingSuggestions, setLoadingSuggestions] = useState(false);
     const [currentTurnIndex, setCurrentTurnIndex] = useState(initialConfig?.currentTurnIndex || 0);
     const [isHost, setIsHost] = useState(false);
 
@@ -266,6 +267,7 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
         setMessages(newMessages);
         setActiveNodeId(msgId);
         setInput('');
+        setWriteOwn(false);
         setLastAuthorId(user.id);
         setTimeout(scrollToBottom, 100);
 
@@ -418,6 +420,26 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
             handleAIStream(prompt, 'continue', [], null, true);
         }
     }, [messages.length]);
+
+    const handleFetchSuggestions = async () => {
+        if (isTyping || loadingSuggestions) return;
+        if (suggestions.length > 0 && writeOwn) {
+            setWriteOwn(false);
+            setInput('');
+            return;
+        }
+        setLoadingSuggestions(true);
+        try {
+            const suggs = await generateSuggestions(messages, lang);
+            setSuggestions(suggs);
+            setWriteOwn(false);
+            setInput('');
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoadingSuggestions(false);
+        }
+    };
 
 
     const handleAction = async (actionType: 'ending' | 'definitive') => {
@@ -971,31 +993,52 @@ export const StoryEngine = ({ t, lang, user, initialConfig, sessionCode, onExit,
                             )}
                         </div>
                     ) : (
-                        <div className={`flex gap-2 relative ${(!writeOwn && suggestions.length > 0) ? 'hidden' : ''}`}>
-                            {suggestions.length > 0 && writeOwn && (
-                                <button
-                                    onClick={() => { setWriteOwn(false); setInput(''); }}
-                                    className="bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-slate-500 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl px-3 flex items-center justify-center transition-all"
-                                    title="Voltar às opções"
-                                >
-                                    <X size={16} />
-                                </button>
+                        <div className="flex flex-col gap-2 w-full">
+                            {!isTyping && (writeOwn || suggestions.length === 0) && (
+                                <div className="flex items-center justify-between px-1 animate-in fade-in">
+                                    <button
+                                        onClick={handleFetchSuggestions}
+                                        disabled={loadingSuggestions || isTyping}
+                                        className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1.5 transition-colors py-1.5 px-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border border-indigo-200/60 dark:border-indigo-500/20 bg-white dark:bg-white/5 shadow-sm"
+                                    >
+                                        <Sparkles size={13} className={loadingSuggestions ? "animate-spin text-indigo-500" : "text-indigo-500"} />
+                                        <span>
+                                            {loadingSuggestions
+                                                ? (lang === 'pt' ? 'A carregar 3 opções de continuação...' : 'Loading 3 suggestions...')
+                                                : (suggestions.length > 0 && writeOwn)
+                                                    ? (lang === 'pt' ? '← Ver 3 Opções de Continuação' : '← Show 3 Suggestions')
+                                                    : (lang === 'pt' ? '✨ Gerar 3 Opções de Continuação com IA' : '✨ Generate 3 Suggestions with AI')}
+                                        </span>
+                                    </button>
+                                </div>
                             )}
-                            <textarea
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                                placeholder={isTyping ? (lang === 'pt' ? 'O Editor está a escrever...' : lang === 'fr' ? 'L\'Éditeur écrit...' : 'The Editor is writing...') : (lang === 'pt' ? 'Escreve a continuação...' : lang === 'fr' ? 'Écrivez la suite...' : 'Write the continuation...')}
-                                disabled={isTyping}
-                                className="flex-1 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 pr-12 text-gray-900 dark:text-white text-sm outline-none focus:ring-2 ring-indigo-500/20 resize-none h-12 max-h-32 transition-all disabled:opacity-50"
-                            />
-                            <button
-                                onClick={handleSend}
-                                disabled={!input.trim() || isTyping}
-                                className="absolute right-1 top-1 bottom-1 w-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-500 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-600/20"
-                            >
-                                {isTyping ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
-                            </button>
+
+                            <div className={`flex gap-2 relative ${(!writeOwn && suggestions.length > 0) ? 'hidden' : ''}`}>
+                                {suggestions.length > 0 && writeOwn && (
+                                    <button
+                                        onClick={() => { setWriteOwn(false); setInput(''); }}
+                                        className="bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-slate-500 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl px-3 flex items-center justify-center transition-all"
+                                        title="Voltar às opções"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                )}
+                                <textarea
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                                    placeholder={isTyping ? (lang === 'pt' ? 'O Editor está a escrever...' : lang === 'fr' ? 'L\'Éditeur écrit...' : 'The Editor is writing...') : (lang === 'pt' ? 'Escreve a continuação...' : lang === 'fr' ? 'Écrivez la suite...' : 'Write the continuation...')}
+                                    disabled={isTyping}
+                                    className="flex-1 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 pr-12 text-gray-900 dark:text-white text-sm outline-none focus:ring-2 ring-indigo-500/20 resize-none h-12 max-h-32 transition-all disabled:opacity-50"
+                                />
+                                <button
+                                    onClick={handleSend}
+                                    disabled={!input.trim() || isTyping}
+                                    className="absolute right-1 top-1 bottom-1 w-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-500 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-600/20"
+                                >
+                                    {isTyping ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
+                                </button>
+                            </div>
                         </div>
                     )
                 ) : (

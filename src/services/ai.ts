@@ -136,54 +136,80 @@ NORMAS LINGUÍSTICAS OBRIGATÓRIAS (PORTUGUÊS DE PORTUGAL - PT-PT):
 // NOVA FUNÇÃO: Gerar Apenas Sugestões (Para Resume/Reload) - OTIMIZADA
 export const generateSuggestions = async (
   messages: any[],
-  lang: Language = 'en'
-) => {
+  lang: Language = 'pt'
+): Promise<string[]> => {
+  const fallbacks: Record<string, string[]> = {
+    pt: [
+      'Investigar os arredores em busca de pistas ou segredos',
+      'Confrontar as figuras presentes para obter respostas',
+      'Avançar cautelosamente para o próximo objetivo'
+    ],
+    en: [
+      'Investigate the surroundings for clues or secrets',
+      'Confront the figures present to demand answers',
+      'Advance cautiously toward the next objective'
+    ],
+    fr: [
+      'Explorer les environs à la recherche d\'indices',
+      'Confronter les personnages présents pour obtenir des réponses',
+      'Avancer prudemment vers le prochain objectif'
+    ]
+  };
+
+  const defaultList = fallbacks[lang] || fallbacks['pt'];
+
   try {
-    // const ai = getAIInstance();
-
-    // OTIMIZAÇÃO DE CONTEXTO: Janela Deslizante (Sliding Window)
-    // Ler apenas as últimas 20 mensagens para poupar tokens e acelerar a resposta
-    const RECENT_MSG_LIMIT = 20;
+    const RECENT_MSG_LIMIT = 15;
     const recentMessages = messages.slice(-RECENT_MSG_LIMIT);
+    if (recentMessages.length === 0) return defaultList;
 
-    const historyStr = recentMessages.map(m => `${m.role === 'user' ? 'AUTOR' : 'EDITOR'}: ${m.content}`).join('\n\n');
+    const historyStr = recentMessages.map(m => `${m.role === 'user' ? 'AUTOR' : 'NARRATIVA'}: ${m.content}`).join('\n\n');
 
     const instructions = {
-      pt: `Com base neste excerto recente da história, devolve APENAS um array JSON contendo 3 sugestões curtas e criativas (strings) para a próxima ação do Autor.
-${PT_PT_STRICT_RULES}`,
-      en: "Based on this recent excerpt of the story, return ONLY a JSON array containing 3 short and creative suggestions (strings) for the Author's next action, in English.",
-      fr: "Basé sur cet extrait récent de l'histoire, retournez UNIQUEMENT un tableau JSON contenant 3 suggestions courtes et créatives (chaînes) pour la prochaine action de l'Auteur, en Français."
+      pt: `Com base no excerto recente da história, gera 3 sugestões curtas, envolventes e distintas para a próxima ação do autor continuar a narrativa.
+${PT_PT_STRICT_RULES}
+Devolve OBRIGATORIAMENTE um array JSON contendo exatamente 3 strings:
+["Sugestão 1", "Sugestão 2", "Sugestão 3"]`,
+      en: "Based on the recent story excerpt, generate 3 short, engaging suggestions for the author's next action to continue the narrative. Return ONLY a JSON array of 3 strings: ['Suggestion 1', 'Suggestion 2', 'Suggestion 3']",
+      fr: "Basé sur l'extrait récent de l'histoire, générez 3 suggestions courtes et attrayantes pour la suite de l'histoire. Renvoyez UNIQUEMENT un tableau JSON de 3 chaînes."
     };
 
-    const promptText = `EXCERTO RECENTE DA HISTÓRIA:\n${historyStr}\n\nTAREFA: ${instructions[lang] || instructions['en']}`;
+    const promptText = `EXCERTO DA HISTÓRIA:\n${historyStr}\n\n${instructions[lang] || instructions['pt']}`;
 
     const responseText = await executeUnifiedAI(promptText, { jsonMode: true });
-
-    // Parse Robustez
     const cleanText = cleanAIJSON(responseText);
-    const start = cleanText.indexOf('[');
-    const end = cleanText.lastIndexOf(']');
 
-    if (start !== -1 && end !== -1) {
-      try {
-        return JSON.parse(cleanText.substring(start, end + 1));
-      } catch (parseErr) {
-        console.warn("JSON parse failed inside brackets, fallback empty");
-        return [];
+    let parsed: any[] = [];
+    try {
+      const json = JSON.parse(cleanText);
+      if (Array.isArray(json)) {
+        parsed = json;
+      } else if (json && typeof json === 'object') {
+        const arr = Object.values(json).find(v => Array.isArray(v));
+        if (arr) parsed = arr as any[];
+      }
+    } catch {
+      // Fallback regex
+      const stringMatches = [...cleanText.matchAll(/"([^"]{8,150})"/g)];
+      if (stringMatches.length >= 2) {
+        parsed = stringMatches.slice(0, 3).map(m => m[1]);
       }
     }
 
-    // Tentativa final de parse direto se a string for limpa
-    try {
-      const directParse = JSON.parse(cleanText);
-      if (Array.isArray(directParse)) return directParse;
-    } catch (e) { }
+    const normalized = parsed.map((item: any) => {
+      if (typeof item === 'string') return item.replace(/^["'\s]+|["'\s]+$/g, '');
+      if (typeof item === 'object' && item !== null) {
+        const val = item.action || item.suggestion || item.text || item.title || Object.values(item)[0];
+        return typeof val === 'string' ? val : String(val);
+      }
+      return String(item);
+    }).filter(s => s && s.length > 3 && !s.toLowerCase().includes('json') && !s.toLowerCase().includes('array'));
 
-    return [];
+    return normalized.length >= 2 ? normalized.slice(0, 3) : defaultList;
 
   } catch (e: any) {
-    console.warn("[generateSuggestions] Falha leve:", e);
-    return []; // Falha silenciosa para não bloquear a UI
+    console.warn("[generateSuggestions] Falha leve, a usar sugestões de fallback:", e);
+    return defaultList;
   }
 };
 
