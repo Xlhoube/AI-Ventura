@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Library, Loader2, UploadCloud, Users2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Library, Loader2, UploadCloud, Users2, Download } from 'lucide-react';
 import { StoriesList } from './components/StoriesList';
 import { ConfirmModal, PageHeader } from '@/components';
-import { getLocalStories } from '@/services/story.services';
+import { getLocalStories, saveLocalStory } from '@/services/story.services';
 import { account, databases, DATABASE_ID, COL_PUBLIC_STORIES, publishStoryToGlobal, unpublishStoryByTitle, syncStoriesCount, isCloudEnabled } from '@/services/services';
 import { Query } from 'appwrite';
 
@@ -12,6 +12,7 @@ export const PrivateLibraryView = ({ t, onRead, onArchive, onBack }: { t: any, o
   const [selectedForDelete, setSelectedForDelete] = useState<any>(null);
   const [isPublishing, setIsPublishing] = useState<string | null>(null);
   const [publishedIds, setPublishedIds] = useState<Set<string>>(new Set());
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const loadStories = async () => {
@@ -104,10 +105,65 @@ export const PrivateLibraryView = ({ t, onRead, onArchive, onBack }: { t: any, o
     }
   };
 
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const currentLang = localStorage.getItem('ia_ventura_lang') || 'en';
+    const isPt = currentLang === 'pt';
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        if (json && json.id && json.messages) {
+          saveLocalStory(json);
+          // Update state instantly
+          if (json.sessionCode) {
+            setCoopLibrary(prev => {
+              const filtered = prev.filter(s => s.id !== json.id);
+              return [json, ...filtered];
+            });
+          } else {
+            setSoloLibrary(prev => {
+              const filtered = prev.filter(s => s.id !== json.id);
+              return [json, ...filtered];
+            });
+          }
+          alert(isPt ? "Obra importada com sucesso!" : "Story imported successfully!");
+        } else {
+          alert(isPt ? "Ficheiro inválido. Certifique-se de que é um backup do AI Ventura." : "Invalid file. Make sure it's an AI Ventura backup.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert(isPt ? "Erro ao ler o ficheiro." : "Error reading file.");
+      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <>
       <PageHeader t={t} title={t.privateLibrary} subtitle={t.privateLibrarySubtitle} onBack={onBack} />
       
+      <div className="flex justify-end mb-6 -mt-4">
+        <input 
+          type="file" 
+          accept=".json" 
+          hidden 
+          ref={fileInputRef} 
+          onChange={handleImport} 
+        />
+        <button 
+          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-gray-50 dark:hover:bg-white/10 transition-all text-sm font-bold shadow-sm"
+        >
+          <Download size={16} />
+          {localStorage.getItem('ia_ventura_lang') === 'pt' ? 'Importar Obra' : 'Import Story'}
+        </button>
+      </div>
+
       <div className="space-y-12">
         {soloLibrary.length > 0 && (
           <section>
