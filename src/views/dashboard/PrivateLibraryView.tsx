@@ -128,12 +128,14 @@ export const PrivateLibraryView = ({ t, onRead, onArchive, onBack, onShowToast }
           // Update state instantly
           if (json.sessionCode) {
             setCoopLibrary(prev => {
-              const filtered = prev.filter(s => s.id !== json.id);
+              const safePrev = Array.isArray(prev) ? prev : [];
+              const filtered = safePrev.filter(s => s.id !== json.id);
               return [json, ...filtered];
             });
           } else {
             setSoloLibrary(prev => {
-              const filtered = prev.filter(s => s.id !== json.id);
+              const safePrev = Array.isArray(prev) ? prev : [];
+              const filtered = safePrev.filter(s => s.id !== json.id);
               return [json, ...filtered];
             });
           }

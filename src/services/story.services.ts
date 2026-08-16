@@ -5,7 +5,8 @@ const ARCHIVE_KEY = 'ia_ventura_archive';
 export const getLocalStories = () => {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    const parsed = data ? JSON.parse(data) : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
     console.error("Erro ao ler LocalStorage", e);
     return [];
@@ -15,7 +16,8 @@ export const getLocalStories = () => {
 export const getArchivedStories = () => {
   try {
     const data = localStorage.getItem(ARCHIVE_KEY);
-    const stories = data ? JSON.parse(data) : [];
+    const parsed = data ? JSON.parse(data) : [];
+    const stories = Array.isArray(parsed) ? parsed : [];
     const now = new Date();
     const validStories = stories.filter((s: any) => {
       const archivedAt = new Date(s.archived_at);
