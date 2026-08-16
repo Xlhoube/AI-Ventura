@@ -146,7 +146,7 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
       <div className="space-y-12 animate-in fade-in duration-700">
          <div className="mb-12 py-2 flex flex-col md:flex-row md:items-start justify-between gap-6 tour-dashboard-header">
             <div>
-               <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-2">{t.welcomeBack} <span className="text-indigo-500">{username}</span></h2>
+               <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-2">{t.welcomeBack} <span className="text-indigo-500 block">{username}</span></h2>
                <p className="text-slate-500 font-medium">{t.exploreFuncs}</p>
             </div>
             <div className="flex flex-wrap items-center gap-3 md:justify-end">
