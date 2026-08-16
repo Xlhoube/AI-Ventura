@@ -225,7 +225,15 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
                          <div className="w-full h-px bg-gray-200 dark:bg-white/10 my-1"></div>
                          <div className="grid grid-cols-2 gap-3 pt-1">
                             <button 
-                               onClick={() => { setShowModeSelect(false); onNavigate('setup?storage=local'); }}
+                               onClick={async () => { 
+                                   // Try to get folder handle
+                                   if ('showDirectoryPicker' in window) {
+                                       const { requestLocalDirectory } = await import('@/utils/fileSystem');
+                                       await requestLocalDirectory();
+                                   }
+                                   setShowModeSelect(false); 
+                                   onNavigate('setup?storage=local'); 
+                               }}
                                className="py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold uppercase tracking-widest text-[10px] sm:text-xs text-center transition-all shadow-md hover:scale-[1.02] active:scale-95"
                             >
                                {lang === 'pt' ? '📁 Armazenar Local' : '📁 Local Storage'}

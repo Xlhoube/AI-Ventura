@@ -159,121 +159,102 @@ export const StorySetup = ({ t, lang, onBack, onComplete, sessionCode, user, onS
             <PageHeader t={t} title={t.setupTitle} subtitle={t.stepCounter(step, 4)} onBack={onBack} />
 
             {step === 1 && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start mt-8">
-                    {/* Lado Esquerdo: Modo & Input Core */}
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            <button onClick={() => setMode('own')} className={`p-6 rounded-3xl border transition-all ${mode === 'own' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-lg shadow-indigo-500/10' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#121214] text-slate-500 hover:border-indigo-300'}`}>
-                                <PenTool className="mb-3 mx-auto" />
-                                <h3 className="font-bold text-center">{t.ownIdea}</h3>
-                            </button>
-                            <button onClick={() => setMode('ai')} className={`p-6 rounded-3xl border transition-all ${mode === 'ai' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-lg shadow-indigo-500/10' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#121214] text-slate-500 hover:border-indigo-300'}`}>
-                                <Sparkles className="mb-3 mx-auto" />
-                                <h3 className="font-bold text-center">{t.aiIdea}</h3>
-                            </button>
-                        </div>
-                        {mode === 'own' && (
-                            <textarea
-                                value={config.idea}
-                                onChange={(e) => handleConfigChange({ ...config, idea: e.target.value })}
-                                placeholder={t.ideaPlaceholder}
-                                className="w-full h-40 lg:h-64 bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-3xl p-6 text-gray-900 dark:text-white outline-none focus:ring-2 ring-indigo-500/20 resize-none shadow-xl text-lg leading-relaxed"
-                            />
-                        )}
-                        {mode === 'ai' && (
-                            <div className="space-y-6 bg-white dark:bg-[#121214] p-6 lg:p-8 rounded-3xl border border-gray-200 dark:border-white/10 shadow-xl">
-                                <div className="space-y-2">
-                                    <h4 className="font-bold text-gray-900 dark:text-white text-base">{t.step1Genre}</h4>
-                                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                                        {Object.keys(t.genres).map(g => (
-                                            <button key={g} onClick={() => setConfig({ ...config, genre: g })} className={`px-3 py-2 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest max-w-full break-words text-wrap border transition-all ${config.genre === g ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/30' : 'bg-gray-50 dark:bg-white/5 text-slate-500 border-gray-200 dark:border-white/10 hover:border-indigo-400/50 hover:text-indigo-400'}`}>
-                                                {t.genres[g] || g}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                                            {lang === 'pt' ? '🎭 Sub-Tema / Foco' : '🎭 Sub-Theme / Focus'}
-                                        </label>
-                                        <select 
-                                            value={config.subTema} 
-                                            onChange={e => handleConfigChange({ ...config, subTema: e.target.value })}
-                                            className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-indigo-500/20 font-medium text-sm text-gray-900 dark:text-white"
-                                        >
-                                            <option value="none" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Nenhum' : 'None'}</option>
-                                            <option value="romance" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Romance / Relações' : 'Romance / Relationships'}</option>
-                                            <option value="medieval" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Medieval / Épico' : 'Medieval / Epic'}</option>
-                                            <option value="scifi" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Ficção Científica / Tecnologia' : 'Science Fiction / Tech'}</option>
-                                            <option value="humor" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Comédia / Humor' : 'Comedy / Humor'}</option>
-                                            <option value="veridica" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'História Real / Verídica' : 'Real / True Story'}</option>
-                                            <option value="mystery" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Mistério / Investigação' : 'Mystery / Investigation'}</option>
-                                            <option value="drama" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Drama / Conflito Familiar' : 'Drama / Family Conflict'}</option>
-                                        </select>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                                            {lang === 'pt' ? '⏳ Posição no Tempo' : '⏳ Position in Time'}
-                                        </label>
-                                        <select 
-                                            value={config.timePeriod} 
-                                            onChange={e => handleConfigChange({ ...config, timePeriod: e.target.value })}
-                                            className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-indigo-500/20 font-medium text-sm text-gray-900 dark:text-white"
-                                        >
-                                            <option value="present" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Contemporâneo / Atual' : 'Contemporary / Present'}</option>
-                                            <option value="past_medieval" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Passado Medieval / Feudal' : 'Medieval Past / Feudal'}</option>
-                                            <option value="past_century" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Século Passado (XIX/XX)' : 'Last Century (19th/20th)'}</option>
-                                            <option value="future_near" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Futuro Próximo / Distopia' : 'Near Future / Dystopia'}</option>
-                                            <option value="future_far" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Futuro Distante / Espacial' : 'Far Future / Space Era'}</option>
-                                            <option value="timeless" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Atemporal / Fantástico' : 'Timeless / Mythological'}</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <button onClick={fetchAI} disabled={loadingAI} className="w-full py-5 mt-4 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-black tracking-widest uppercase text-sm rounded-2xl hover:bg-indigo-200 dark:hover:bg-indigo-500/30 transition-all flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 shadow-lg shadow-indigo-500/10">
-                                    {loadingAI ? <Loader2 className="animate-spin" size={24} /> : <Wand2 size={24} />}
-                                    {loadingAI ? t.generatingConcepts : t.generateMagicSuggestions}
-                                </button>
-                            </div>
-                        )}
+                <div className="flex flex-col gap-8 mt-8 w-full max-w-3xl mx-auto">
+                    <div className="grid grid-cols-2 gap-4">
+                        <button onClick={() => setMode('own')} className={`p-6 rounded-3xl border transition-all ${mode === 'own' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-lg shadow-indigo-500/10' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#121214] text-slate-500 hover:border-indigo-300'}`}>
+                            <PenTool className="mb-3 mx-auto" />
+                            <h3 className="font-bold text-center">{t.ownIdea}</h3>
+                        </button>
+                        <button onClick={() => setMode('ai')} className={`p-6 rounded-3xl border transition-all ${mode === 'ai' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-lg shadow-indigo-500/10' : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#121214] text-slate-500 hover:border-indigo-300'}`}>
+                            <Sparkles className="mb-3 mx-auto" />
+                            <h3 className="font-bold text-center">{t.aiIdea}</h3>
+                        </button>
                     </div>
 
-                    {/* Lado Direito: Preview da Ideia ou AI Ideas */}
-                    <div className="space-y-6 h-full">
-                        {mode === 'ai' ? (
-                            <div className="bg-white dark:bg-[#121214] p-6 lg:p-8 rounded-3xl border border-gray-200 dark:border-white/10 shadow-xl h-full flex flex-col min-h-[400px]">
-                                <h4 className="font-bold text-gray-900 dark:text-white mb-6 text-lg flex items-center gap-3">
-                                    <Sparkles className="text-indigo-500" />
-                                    {t.step2Premise}
-                                </h4>
-                                {aiIdeas.length === 0 ? (
-                                    <div className="flex-1 flex flex-col items-center justify-center text-center opacity-40">
-                                        <Wand2 size={64} className="mb-6 text-indigo-500" />
-                                        <p className="text-sm font-black uppercase tracking-[0.2em] text-slate-500">{t.generateIdeasFirst}</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1 max-h-[500px]">
+                    {mode === 'own' && (
+                        <textarea
+                            value={config.idea}
+                            onChange={(e) => handleConfigChange({ ...config, idea: e.target.value })}
+                            placeholder={t.ideaPlaceholder}
+                            className="w-full h-40 lg:h-64 bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-3xl p-6 text-gray-900 dark:text-white outline-none focus:ring-2 ring-indigo-500/20 resize-none shadow-xl text-lg leading-relaxed"
+                        />
+                    )}
+
+                    {mode === 'ai' && (
+                        <div className="space-y-6 bg-white dark:bg-[#121214] p-6 lg:p-8 rounded-3xl border border-gray-200 dark:border-white/10 shadow-xl">
+                            <div className="space-y-2">
+                                <h4 className="font-bold text-gray-900 dark:text-white text-base">{t.step1Genre}</h4>
+                                <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                    {Object.keys(t.genres).map(g => (
+                                        <button key={g} onClick={() => setConfig({ ...config, genre: g })} className={`px-3 py-2 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest max-w-full break-words text-wrap border transition-all ${config.genre === g ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/30' : 'bg-gray-50 dark:bg-white/5 text-slate-500 border-gray-200 dark:border-white/10 hover:border-indigo-400/50 hover:text-indigo-400'}`}>
+                                            {t.genres[g] || g}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                        {lang === 'pt' ? '🎭 Sub-Tema / Foco' : '🎭 Sub-Theme / Focus'}
+                                    </label>
+                                    <select 
+                                        value={config.subTema} 
+                                        onChange={e => handleConfigChange({ ...config, subTema: e.target.value })}
+                                        className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-indigo-500/20 font-medium text-sm text-gray-900 dark:text-white"
+                                    >
+                                        <option value="none" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Nenhum' : 'None'}</option>
+                                        <option value="romance" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Romance / Relações' : 'Romance / Relationships'}</option>
+                                        <option value="medieval" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Medieval / Épico' : 'Medieval / Epic'}</option>
+                                        <option value="scifi" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Ficção Científica / Tecnologia' : 'Science Fiction / Tech'}</option>
+                                        <option value="humor" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Comédia / Humor' : 'Comedy / Humor'}</option>
+                                        <option value="veridica" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'História Real / Verídica' : 'Real / True Story'}</option>
+                                        <option value="mystery" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Mistério / Investigação' : 'Mystery / Investigation'}</option>
+                                        <option value="drama" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Drama / Conflito Familiar' : 'Drama / Family Conflict'}</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                        {lang === 'pt' ? '⏳ Posição no Tempo' : '⏳ Position in Time'}
+                                    </label>
+                                    <select 
+                                        value={config.timePeriod} 
+                                        onChange={e => handleConfigChange({ ...config, timePeriod: e.target.value })}
+                                        className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 ring-indigo-500/20 font-medium text-sm text-gray-900 dark:text-white"
+                                    >
+                                        <option value="present" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Contemporâneo / Atual' : 'Contemporary / Present'}</option>
+                                        <option value="past_medieval" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Passado Medieval / Feudal' : 'Medieval Past / Feudal'}</option>
+                                        <option value="past_century" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Século Passado (XIX/XX)' : 'Last Century (19th/20th)'}</option>
+                                        <option value="future_near" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Futuro Próximo / Distopia' : 'Near Future / Dystopia'}</option>
+                                        <option value="future_far" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Futuro Distante / Espacial' : 'Far Future / Space Era'}</option>
+                                        <option value="timeless" className="text-gray-900 dark:text-gray-100 dark:bg-[#1A1A1E]">{lang === 'pt' ? 'Atemporal / Fantástico' : 'Timeless / Mythological'}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button onClick={fetchAI} disabled={loadingAI} className="w-full py-5 mt-4 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-black tracking-widest uppercase text-sm rounded-2xl hover:bg-indigo-200 dark:hover:bg-indigo-500/30 transition-all flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 shadow-lg shadow-indigo-500/10">
+                                {loadingAI ? <Loader2 className="animate-spin" size={24} /> : <Wand2 size={24} />}
+                                {loadingAI ? t.generatingConcepts : t.generateMagicSuggestions}
+                            </button>
+
+                            {aiIdeas.length > 0 && (
+                                <div className="mt-8 pt-8 border-t border-gray-200 dark:border-white/10 animate-in fade-in slide-in-from-top-4">
+                                    <h4 className="font-bold text-gray-900 dark:text-white mb-6 text-lg flex items-center gap-3">
+                                        <Sparkles className="text-indigo-500" />
+                                        {t.step2Premise}
+                                    </h4>
+                                    <div className="space-y-4">
                                         {aiIdeas.map((idea, i) => (
                                             <div key={i} onClick={() => handleConfigChange({ ...config, idea })} className={`p-6 rounded-2xl border cursor-pointer hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 transition-all animate-in slide-in-from-bottom-2 ${config.idea === idea ? 'border-indigo-500 ring-4 ring-indigo-500/20 bg-indigo-50 dark:bg-indigo-500/10' : 'border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02]'}`} style={{ animationDelay: `${i * 100}ms` }}>
                                                 <p className="text-base font-medium text-slate-700 dark:text-slate-300 leading-relaxed">{idea}</p>
                                             </div>
                                         ))}
                                     </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="hidden lg:flex bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/5 dark:to-purple-500/5 border border-indigo-500/10 rounded-3xl p-12 h-full flex-col items-center justify-center text-center shadow-inner">
-                                <div className="w-24 h-24 bg-white dark:bg-white/5 rounded-full flex items-center justify-center mb-8 shadow-xl">
-                                    <PenTool size={40} className="text-indigo-500" />
                                 </div>
-                                <h3 className="text-3xl font-black text-gray-900 dark:text-white mb-6 tracking-tight">{t.limitImaginationTitle}</h3>
-                                <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed max-w-md">{t.limitImaginationDesc}</p>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
 

@@ -31,12 +31,18 @@ export const getArchivedStories = () => {
   }
 };
 
+import { saveStoryToJson } from '@/utils/fileSystem';
+
 export const saveLocalStory = (story: any) => {
   const stories = getLocalStories();
   const index = stories.findIndex((s: any) => s.id === story.id);
   const updatedStory = { ...story, updated_at: new Date().toISOString() };
   if (index >= 0) { stories[index] = updatedStory; } else { stories.push(updatedStory); }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(stories));
+  
+  // Try saving to File System Access API in background
+  saveStoryToJson(updatedStory.id, updatedStory).catch(console.error);
+  
   return updatedStory;
 };
 
