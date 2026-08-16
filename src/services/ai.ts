@@ -107,7 +107,7 @@ export const generateSuggestions = async (
     const historyStr = recentMessages.map(m => `${m.role === 'user' ? 'AUTOR' : 'EDITOR'}: ${m.content}`).join('\n\n');
 
     const instructions = {
-      pt: "Com base neste excerto recente da história, devolve APENAS um array JSON contendo 3 sugestões curtas e criativas (strings) para a próxima ação do Autor, em Português.",
+      pt: "Com base neste excerto recente da história, devolve APENAS um array JSON contendo 3 sugestões curtas e criativas (strings) para a próxima ação do Autor, em Português de Portugal (PT-PT). Usa SEMPRE Euros (€) e NUNCA Reais (R$).",
       en: "Based on this recent excerpt of the story, return ONLY a JSON array containing 3 short and creative suggestions (strings) for the Author's next action, in English.",
       fr: "Basé sur cet extrait récent de l'histoire, retournez UNIQUEMENT un tableau JSON contenant 3 suggestions courtes et créatives (chaînes) pour la prochaine action de l'Auteur, en Français."
     };
@@ -265,7 +265,7 @@ export const streamAIConversation = async (
 
     // INSTRUÇÕES REFORÇADAS PARA IGNORAR COMANDOS E EVITAR META-COMENTÁRIOS E LISTAS MARKDOWN NAS SUGESTOES
     const instructions = {
-      pt: "DESENVOLVER PROSA: Escreve a narrativa em PORTUGUÊS (PT-PT). REGRAS DE OURO: 1. NUNCA respondas a comentários do autor (ex: 'ok', 'desculpa'). 2. Se o input for 'continua' ou uma instrução, apenas escreve a história e ignora o texto da ordem na narrativa. 3. O teu output deve ser 100% narrativa literária. 4. No final, adiciona EXATAMENTE '---SUGGESTIONS---' seguido de 3 opções separadas por ' | ' sem qualquer markdown, sem números e sem listas (exemplo: ---SUGGESTIONS---Opção UM | Opção DOIS | Opção TRES).",
+      pt: "DESENVOLVER PROSA: Escreve a narrativa em PORTUGUÊS DE PORTUGAL (PT-PT). REGRAS DE OURO: 1. NUNCA respondas a comentários do autor. 2. Se o input for uma instrução, apenas escreve a história ignorando o comando. 3. O teu output deve ser 100% narrativa literária. 4. Usa SEMPRE a moeda Euro (€) e NUNCA Reais (R$). 5. No final, adiciona EXATAMENTE '---SUGGESTIONS---' seguido de 3 opções separadas por ' | ' sem qualquer markdown ou listas (exemplo: ---SUGGESTIONS---Opção UM | Opção DOIS | Opção TRES).",
       en: "DEVELOP PROSE: Write the narrative in ENGLISH. GOLDEN RULES: 1. NEVER reply to user comments (e.g., 'ok', 'sorry'). 2. If the input is 'continue' or a command, just write the story and ignore the command text in the narrative. 3. Your output must be 100% literary narrative. 4. At the end, add EXACTLY '---SUGGESTIONS---' followed by 3 options separated by ' | ' without any markdown, numbers, or lists (example: ---SUGGESTIONS---Option ONE | Option TWO | Option THREE).",
       fr: "DÉVELOPPER LA PROSE : Écrivez la narration en FRANÇAIS. RÈGLES D'OR : 1. NE JAMAIS répondre aux commentaires de l'auteur (ex : 'ok', 'désolé'). 2. Si l'entrée est une commande, écrivez juste l'histoire et ignorez le texte de commande. 3. Votre sortie doit être 100% narrative. 4. À la fin, ajoutez EXACTEMENT '---SUGGESTIONS---' suivi de 3 options séparées par ' | ' sans aucun markdown, numéros ou listes (exemple: ---SUGGESTIONS---Option UNE | Option DEUX | Option TROIS)."
     };
