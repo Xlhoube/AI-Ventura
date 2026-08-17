@@ -133,13 +133,28 @@ const _executeUnifiedAIBase = async (
     // Groq e Mistral utilizam a API standard da OpenAI, permitindo reaproveitar a lógica
     if (provider === 'groq' || provider === 'mistral') {
         const baseURL = provider === 'groq' ? 'https://api.groq.com/openai/v1' : 'https://api.mistral.ai/v1';
-        
-        // Modelos com lista de fallback no Groq caso a conta não tenha acesso a um modelo específico
-        const groqCandidates = ['llama-3.3-70b-versatile', 'llama3-70b-8192', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
-        const mistralCandidates = ['open-mistral-nemo', 'mistral-small-latest'];
-        const candidateModels = provider === 'groq' ? groqCandidates : mistralCandidates;
-
         const openai = new OpenAI({ apiKey: key, baseURL, dangerouslyAllowBrowser: true });
+
+        let candidateModels = provider === 'groq' 
+            ? ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama3-70b-8192', 'llama3-8b-8192']
+            : ['open-mistral-nemo', 'mistral-small-latest'];
+
+        // Se for Groq, tentar consultar a lista de modelos ativos da conta em tempo real
+        if (provider === 'groq') {
+            try {
+                const modelListResponse = await openai.models.list();
+                const activeIds = modelListResponse.data
+                    .map((m: any) => m.id)
+                    .filter((id: string) => !id.includes('whisper') && !id.includes('guard') && !id.includes('vision'));
+                
+                if (activeIds.length > 0) {
+                    candidateModels = activeIds;
+                }
+            } catch (listErr) {
+                console.warn("[UnifiedAI - Groq] Não foi possível listar modelos dinamicamente, a usar lista predefinida.", listErr);
+            }
+        }
+
         const messages: any[] = [];
         if (config.systemInstruction) {
             messages.push({ role: 'system', content: config.systemInstruction });
@@ -172,16 +187,14 @@ const _executeUnifiedAIBase = async (
                 }
             } catch (err: any) {
                 lastError = err;
-                console.warn(`[UnifiedAI - ${provider}] Modelo ${model} falhou, a tentar próximo modelo:`, err.message);
-                // Se o erro for 404 (modelo não existe / sem acesso), continua para o próximo candidato
-                if (err?.status === 404 || err?.message?.includes('404') || err?.message?.includes('model')) {
-                    continue;
-                }
-                throw err;
+                console.warn(`[UnifiedAI - ${provider}] Modelo ${model} falhou (${err.status || err.message}), a tentar próximo modelo...`);
+                // Continua para o próximo candidato em qualquer erro de modelo (400, 404, etc.)
+                continue;
             }
         }
         if (lastError) throw lastError;
     }
+
 
     
     throw new Error(`Unsupported provider: ${provider}`);
