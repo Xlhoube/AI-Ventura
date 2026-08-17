@@ -313,7 +313,9 @@ export const AppRoutes = () => {
                                                         'library_private': '/library',
                                                         'public': '/explore',
                                                         'authors': '/authors',
-                                                        'archive': '/archive'
+                                                        'archive': '/archive',
+                                                        'dungeon_setup': '/dungeon_setup',
+                                                        'dungeon': '/dungeon'
                                                     };
                                                     const matchedRoute = routeMap[base];
                                                     if (matchedRoute) {
@@ -329,8 +331,11 @@ export const AppRoutes = () => {
                                                     if (nav.view === 'lobby') navigate('/lobby');
                                                     else if (nav.view === 'setup') navigate('/setup');
                                                     else if (nav.view === 'story') navigate('/story');
+                                                    else if (nav.view === 'dungeon_setup') navigate('/dungeon_setup');
+                                                    else if (nav.view === 'dungeon') navigate('/dungeon');
                                                     else navigate('/dashboard');
                                                 }
+
                                             }}
                                             lang={userLang}
                                             onShowToast={showToast}
