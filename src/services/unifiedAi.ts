@@ -25,27 +25,40 @@ const _executeUnifiedAIBase = async (
             geminiConfig.responseSchema = { type: Type.OBJECT };
         }
         
-        if (config.stream) {
-            const stream = await ai.models.generateContentStream({
-                model: 'gemini-2.5-flash',
-                contents: prompt,
-                config: geminiConfig
-            });
-            async function* textStream() {
-                for await (const chunk of stream) {
-                    yield chunk.text || "";
+        const googleModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash'];
+        let lastError = null;
+
+        for (const model of googleModels) {
+            try {
+                if (config.stream) {
+                    const stream = await ai.models.generateContentStream({
+                        model,
+                        contents: prompt,
+                        config: geminiConfig
+                    });
+                    async function* textStream() {
+                        for await (const chunk of stream) {
+                            yield chunk.text || "";
+                        }
+                    }
+                    return textStream();
+                } else {
+                    const response = await ai.models.generateContent({
+                        model,
+                        contents: prompt,
+                        config: geminiConfig
+                    });
+                    return response.text || "";
                 }
+            } catch (err: any) {
+                lastError = err;
+                console.warn(`[UnifiedAI - Google] Modelo ${model} falhou, a tentar próximo:`, err.message);
+                continue;
             }
-            return textStream();
-        } else {
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: prompt,
-                config: geminiConfig
-            });
-            return response.text || "";
         }
+        if (lastError) throw lastError;
     }
+
 
     
     if (provider === 'openai') {
