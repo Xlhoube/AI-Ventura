@@ -27,7 +27,7 @@ const _executeUnifiedAIBase = async (
         
         if (config.stream) {
             const stream = await ai.models.generateContentStream({
-                model: 'gemini-3.5-flash',
+                model: 'gemini-2.5-flash',
                 contents: prompt,
                 config: geminiConfig
             });
@@ -39,13 +39,14 @@ const _executeUnifiedAIBase = async (
             return textStream();
         } else {
             const response = await ai.models.generateContent({
-                model: 'gemini-3.5-flash',
+                model: 'gemini-2.5-flash',
                 contents: prompt,
                 config: geminiConfig
             });
             return response.text || "";
         }
     }
+
     
     if (provider === 'openai') {
         const openai = new OpenAI({ apiKey: key, dangerouslyAllowBrowser: true });
@@ -120,7 +121,8 @@ const _executeUnifiedAIBase = async (
     if (provider === 'groq' || provider === 'mistral') {
         const baseURL = provider === 'groq' ? 'https://api.groq.com/openai/v1' : 'https://api.mistral.ai/v1';
         // Modelos recomendados para cada plataforma (rápidos e competentes para narrativa)
-        const model = provider === 'groq' ? 'llama-3.1-8b-instant' : 'open-mistral-nemo';
+        const model = provider === 'groq' ? 'llama-3.3-70b-versatile' : 'open-mistral-nemo';
+
 
         const openai = new OpenAI({ apiKey: key, baseURL, dangerouslyAllowBrowser: true });
         const messages: any[] = [];
