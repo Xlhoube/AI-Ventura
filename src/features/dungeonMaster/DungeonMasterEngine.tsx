@@ -67,14 +67,20 @@ export const DungeonMasterEngine: React.FC<DungeonMasterEngineProps> = ({
 
             // Gerar novas escolhas dinâmicas
             const newChoices = await generateDMChoices(updatedCampaign, fullDmText);
+            const validChoices = Array.isArray(newChoices) ? newChoices : [];
 
             const dmNode: DMNarrativeNode = {
                 id: `node-${Date.now()}-dm`,
                 timestamp: Date.now(),
                 sender: 'dm',
                 text: fullDmText,
-                choices: newChoices.map((c, i) => ({ id: `c-${i}`, text: c.text, intent: c.intent as any }))
+                choices: validChoices.map((c: any, i: number) => ({
+                    id: `c-${i}`,
+                    text: typeof c === 'string' ? c : (c.text || c.action || 'Avançar com cuidado'),
+                    intent: (c.intent || 'action') as any
+                }))
             };
+
 
             const finalCampaign: DMCampaign = {
                 ...updatedCampaign,

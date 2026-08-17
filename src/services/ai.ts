@@ -999,13 +999,27 @@ ${recentNodes}
 
 Dungeon Master, narra o desenrolar desta ação e a resposta do mundo:`;
 
-  return await streamAIConversation(
-    promptText,
-    onChunk,
-    { systemInstruction, temperature: 0.85 },
-    lang
-  );
+  const streamGenerator = await executeUnifiedAI(promptText, {
+    systemInstruction,
+    stream: true
+  });
+
+  let fullResponse = '';
+  if (streamGenerator && typeof streamGenerator[Symbol.asyncIterator] === 'function') {
+    for await (const chunk of streamGenerator) {
+      if (chunk) {
+        fullResponse += chunk;
+        onChunk(fullResponse);
+      }
+    }
+  } else if (typeof streamGenerator === 'string') {
+    fullResponse = streamGenerator;
+    onChunk(fullResponse);
+  }
+
+  return fullResponse;
 };
+
 
 /**
  * Gera 3 a 4 escolhas narrativas instigantes sugeridas pelo Mestre
