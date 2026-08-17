@@ -120,9 +120,11 @@ const _executeUnifiedAIBase = async (
     // Groq e Mistral utilizam a API standard da OpenAI, permitindo reaproveitar a lógica
     if (provider === 'groq' || provider === 'mistral') {
         const baseURL = provider === 'groq' ? 'https://api.groq.com/openai/v1' : 'https://api.mistral.ai/v1';
-        // Modelos recomendados para cada plataforma (rápidos e competentes para narrativa)
-        const model = provider === 'groq' ? 'llama-3.3-70b-versatile' : 'open-mistral-nemo';
-
+        
+        // Modelos com lista de fallback no Groq caso a conta não tenha acesso a um modelo específico
+        const groqCandidates = ['llama-3.3-70b-versatile', 'llama3-70b-8192', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
+        const mistralCandidates = ['open-mistral-nemo', 'mistral-small-latest'];
+        const candidateModels = provider === 'groq' ? groqCandidates : mistralCandidates;
 
         const openai = new OpenAI({ apiKey: key, baseURL, dangerouslyAllowBrowser: true });
         const messages: any[] = [];
@@ -131,28 +133,43 @@ const _executeUnifiedAIBase = async (
         }
         messages.push({ role: 'user', content: prompt });
         
-        if (config.stream) {
-            const stream = await openai.chat.completions.create({
-                model,
-                messages,
-                stream: true,
-                response_format: config.jsonMode ? { type: "json_object" } : undefined
-            });
-            async function* textStream() {
-                for await (const chunk of stream) {
-                    yield chunk.choices[0]?.delta?.content || "";
+        let lastError = null;
+        for (const model of candidateModels) {
+            try {
+                if (config.stream) {
+                    const stream = await openai.chat.completions.create({
+                        model,
+                        messages,
+                        stream: true,
+                        response_format: config.jsonMode ? { type: "json_object" } : undefined
+                    });
+                    async function* textStream() {
+                        for await (const chunk of stream) {
+                            yield chunk.choices[0]?.delta?.content || "";
+                        }
+                    }
+                    return textStream();
+                } else {
+                    const response = await openai.chat.completions.create({
+                        model,
+                        messages,
+                        response_format: config.jsonMode ? { type: "json_object" } : undefined
+                    });
+                    return response.choices[0]?.message?.content || "";
                 }
+            } catch (err: any) {
+                lastError = err;
+                console.warn(`[UnifiedAI - ${provider}] Modelo ${model} falhou, a tentar próximo modelo:`, err.message);
+                // Se o erro for 404 (modelo não existe / sem acesso), continua para o próximo candidato
+                if (err?.status === 404 || err?.message?.includes('404') || err?.message?.includes('model')) {
+                    continue;
+                }
+                throw err;
             }
-            return textStream();
-        } else {
-            const response = await openai.chat.completions.create({
-                model,
-                messages,
-                response_format: config.jsonMode ? { type: "json_object" } : undefined
-            });
-            return response.choices[0]?.message?.content || "";
         }
+        if (lastError) throw lastError;
     }
+
     
     throw new Error(`Unsupported provider: ${provider}`);
 };
