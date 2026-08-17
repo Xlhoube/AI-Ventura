@@ -248,6 +248,33 @@ export const DashboardView = ({ t, username, onNavigate, lang, activeSessionCode
                             </button>
                          </div>
                       </div>
+
+                      {/* Modo Dungeon Master (Contador de Histórias / RPG Master) */}
+                      <div 
+                         onClick={() => {
+                             setShowModeSelect(false);
+                             onNavigate('dungeon_setup');
+                         }}
+                         className="flex items-center gap-6 p-6 rounded-[32px] border border-amber-500/30 dark:border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 cursor-pointer transition-all text-left group hover:scale-[1.01] hover:border-amber-500 shadow-sm"
+                      >
+                         <div className="w-16 h-16 bg-amber-500/20 text-amber-500 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform shadow-inner">
+                            🎲
+                         </div>
+                         <div>
+                            <div className="flex items-center gap-2 mb-1">
+                               <h4 className="text-lg font-black text-amber-500 dark:text-amber-400">
+                                  {lang === 'pt' ? 'Dungeon Master (Mestre de RPG)' : 'Dungeon Master (Storyteller)'}
+                               </h4>
+                               <span className="text-[10px] bg-amber-500/20 text-amber-500 font-bold px-2 py-0.5 rounded-full uppercase">Novo</span>
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                               {lang === 'pt' 
+                                  ? 'A IA atua como o teu Mestre de Jogo: narração rica, escolhas imersivas, fichas de herói e segredos ancestrais.' 
+                                  : 'The AI acts as your Game Master: rich narration, immersive choices, hero sheets and ancestral secrets.'}
+                            </p>
+                         </div>
+                      </div>
+
                      <button onClick={isGuest ? undefined : handleCreateLobby} disabled={isCreatingLobby || isGuest} className={`flex items-center gap-6 p-6 rounded-[32px] border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.02] transition-all text-left group relative tour-coop-mode ${isGuest ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white dark:hover:bg-white/5 hover:border-emerald-500 dark:hover:border-emerald-500/50'}`}>
                         <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">{isCreatingLobby ? <Loader2 className="animate-spin" /> : <Users2 size={32} />}</div>
                         <div>

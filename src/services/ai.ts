@@ -944,3 +944,109 @@ Nome C é [relação em PT-PT] de Nome A. Sem listas enumeradas, apenas uma fras
     return "";
   }
 };
+
+/**
+ * Motor do Dungeon Master: Gera a narrativa imersiva, reações do mundo e NPCs
+ */
+export const streamDungeonMasterNarrative = async (
+  campaign: any,
+  playerAction: string,
+  onChunk: (chunk: string) => void,
+  lang: string = 'pt'
+): Promise<string> => {
+  const charactersContext = campaign.characters?.map((c: any) => 
+    `- ${c.name} (${c.archetype}): Traços: ${c.traits?.join(', ')}. Inventário: ${c.inventory?.join(', ')}.`
+  ).join('\n') || '';
+
+  const questsContext = campaign.quests?.map((q: any) => 
+    `- Missão: ${q.title} [${q.status}]: ${q.description}`
+  ).join('\n') || '';
+
+  const recentNodes = campaign.nodes?.slice(-4).map((n: any) => 
+    `${n.sender === 'dm' ? 'DUNGEON MASTER' : 'JOGADOR'}: ${n.text}`
+  ).join('\n\n') || '';
+
+  const systemInstruction = `És o **Dungeon Master (Mestre de Jogo de RPG e Contador de Histórias Supremo)**.
+O teu objetivo é conduzir uma sessão épica, imersiva e reativa.
+Idioma estrito: Português de Portugal (PT-PT) autêntico.
+${PT_PT_STRICT_RULES}
+
+### Diretrizes do Mestre:
+1. **Atmosfera & Descrição Sensorial:** Descreve sons, cheiros, iluminação e a atmosfera do local.
+2. **Reatividade e Consequências:** Reage diretamente à ação ou diálogo do jogador. Faz os NPCs responderem com personalidade própria.
+3. **Ritmo & Tensão:** Mantém o jogador engajado com revelações, dilemas morais, mistérios e descobertas.
+4. **Sem Combate Banal / Sem Estatísticas Numéricas:** Foca-te na narrativa, na astúcia, nos diálogos e nas soluções criativas.
+5. **Formato:** Narra a cena de forma envolvente (2 a 4 parágrafos fluídos). No final, passa a palavra ao jogador com uma pergunta instigante ou gancho para a próxima ação.`;
+
+  const promptText = `
+### CENÁRIO DA CAMPANHA:
+Título: ${campaign.title}
+Cenário: ${campaign.setting}
+Estilo do Mestre: ${campaign.dmStyle}
+Local Atual: ${campaign.currentLocation || 'Desconhecido'}
+
+### PERSONAGENS ATIVAS:
+${charactersContext}
+
+### MISSÕES E MISTÉRIOS:
+${questsContext}
+
+### HISTÓRICO RECENTE:
+${recentNodes}
+
+### NOVA AÇÃO DO JOGADOR:
+"${playerAction}"
+
+Dungeon Master, narra o desenrolar desta ação e a resposta do mundo:`;
+
+  return await streamAIConversation(
+    promptText,
+    onChunk,
+    { systemInstruction, temperature: 0.85 },
+    lang
+  );
+};
+
+/**
+ * Gera 3 a 4 escolhas narrativas instigantes sugeridas pelo Mestre
+ */
+export const generateDMChoices = async (
+  campaign: any,
+  lastNarrative: string,
+  lang: string = 'pt'
+): Promise<Array<{ text: string; intent: string }>> => {
+  try {
+    const prompt = `Como Dungeon Master (Mestre de RPG), sugere 3 ou 4 opções de ação inteligentes, variadas e instigantes para o jogador tomar a seguir.
+Responde APENAS em JSON válido.
+Idioma estrito: Português de Portugal (PT-PT).
+${PT_PT_STRICT_RULES}
+
+Cenário: ${campaign.setting}
+Último acontecimento narrado pelo Mestre:
+"${lastNarrative}"
+
+Formato esperado:
+[
+  { "text": "Examinar as runas antigas gravadas no arco de pedra", "intent": "investigate" },
+  { "text": "Interrogar o guarda com cautela sobre os desaparecimentos", "intent": "dialogue" },
+  { "text": "Avançar furtivamente pelas sombras até à torre", "intent": "stealth" },
+  { "text": "Tentar usar o amuleto para dissipar a névoa", "intent": "magic" }
+]`;
+
+    const response = await executeUnifiedAI(prompt);
+    const clean = response.replace(/```json/g, '').replace(/```/g, '').trim();
+    const start = clean.indexOf('[');
+    const end = clean.lastIndexOf(']');
+    if (start !== -1 && end !== -1) {
+      return JSON.parse(clean.substring(start, end + 1));
+    }
+    return JSON.parse(clean);
+  } catch (e) {
+    console.warn("[generateDMChoices] Falha ao gerar opções:", e);
+    return [
+      { text: "Investigar atentamente o ambiente em redor", intent: "investigate" },
+      { text: "Falar ou interagir com quem estiver próximo", intent: "dialogue" },
+      { text: "Avançar com precaução pelo caminho à frente", intent: "action" }
+    ];
+  }
+};

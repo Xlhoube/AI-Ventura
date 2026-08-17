@@ -24,6 +24,9 @@ const BookPreview = lazy(() => import('./views').then(m => ({ default: m.BookPre
 const StorySetup = lazy(() => import('./views').then(m => ({ default: m.StorySetup })));
 const StoryEngine = lazy(() => import('./views').then(m => ({ default: m.StoryEngine })));
 const LobbyView = lazy(() => import('./views').then(m => ({ default: m.LobbyView })));
+const CampaignSetup = lazy(() => import('./views').then(m => ({ default: m.CampaignSetup })));
+const DungeonMasterEngine = lazy(() => import('./views').then(m => ({ default: m.DungeonMasterEngine })));
+
 
 export const AppRoutes = () => {
     const navigate = useNavigate();
@@ -399,6 +402,37 @@ export const AppRoutes = () => {
                                             }}
                                         />
                                     } />
+
+                                    <Route path="/dungeon_setup" element={
+                                        <CampaignSetup
+                                            onCancel={() => navigate('/dashboard')}
+                                            onStartCampaign={(campaign) => {
+                                                localStorage.setItem('active_dm_campaign', JSON.stringify(campaign));
+                                                navigate('/dungeon');
+                                            }}
+                                        />
+                                    } />
+
+                                    <Route path="/dungeon" element={
+                                        (() => {
+                                            const saved = localStorage.getItem('active_dm_campaign');
+                                            if (!saved) {
+                                                return <Navigate to="/dungeon_setup" replace />;
+                                            }
+                                            const parsed = JSON.parse(saved);
+                                            return (
+                                                <DungeonMasterEngine
+                                                    initialCampaign={parsed}
+                                                    onExit={() => navigate('/dashboard')}
+                                                    onSaveCampaign={(c) => {
+                                                        localStorage.setItem('active_dm_campaign', JSON.stringify(c));
+                                                    }}
+                                                    onShowToast={showToast}
+                                                />
+                                            );
+                                        })()
+                                    } />
+
 
                                     {currentStory && (
                                         <>
